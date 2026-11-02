@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
+project(opencv3_catkin)
+find_package(catkin REQUIRED)
+find_package(OpenCV 4 REQUIRED)
+catkin_package(INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} LIBRARIES ${OpenCV_LIBRARIES})

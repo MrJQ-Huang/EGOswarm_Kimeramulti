@@ -1,0 +1,109 @@
+Panels:
+- Class: rviz/Displays
+  Help Height: 70
+  Name: Displays
+  Property Tree Widget:
+    Expanded:
+    - /Global Options1
+    Splitter Ratio: 0.5
+  Tree Height: 650
+- Class: rviz/Views
+  Expanded:
+  - /Current View1
+  Name: Views
+  Splitter Ratio: 0.5
+Preferences:
+  PromptSaveOnExit: false
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Alpha: 0.12
+    Cell Size: 1
+    Class: rviz/Grid
+    Color: 82; 105; 130
+    Enabled: true
+    Line Style:
+      Line Width: 0.02
+      Value: Lines
+    Name: Reference Grid
+    Normal Cell Count: 0
+    Offset:
+      X: 16
+      Y: 0
+      Z: 0
+    Plane: XY
+    Plane Cell Count: 52
+    Reference Frame: <Fixed Frame>
+    Value: true
+  - Alpha: 1
+    Class: rviz/PointCloud2
+    Decay Time: 0
+    Enabled: true
+    Position Transformer: XYZ
+    Queue Size: 2
+    Selectable: true
+    Size (Pixels): 2
+    Size (m): 0.045
+    Style: Points
+    Unreliable: false
+    Use Fixed Frame: true
+    Value: true
+    Name: AMOV - raw native local TSDF in VIO frame - cyan
+    Topic: /sim_0/native_dense/raw_local_vertices
+    Color Transformer: FlatColor
+    Color: 52; 216; 237
+  Enabled: true
+  Global Options:
+    Background Color: 10; 18; 32
+    Default Light: true
+    Fixed Frame: sim_0/vio_odom
+    Frame Rate: 2
+  Name: root
+  Tools:
+  - Class: rviz/Interact
+    Hide Inactive Objects: true
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+  - Class: rviz/FocusCamera
+  - Class: rviz/Measure
+  Transformation:
+    Current:
+      Class: rviz/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 85
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Field of View: 0.785398
+      Focal Point:
+        X: 16
+        Y: 0
+        Z: 1
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 1.05
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: -1.570796
+    Saved: null
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 900
+  Hide Left Dock: true
+  Hide Right Dock: true
+  Views:
+    collapsed: true
+  Width: 1200
+  X: 0
+  Y: 0

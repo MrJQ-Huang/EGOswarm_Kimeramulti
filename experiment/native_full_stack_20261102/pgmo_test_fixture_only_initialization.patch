@@ -1,0 +1,23 @@
+--- upstream/test_deformation_graph.cpp
++++ isolated_fixture/test_deformation_graph.cpp
+@@ -862,6 +862,8 @@
+   size_t num_poses = 5;
+   for (size_t i = 0; i < num_poses; i++) {
+     pose_graph_tools::PoseGraphNode pg_node;
++    pg_node.robot_id = 0;
++    pg_node.stamp_ns = 0;
+     pg_node.key = i;
+     pg_node.pose = gtsam::Pose3(gtsam::Rot3(), gtsam::Point3(i, 0, 0)).matrix();
+     pose_graph.nodes.push_back(pg_node);
+@@ -871,6 +873,11 @@
+     }
+ 
+     pose_graph_tools::PoseGraphEdge pg_edge;
++    pg_edge.robot_from = 0;
++    pg_edge.robot_to = 0;
++    pg_edge.type = pose_graph_tools::PoseGraphEdge::Type::ODOM;
++    pg_edge.stamp_ns = 0;
++    pg_edge.covariance.setIdentity();
+     pg_edge.key_from = i - 1;
+     pg_edge.key_to = i;
+     pg_edge.pose = gtsam::Pose3(gtsam::Rot3(), gtsam::Point3(1, 0, 0)).matrix();

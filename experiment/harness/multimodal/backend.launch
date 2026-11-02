@@ -1,0 +1,48 @@
+<launch>
+  <arg name="robot_id"/>
+  <arg name="robot_name"/>
+  <arg name="runtime_dir"/>
+  <arg name="odom_suffix" default="vio_odom"/>
+  <arg name="local_pose_graph_topic" default="/$(arg robot_name)/kimera_vio_ros/pose_graph_incremental"/>
+  <group ns="$(arg robot_name)">
+    <node name="distributed_loop_closure_node" ns="distributed_loop_closure" pkg="kimera_distributed" type="kimera_distributed_loop_closure_node" output="screen">
+      <remap from="/$(arg robot_name)/kimera_vio_ros/pose_graph_incremental" to="$(arg local_pose_graph_topic)"/>
+      <param name="robot_id" value="$(arg robot_id)"/>
+      <param name="num_robots" value="2"/>
+      <param name="frame_id" value="$(arg robot_name)/map"/>
+      <param name="world_frame_id" value="kimera_world"/>
+      <param name="odom_frame_id" value="$(arg robot_name)/$(arg odom_suffix)"/>
+      <param name="latest_kf_frame_id" value="$(arg robot_name)/camera_optical"/>
+      <param name="vocabulary_path" value="$(find kimera_vio)/vocabulary/ORBvoc.yml"/>
+      <param name="alpha" value="0.5"/>
+      <param name="log_output_path" value="$(arg runtime_dir)/lcd/"/>
+      <param name="bow_skip_num" value="1"/>
+      <param name="bow_batch_size" value="1"/>
+      <param name="vlc_batch_size" value="5"/>
+      <param name="loop_batch_size" value="10"/>
+      <param name="loop_sync_sleep_time" value="1"/>
+      <param name="comm_sleep_time" value="1"/>
+      <param name="detection_batch_size" value="5"/>
+      <param name="run_offline" value="false"/>
+      <param name="max_submap_size" value="5"/>
+      <param name="max_submap_distance" value="1.0"/>
+      <rosparam file="$(find kimera_distributed)/params/visual_loopclosure_Jackal.yaml"/>
+      <rosparam file="$(arg runtime_dir)/robot_names.yaml"/>
+      <param name="detect_interrobot_only" value="false"/>
+      <param name="min_nss_factor" value="0.001"/>
+      <param name="geometric_verification_min_inlier_count" value="20"/>
+      <param name="geometric_verification_min_inlier_percentage" value="0.2"/>
+    </node>
+    <include file="$(find dpgo_ros)/launch/PGOAgent.launch">
+      <arg name="agent_id" value="$(arg robot_id)"/>
+      <arg name="num_robots" value="2"/>
+      <arg name="robot_names_file" value="$(arg runtime_dir)/robot_names.yaml"/>
+      <arg name="log_directory" value="$(arg runtime_dir)/dpgo/"/>
+      <arg name="robust_cost_type" value="GNC_TLS"/>
+      <arg name="robust_opt_num_weight_updates" value="25"/>
+      <arg name="max_iteration_number" value="1500"/>
+      <arg name="robust_init_min_inliers" value="5"/>
+      <arg name="publish_iterate" value="false"/>
+    </include>
+  </group>
+</launch>

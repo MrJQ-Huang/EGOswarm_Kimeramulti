@@ -1,0 +1,30 @@
+--- a/src/frontend/Tracker.cpp
++++ b/src/frontend/Tracker.cpp
+@@ -111,6 +111,13 @@
+       px_ref.push_back(ref_frame->keypoints_[i]);
+       indices_of_valid_landmarks.push_back(i);
+     }
++  }
++
++  // Odin RGB-D: no reference tracks; let the frontend detect new features.
++  // Passing an empty point vector to PyrLK can also trigger an OpenCV assertion.
++  if (px_ref.empty()) {
++    CHECK(cur_frame->keypoints_.empty());
++    return;
+   }
+ 
+   // Setup termination criteria for optical flow.
+--- a/src/frontend/UndistorterRectifier.cpp
++++ b/src/frontend/UndistorterRectifier.cpp
+@@ -37,6 +37,11 @@
+     std::optional<cv::Mat> R,
+     std::optional<cv::Mat> P) {
+   CHECK_NOTNULL(undistorted_keypoints)->clear();
++  // Odin RGB-D: an empty feature set has an empty undistorted result.
++  // OpenCV 4.2 undistortPoints throws for an empty point vector.
++  if (keypoints.empty()) {
++    return;
++  }
+   switch (cam_param.distortion_model_) {
+     case DistortionModel::RADTAN: {
+       cv::undistortPoints(keypoints,

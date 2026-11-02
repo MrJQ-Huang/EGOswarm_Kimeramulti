@@ -1,0 +1,765 @@
+{
+  "schema_version": 1,
+  "scene_file": "broad_loop_scene.json",
+  "title": "Navigation-only getLocalTarget boundary regression, no SLAM proof",
+  "frame_id": "world",
+  "starts": [
+    [
+      -16.0,
+      0.0,
+      1.0
+    ],
+    [
+      -13.5,
+      0.0,
+      1.0
+    ]
+  ],
+  "initial_yaw_rad": [
+    0.0,
+    0.0
+  ],
+  "nominal_height_m": 1.0,
+  "recommended_laps": 1,
+  "recommended_speed_m_s": 0.8,
+  "warmup_stationary_seconds": 2,
+  "stages": [
+    {
+      "name": "shared_heading_anchor",
+      "targets": [
+        [
+          -13.0,
+          0.0,
+          1.0
+        ],
+        [
+          -10.5,
+          0.0,
+          1.0
+        ]
+      ],
+      "intent": "Move east by 3m before the first pier to let the body naturally settle near yaw0, including after a closed lap. No world-fixed camera.",
+      "shared_observation": true,
+      "expected_heading_rad": [
+        0.0,
+        0.0
+      ],
+      "free_path_witnesses": {
+        "0": [
+          [
+            -16.0,
+            0.0,
+            1.0
+          ],
+          [
+            -13.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "1": [
+          [
+            -13.5,
+            0.0,
+            1.0
+          ],
+          [
+            -10.5,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      "stage": 1,
+      "settle_seconds": 2.0,
+      "dwell_seconds": 5.0,
+      "goal_tolerance_m": 0.35,
+      "timeout_seconds": 45,
+      "barrier": "Both actual bodies within 0.35m for 2s, then dwell an additional 5s with EGO/sensors/SLAM running; do not reset pose, yaw or estimators.",
+      "yaw_policy": "EGO lookahead atan2 -> PositionCommand.yaw -> continuous body; 0.7rad/s limit. Settle at corners; no fixed-world camera."
+    },
+    {
+      "name": "smoke_return_to_start",
+      "targets": [
+        [
+          -16.0,
+          0.0,
+          1.0
+        ],
+        [
+          -13.5,
+          0.0,
+          1.0
+        ]
+      ],
+      "settle_seconds": 2,
+      "dwell_seconds": 2,
+      "goal_tolerance_m": 0.35,
+      "timeout_seconds": 45
+    }
+  ],
+  "closed_position_loops": true,
+  "per_robot_nominal_goal_chord_length_m": [
+    78.09016994374947,
+    77.07106781186548
+  ],
+  "closure_and_overlap_intent": {
+    "position_closure": "Stage10 returns each robot to its exact own initial position. Never reset poses or SLAM. The next lap starts with the shared 3m eastbound heading anchor.",
+    "visual_revisit": "Two continuous laps: lap2 heading anchor plus eastbound stages2/3 repeat physical viewpoints in the same camera direction. Manually closed routes do not prove detected or accepted SLAM loop closures.",
+    "shared_centerline_world": {
+      "x": [
+        -13.5,
+        11.0
+      ],
+      "y": 0.0,
+      "z": 1.0,
+      "common_nominal_length_m": 24.5
+    },
+    "same_heading": "At initial hover use yaw=0. Body-mounted optical axis follows body +X. Shared eastbound flight should put both cameras near yaw=0; verify actual quaternion, do not fix camera in world.",
+    "arrival_orientation_caveat": "Final approach to the initial position has different yaw. The position closure alone is not an equal-view visual revisit; the following eastbound lap supplies the matching viewpoint direction.",
+    "separation": "Starts are 2.5 m apart. Shared targets maintain 2.5 m nominal lead/lag. At east end robots split into north/south lanes; use EGO shared planned trajectories for actual dynamic separation."
+  },
+  "validation": {
+    "method": "scene_geometry exact point SDF; <=0.05m segment samples; analytic box/cylinder center-segment intersections",
+    "target_checks": [
+      {
+        "stage": "initial",
+        "robot_id": 0,
+        "position": [
+          -16.0,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.999999999999999,
+        "closest_obstacle": "boundary_west",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "initial",
+        "robot_id": 1,
+        "position": [
+          -13.5,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.0413812651491097,
+        "closest_obstacle": "south_west_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_heading_anchor",
+        "robot_id": 0,
+        "position": [
+          -13.0,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.0,
+        "closest_obstacle": "south_west_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_heading_anchor",
+        "robot_id": 1,
+        "position": [
+          -10.5,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 1.35,
+        "closest_obstacle": "shared_west_round_pier",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_west_eastbound",
+        "robot_id": 0,
+        "position": [
+          -5,
+          0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.85,
+        "closest_obstacle": "shared_west_round_pier",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_west_eastbound",
+        "robot_id": 1,
+        "position": [
+          -2.5,
+          0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.5305843601498728,
+        "closest_obstacle": "offset_central_landmark",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_east_eastbound",
+        "robot_id": 0,
+        "position": [
+          11,
+          0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.9,
+        "closest_obstacle": "shared_east_rectangular_pier",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "shared_east_eastbound",
+        "robot_id": 1,
+        "position": [
+          13.5,
+          0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.3541019662496847,
+        "closest_obstacle": "north_east_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "split_east",
+        "robot_id": 0,
+        "position": [
+          16,
+          2.5,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 1.7860679774997898,
+        "closest_obstacle": "east_north_turn_column",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "split_east",
+        "robot_id": 1,
+        "position": [
+          16,
+          -2.5,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 1.6360679774997897,
+        "closest_obstacle": "east_south_turn_column",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_east_turn",
+        "robot_id": 0,
+        "position": [
+          16,
+          8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.999999999999999,
+        "closest_obstacle": "boundary_east",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_east_turn",
+        "robot_id": 1,
+        "position": [
+          16,
+          -8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.999999999999999,
+        "closest_obstacle": "boundary_east",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_return_east",
+        "robot_id": 0,
+        "position": [
+          5,
+          8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.1622776601683795,
+        "closest_obstacle": "north_east_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_return_east",
+        "robot_id": 1,
+        "position": [
+          5,
+          -8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 1.303840481040529,
+        "closest_obstacle": "south_return_low_marker",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_return_center",
+        "robot_id": 0,
+        "position": [
+          -5,
+          8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 1.3527756377319946,
+        "closest_obstacle": "north_return_round_marker",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_return_center",
+        "robot_id": 1,
+        "position": [
+          -5,
+          -8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.6627053911388696,
+        "closest_obstacle": "south_center_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_west_turn",
+        "robot_id": 0,
+        "position": [
+          -16,
+          8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.155551275463989,
+        "closest_obstacle": "west_north_turn_column",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "outer_west_turn",
+        "robot_id": 1,
+        "position": [
+          -16,
+          -8,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.255124837953327,
+        "closest_obstacle": "west_south_turn_column",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "return_to_shared_entrance",
+        "robot_id": 0,
+        "position": [
+          -16,
+          2.5,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.596150997149434,
+        "closest_obstacle": "north_west_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "return_to_shared_entrance",
+        "robot_id": 1,
+        "position": [
+          -16,
+          -2.5,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 2.885533905932738,
+        "closest_obstacle": "west_south_turn_column",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "close_each_position_loop",
+        "robot_id": 0,
+        "position": [
+          -16.0,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.999999999999999,
+        "closest_obstacle": "boundary_west",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      },
+      {
+        "stage": "close_each_position_loop",
+        "robot_id": 1,
+        "position": [
+          -13.5,
+          0.0,
+          1.0
+        ],
+        "obstacle_center_clearance_m": 3.0413812651491097,
+        "closest_obstacle": "south_west_rack",
+        "minimum_including_floor_m": 1.0,
+        "sphere_radius_0p2_clearance_including_floor_m": 0.8
+      }
+    ],
+    "all_targets_at_least_1m_from_obstacles": true,
+    "minimum_target_obstacle_center_clearance_m": 1.303840481040529,
+    "minimum_target_including_floor_center_clearance_m": 1.0,
+    "nominal_chords": [
+      {
+        "stage": 1,
+        "name": "shared_heading_anchor",
+        "robot_id": 0,
+        "straight_goal_distance_m": 3.0,
+        "sampled_min_obstacle_center_sdf_m": 3.0,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 3.0
+      },
+      {
+        "stage": 1,
+        "name": "shared_heading_anchor",
+        "robot_id": 1,
+        "straight_goal_distance_m": 3.0,
+        "sampled_min_obstacle_center_sdf_m": 1.35,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.35
+      },
+      {
+        "stage": 2,
+        "name": "shared_west_eastbound",
+        "robot_id": 0,
+        "straight_goal_distance_m": 8.0,
+        "sampled_min_obstacle_center_sdf_m": -0.65,
+        "analytic_segment_intersections": [
+          "shared_west_round_pier"
+        ],
+        "requires_EGO_detour": true,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.15
+      },
+      {
+        "stage": 2,
+        "name": "shared_west_eastbound",
+        "robot_id": 1,
+        "straight_goal_distance_m": 8.0,
+        "sampled_min_obstacle_center_sdf_m": -0.65,
+        "analytic_segment_intersections": [
+          "shared_west_round_pier"
+        ],
+        "requires_EGO_detour": true,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.15
+      },
+      {
+        "stage": 3,
+        "name": "shared_east_eastbound",
+        "robot_id": 0,
+        "straight_goal_distance_m": 16.0,
+        "sampled_min_obstacle_center_sdf_m": -0.5,
+        "analytic_segment_intersections": [
+          "shared_east_rectangular_pier"
+        ],
+        "requires_EGO_detour": true,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.3
+      },
+      {
+        "stage": 3,
+        "name": "shared_east_eastbound",
+        "robot_id": 1,
+        "straight_goal_distance_m": 16.0,
+        "sampled_min_obstacle_center_sdf_m": -0.5,
+        "analytic_segment_intersections": [
+          "shared_east_rectangular_pier"
+        ],
+        "requires_EGO_detour": true,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.3
+      },
+      {
+        "stage": 4,
+        "name": "split_east",
+        "robot_id": 0,
+        "straight_goal_distance_m": 5.5901699437494745,
+        "sampled_min_obstacle_center_sdf_m": 1.7860679774997898,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.7860679774997898
+      },
+      {
+        "stage": 4,
+        "name": "split_east",
+        "robot_id": 1,
+        "straight_goal_distance_m": 3.5355339059327378,
+        "sampled_min_obstacle_center_sdf_m": 1.6360679774997897,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.6360679774997897
+      },
+      {
+        "stage": 5,
+        "name": "outer_east_turn",
+        "robot_id": 0,
+        "straight_goal_distance_m": 5.5,
+        "sampled_min_obstacle_center_sdf_m": 1.55,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.55
+      },
+      {
+        "stage": 5,
+        "name": "outer_east_turn",
+        "robot_id": 1,
+        "straight_goal_distance_m": 5.5,
+        "sampled_min_obstacle_center_sdf_m": 1.4,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.4
+      },
+      {
+        "stage": 6,
+        "name": "outer_return_east",
+        "robot_id": 0,
+        "straight_goal_distance_m": 11.0,
+        "sampled_min_obstacle_center_sdf_m": 3.0,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 3.0
+      },
+      {
+        "stage": 6,
+        "name": "outer_return_east",
+        "robot_id": 1,
+        "straight_goal_distance_m": 11.0,
+        "sampled_min_obstacle_center_sdf_m": 1.2999999999999994,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.2999999999999994
+      },
+      {
+        "stage": 7,
+        "name": "outer_return_center",
+        "robot_id": 0,
+        "straight_goal_distance_m": 10.0,
+        "sampled_min_obstacle_center_sdf_m": 1.05,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.05
+      },
+      {
+        "stage": 7,
+        "name": "outer_return_center",
+        "robot_id": 1,
+        "straight_goal_distance_m": 10.0,
+        "sampled_min_obstacle_center_sdf_m": 1.303840481040529,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.303840481040529
+      },
+      {
+        "stage": 8,
+        "name": "outer_west_turn",
+        "robot_id": 0,
+        "straight_goal_distance_m": 11.0,
+        "sampled_min_obstacle_center_sdf_m": 1.3527756377319946,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.3527756377319946
+      },
+      {
+        "stage": 8,
+        "name": "outer_west_turn",
+        "robot_id": 1,
+        "straight_goal_distance_m": 11.0,
+        "sampled_min_obstacle_center_sdf_m": 2.6627053911388696,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 2.6627053911388696
+      },
+      {
+        "stage": 9,
+        "name": "return_to_shared_entrance",
+        "robot_id": 0,
+        "straight_goal_distance_m": 5.5,
+        "sampled_min_obstacle_center_sdf_m": 1.55,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.55
+      },
+      {
+        "stage": 9,
+        "name": "return_to_shared_entrance",
+        "robot_id": 1,
+        "straight_goal_distance_m": 5.5,
+        "sampled_min_obstacle_center_sdf_m": 1.85,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 1.85
+      },
+      {
+        "stage": 10,
+        "name": "close_each_position_loop",
+        "robot_id": 0,
+        "straight_goal_distance_m": 2.5,
+        "sampled_min_obstacle_center_sdf_m": 2.596150997149434,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 2.596150997149434
+      },
+      {
+        "stage": 10,
+        "name": "close_each_position_loop",
+        "robot_id": 1,
+        "straight_goal_distance_m": 3.5355339059327378,
+        "sampled_min_obstacle_center_sdf_m": 2.474998973067099,
+        "analytic_segment_intersections": [],
+        "requires_EGO_detour": false,
+        "sampled_free_path_witness_min_obstacle_clearance_m": 2.474998973067099
+      }
+    ],
+    "nominal_chords_that_need_EGO_detours": 4,
+    "free_path_witnesses_all_center_collision_free": true,
+    "sampled_min_free_path_witness_obstacle_center_clearance_m": 1.05,
+    "same_progress_nominal_chord_min_robot_center_separation_m": 2.23606797749979,
+    "planning_cloud_point_counts": {
+      "old_step_0p12": 49810,
+      "new_step_0p12": 131201,
+      "new_step_0p18": 65899
+    },
+    "limitations": [
+      "Guide witnesses prove sampled static free space and analytic center-segment nonintersection only, not that EGO will find those paths.",
+      "Nominal goal chords deliberately intersect two piers; do not play these straight chords as actual vehicle motion.",
+      "Same-progress pair separation is a design diagnostic, not a collision guarantee under asynchronous flights.",
+      "Distances use body origins. Subtract the verified vehicle envelope and actual tracking error before making safety claims.",
+      "No loop descriptor, geometric verification, distributed optimization, or map accuracy has been tested by this file."
+    ],
+    "per_robot_nominal_goal_chord_length_m": [
+      78.09016994374947,
+      77.07106781186548
+    ],
+    "each_position_loop_closed": true,
+    "static_design_checks_passed": true,
+    "claim_boundary": "Static design checks do not validate actual EGO trajectories, camera tracking, LCD, cross-robot constraints or SLAM map accuracy.",
+    "scene_sha256": "069cce44f16f450f7763a4d909a149608f0efdfb4116725e76fec936903fd04a",
+    "shared_heading_visibility_probes": [
+      {
+        "position": [
+          -13.0,
+          0.0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.605,
+        "vertical_obstacle_hit_fraction_8m": 0.23333333333333334
+      },
+      {
+        "position": [
+          -10.5,
+          0.0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.6522916666666667,
+        "vertical_obstacle_hit_fraction_8m": 0.38229166666666664
+      },
+      {
+        "position": [
+          -5,
+          0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.6197916666666666,
+        "vertical_obstacle_hit_fraction_8m": 0.24395833333333333
+      },
+      {
+        "position": [
+          -2.5,
+          0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.615625,
+        "vertical_obstacle_hit_fraction_8m": 0.27416666666666667
+      },
+      {
+        "position": [
+          11,
+          0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.46041666666666664,
+        "vertical_obstacle_hit_fraction_8m": 0.05645833333333333
+      },
+      {
+        "position": [
+          13.5,
+          0,
+          1.0
+        ],
+        "yaw_rad": 0.0,
+        "resolution": [
+          80,
+          60
+        ],
+        "finite_hit_fraction_8m": 0.7933333333333333,
+        "vertical_obstacle_hit_fraction_8m": 0.41354166666666664
+      }
+    ]
+  },
+  "deployment_notes": {
+    "scene_paths": [
+      "supervisor scene must load this file instead of its hard-coded complex_scene.json",
+      "complex_world_view.py --scene PATH/broad_loop_scene.json",
+      "sim_sensors.py --scene PATH/broad_loop_scene.json on both hosts, same exact JSON bytes and obstacle order"
+    ],
+    "planner_map": "Expose/pass map_size_x=44,map_size_y=28,map_size_z=5 from complex_drone.launch into one_drone.launch; currently wrapper does not forward map sizes, defaults 24x16x4 are too small. Keep local sensing/update horizons local rather than 40m.",
+    "planning_cloud": "complex_world_view.py currently hard-codes points(scene,step=.12); use .18 for this scene or add a CLI surface-step. Do not increase point density with area. range_sensor.py still filters radius5m and remains an explicitly ideal, unoccluded planner perception source.",
+    "initializer": "Select scenarios.broad_loop. Starts are [-16,0,1.0] and [-13.5,0,1.0], initial yaw0, initial goals equal starts. Use continuous body at z1.0 to match the current EGO manual-goal interface. Reset only before the experiment, never between laps.",
+    "mission_runner": "Read 10 stages in order; send targets as EGO goals. Per stage use goal_tolerance_m, settle_seconds, dwell_seconds and timeout_seconds. Run recommended_laps=2; no intermediate reset. Required post-closure shared revisit is stages1,2,3 of the next lap.",
+    "camera_yaw": "Verified EGO traj_server yaw follows atan2 of lookahead motion. continuous_body yaw-rate is limited to0.7rad/s. Initial/body yaw0 plus 3m heading anchor and 5s dwells support repeated east-facing views; verify actual quaternion yaw rather than trusting PoseStamped.orientation.",
+    "SLAM_timing": "Keep real RGB-D/IMU calibration/extrinsics/synchronization. Recommended rates 8Hz camera,10Hz LiDAR,100Hz IMU. 2 laps give approximately 200-260s motion plus waypoint dwell; benchmark actual CPU before raising rates.",
+    "claim_boundary": "Only actual native visual BoW/VLC, geometric cross-robot constraints, accepted robust weights and optimized keyframes can substantiate Kimera-Multi collaboration."
+  },
+  "required_post_closure_shared_revisit": {
+    "after_stage": 10,
+    "stages_on_next_lap": [
+      1,
+      2,
+      3
+    ],
+    "same_direction": "east, yaw approximately0",
+    "note": "Recommended two full laps includes these identical shared stages after closing lap1. If only one complete lap is run, execute stages1,2,3 once more before stopping to provide equal-heading visual revisit."
+  },
+  "LCD_time_separation_intent": "At 0.8 m/s, nominal motion plus ten 5s dwells takes 147.61s and 146.34s per robot, before arrival settling/detours. This exceeds 100s and the 90-frame local-image exclusion at 8-10Hz. Keep local LCD enabled and preserve exclusion gates.",
+  "per_lap_nominal_motion_plus_dwell_seconds": [
+    147.61271242968684,
+    146.33883476483186
+  ]
+}

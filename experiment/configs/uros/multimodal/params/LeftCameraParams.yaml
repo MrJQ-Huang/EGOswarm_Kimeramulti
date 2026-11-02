@@ -1,0 +1,18 @@
+%YAML:1.0
+---
+camera_id: left_cam
+T_BS:
+  rows: 4
+  cols: 4
+  data: [0., 0., 1., 0., -1., 0., 0., 0., 0., -1., 0., 0., 0., 0., 0., 1.]
+rate_hz: 10
+resolution: [320, 240]
+camera_model: pinhole
+intrinsics: [160., 160., 159.5, 119.5]
+distortion_model: radtan
+distortion_coefficients: [0., 0., 0., 0.]
+virtual_baseline: 0.1
+min_depth: 0.2
+max_depth: 12.0
+depth_to_meters: 1.0
+is_registered: 1

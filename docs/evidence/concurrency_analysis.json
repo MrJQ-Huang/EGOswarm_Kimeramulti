@@ -1,0 +1,706 @@
+{
+  "run_id": "native_restart_20261102_184554",
+  "scope": "Public summary of one measured dual-host experiment; raw recordings are stored separately.",
+  "flight_window": {
+    "start_wall": 1793616909.898219,
+    "end_wall": 1793617410.344858,
+    "duration_s": 500.44663882255554
+  },
+  "flight": {
+    "completed_laps": 2,
+    "error": null,
+    "actual_body_path_lengths_m": [
+      160.21178464659224,
+      158.45968588300542
+    ],
+    "simulator_position_closure_errors_m": [
+      0.2277398601689214,
+      0.15844109435864626
+    ],
+    "position_closure_is_not_SLAM_ATE": true
+  },
+  "hosts": {
+    "amov": {
+      "robot_id": 0,
+      "actual_native_tsdf_integrations": {
+        "whole_monitored_run": 95,
+        "during_flight": 47,
+        "last_completion_wall": 1793617020.0854821,
+        "last_allocated_blocks": 119,
+        "last_completion_age_at_flight_end_s": 390.25937581062317,
+        "largest_flight_integration_gap_including_right_censored_ending_s": 390.25937581062317,
+        "integration_duration_s": {
+          "samples": 47,
+          "min": 0.019187,
+          "p50": 0.04791,
+          "p95": 0.1272015,
+          "max": 0.278719
+        },
+        "throttled_queue_drop_warnings": [
+          1793617190.9931276,
+          1793617252.6357763,
+          1793617331.9293964,
+          1793617394.5059028,
+          1793617455.7337513
+        ],
+        "counter_caveat": "Native completion logs lack cloud stamp; input-count difference cannot distinguish pending, queue-dropped or callback-dropped frames individually."
+      },
+      "flight_bridge_queue_length": {
+        "samples": 499,
+        "min": 0.0,
+        "p50": 194.0,
+        "p95": 523.0,
+        "max": 1012.0
+      },
+      "flight_bridge_status_source_age_s": {
+        "samples": 499,
+        "min": 0.0056726932525634766,
+        "p50": 1.829526662826538,
+        "p95": 9.25195755958556,
+        "max": 15.588742971420288
+      },
+      "gyro_omission_counters": {
+        "rgbd_omitted_no_native_lower_bracket": 4
+      },
+      "pending_rgbd_buffer_drop_counter": 30,
+      "explicit_sensor_clouds_during_pgmo_transactions": 19,
+      "history_max_delay_caveat": "native_original_max_queue_delay_s, native_control_max_queue_delay_s and actual_gyro_max_queue_delay_s are historical maxima; they are not current backlog. End-of-drain native_original_priority_queue_length is reported separately.",
+      "streams": {
+        "raw_rgb": {
+          "total_subscriber_observed_messages": 4257,
+          "flight_counter_delta_approximately_1s_boundaries": 3413,
+          "counter_window_wall": [
+            1793616909.496325,
+            1793617410.2803295
+          ],
+          "mean_observed_flight_hz": 6.815313527734344,
+          "flight_sampled_receive_age_s": {
+            "samples": 499,
+            "min": 0.00040984153747558594,
+            "p50": 0.0763237476348877,
+            "p95": 0.17487225532531733,
+            "max": 0.305617094039917
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 499,
+            "min": 0.0992884635925293,
+            "p50": 0.14454960823059082,
+            "p95": 0.22432243824005124,
+            "max": 0.39277052879333496
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 4257,
+            "stamp_ns": 1793617464317332029,
+            "frame": "sim_0/camera_optical"
+          },
+          "last_receive_wall": 1793617464.431445
+        },
+        "raw_depth": {
+          "total_subscriber_observed_messages": 4257,
+          "flight_counter_delta_approximately_1s_boundaries": 3413,
+          "counter_window_wall": [
+            1793616909.496325,
+            1793617410.2803295
+          ],
+          "mean_observed_flight_hz": 6.815313527734344,
+          "flight_sampled_receive_age_s": {
+            "samples": 499,
+            "min": 0.0002982616424560547,
+            "p50": 0.07657551765441895,
+            "p95": 0.17520828247070314,
+            "max": 0.30082130432128906
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 499,
+            "min": 0.10212445259094238,
+            "p50": 0.14635992050170898,
+            "p95": 0.22584125995635984,
+            "max": 0.4044218063354492
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 4257,
+            "stamp_ns": 1793617464317332029,
+            "frame": "sim_0/camera_optical"
+          },
+          "last_receive_wall": 1793617464.4335988
+        },
+        "raw_imu": {
+          "total_subscriber_observed_messages": 55365,
+          "flight_counter_delta_approximately_1s_boundaries": 45159,
+          "counter_window_wall": [
+            1793616909.496325,
+            1793617410.2803295
+          ],
+          "mean_observed_flight_hz": 90.17660228507332,
+          "flight_sampled_receive_age_s": {
+            "samples": 499,
+            "min": 0.00011968612670898438,
+            "p50": 0.006218671798706055,
+            "p95": 0.021859693527221676,
+            "max": 0.07328271865844727
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 499,
+            "min": 0.009392023086547852,
+            "p50": 0.017566204071044922,
+            "p95": 0.047160220146179196,
+            "max": 0.10925483703613281
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 583,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 55950,
+            "stamp_ns": 1793617464571850061,
+            "frame": "sim_0/imu"
+          },
+          "last_receive_wall": 1793617464.588918
+        },
+        "native_odom": {
+          "total_subscriber_observed_messages": 1290,
+          "flight_counter_delta_approximately_1s_boundaries": 1059,
+          "counter_window_wall": [
+            1793616909.496325,
+            1793617410.2803295
+          ],
+          "mean_observed_flight_hz": 2.1146841564226984,
+          "flight_sampled_receive_age_s": {
+            "samples": 499,
+            "min": 0.00029468536376953125,
+            "p50": 0.25677943229675293,
+            "p95": 0.5134366035461426,
+            "max": 0.6522574424743652
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 499,
+            "min": 0.12834477424621582,
+            "p50": 0.31456923484802246,
+            "p95": 0.4264122486114501,
+            "max": 0.5654854774475098
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 1289,
+            "stamp_ns": 1793617464317332029,
+            "frame": "sim_0/vio_odom"
+          },
+          "last_receive_wall": 1793617464.4914393
+        },
+        "local_tsdf_points": {
+          "total_subscriber_observed_messages": 134,
+          "flight_counter_delta_approximately_1s_boundaries": 76,
+          "counter_window_wall": [
+            1793616909.496325,
+            1793617410.2803295
+          ],
+          "mean_observed_flight_hz": 0.15176203577726638,
+          "flight_sampled_receive_age_s": {
+            "samples": 499,
+            "min": 0.025437593460083008,
+            "p50": 6.3780694007873535,
+            "p95": 37.2326353549957,
+            "max": 60.057517766952515
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 73,
+            "min": 0.2404155731201172,
+            "p50": 18.014627695083618,
+            "p95": 102.70767745971675,
+            "max": 123.46207427978516
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 134,
+            "stamp_ns": 1793617454822157144,
+            "frame": "sim_0/native_dense_optical"
+          },
+          "last_receive_wall": 1793617480.0182874
+        }
+      }
+    },
+    "uros": {
+      "robot_id": 1,
+      "actual_native_tsdf_integrations": {
+        "whole_monitored_run": 130,
+        "during_flight": 84,
+        "last_completion_wall": 1793617476.2344408,
+        "last_allocated_blocks": 254,
+        "last_completion_age_at_flight_end_s": 22.399837017059326,
+        "largest_flight_integration_gap_including_right_censored_ending_s": 101.31112313270569,
+        "integration_duration_s": {
+          "samples": 84,
+          "min": 0.006704,
+          "p50": 0.010474,
+          "p95": 0.025891899999999992,
+          "max": 0.038747
+        },
+        "throttled_queue_drop_warnings": [],
+        "counter_caveat": "Native completion logs lack cloud stamp; input-count difference cannot distinguish pending, queue-dropped or callback-dropped frames individually."
+      },
+      "flight_bridge_queue_length": {
+        "samples": 496,
+        "min": 0.0,
+        "p50": 97.5,
+        "p95": 175.25,
+        "max": 353.0
+      },
+      "flight_bridge_status_source_age_s": {
+        "samples": 496,
+        "min": 0.004225492477416992,
+        "p50": 0.7766351699829102,
+        "p95": 2.688106894493103,
+        "max": 5.772495746612549
+      },
+      "gyro_omission_counters": {
+        "rgbd_omitted_no_native_lower_bracket": 4
+      },
+      "pending_rgbd_buffer_drop_counter": 234,
+      "explicit_sensor_clouds_during_pgmo_transactions": 7,
+      "history_max_delay_caveat": "native_original_max_queue_delay_s, native_control_max_queue_delay_s and actual_gyro_max_queue_delay_s are historical maxima; they are not current backlog. End-of-drain native_original_priority_queue_length is reported separately.",
+      "streams": {
+        "raw_rgb": {
+          "total_subscriber_observed_messages": 5715,
+          "flight_counter_delta_approximately_1s_boundaries": 4721,
+          "counter_window_wall": [
+            1793616909.490279,
+            1793617410.2065833
+          ],
+          "mean_observed_flight_hz": 9.428492660288056,
+          "flight_sampled_receive_age_s": {
+            "samples": 496,
+            "min": 0.00040149688720703125,
+            "p50": 0.050127387046813965,
+            "p95": 0.10322415828704834,
+            "max": 0.21955060958862305
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 496,
+            "min": 0.04648232460021973,
+            "p50": 0.06798017024993896,
+            "p95": 0.09443002939224243,
+            "max": 0.1433277130126953
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 12,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 5727,
+            "stamp_ns": 1793617468604210853,
+            "frame": "sim_1/camera_optical"
+          },
+          "last_receive_wall": 1793617468.7354302
+        },
+        "raw_depth": {
+          "total_subscriber_observed_messages": 5716,
+          "flight_counter_delta_approximately_1s_boundaries": 4722,
+          "counter_window_wall": [
+            1793616909.490279,
+            1793617410.2065833
+          ],
+          "mean_observed_flight_hz": 9.43048979916971,
+          "flight_sampled_receive_age_s": {
+            "samples": 496,
+            "min": 5.0067901611328125e-05,
+            "p50": 0.049588799476623535,
+            "p95": 0.10307282209396362,
+            "max": 0.21878409385681152
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 496,
+            "min": 0.04672956466674805,
+            "p50": 0.06831657886505127,
+            "p95": 0.09441661834716797,
+            "max": 0.14588141441345215
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 11,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 5727,
+            "stamp_ns": 1793617468604210853,
+            "frame": "sim_1/camera_optical"
+          },
+          "last_receive_wall": 1793617468.7356434
+        },
+        "raw_imu": {
+          "total_subscriber_observed_messages": 60129,
+          "flight_counter_delta_approximately_1s_boundaries": 49676,
+          "counter_window_wall": [
+            1793616909.490279,
+            1793617410.2065833
+          ],
+          "mean_observed_flight_hz": 99.20987108503907,
+          "flight_sampled_receive_age_s": {
+            "samples": 496,
+            "min": 4.410743713378906e-05,
+            "p50": 0.00480806827545166,
+            "p95": 0.010243773460388184,
+            "max": 0.01827836036682129
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 496,
+            "min": 0.01030588150024414,
+            "p50": 0.013208746910095215,
+            "p95": 0.0161934494972229,
+            "max": 0.054030656814575195
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 440,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 60569,
+            "stamp_ns": 1793617468774260997,
+            "frame": "sim_1/imu"
+          },
+          "last_receive_wall": 1793617468.7889464
+        },
+        "native_odom": {
+          "total_subscriber_observed_messages": 1429,
+          "flight_counter_delta_approximately_1s_boundaries": 1184,
+          "counter_window_wall": [
+            1793616909.490279,
+            1793617410.2065833
+          ],
+          "mean_observed_flight_hz": 2.364612435878216,
+          "flight_sampled_receive_age_s": {
+            "samples": 496,
+            "min": 4.76837158203125e-05,
+            "p50": 0.21841514110565186,
+            "p95": 0.40630316734313965,
+            "max": 0.5187032222747803
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 496,
+            "min": 0.07166934013366699,
+            "p50": 0.11823081970214844,
+            "p95": 0.16498851776123047,
+            "max": 0.25647759437561035
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 1428,
+            "stamp_ns": 1793617466933252573,
+            "frame": "sim_1/vio_odom"
+          },
+          "last_receive_wall": 1793617467.0302854
+        },
+        "local_tsdf_points": {
+          "total_subscriber_observed_messages": 131,
+          "flight_counter_delta_approximately_1s_boundaries": 85,
+          "counter_window_wall": [
+            1793616909.490279,
+            1793617410.2065833
+          ],
+          "mean_observed_flight_hz": 0.16975680494058137,
+          "flight_sampled_receive_age_s": {
+            "samples": 496,
+            "min": 0.008214712142944336,
+            "p50": 19.01431143283844,
+            "p95": 86.51331144571304,
+            "max": 100.91732788085938
+          },
+          "flight_distinct_last_messages_header_lag_at_receive_s": {
+            "samples": 75,
+            "min": 0.0986485481262207,
+            "p50": 0.3578956127166748,
+            "p95": 76.7296444416046,
+            "max": 106.41877961158752
+          },
+          "monitor_sequence_jumps_not_a_SLAM_loss_count": 0,
+          "header_stamp_backwards": 0,
+          "final_header": {
+            "sequence": 131,
+            "stamp_ns": 1793617359593433618,
+            "frame": "sim_1/native_dense_optical"
+          },
+          "last_receive_wall": 1793617483.1446016
+        }
+      }
+    }
+  },
+  "global_pair": {
+    "ready_observations": 0,
+    "any_same_generation_global_snapshot_observed": false,
+    "accepted_serials_at_monitor_stop": [
+      40,
+      25
+    ],
+    "accepted_weight_hashes_at_monitor_stop": [
+      "7f72800ab863fc9aae05f10682f886231cb146bf49d0f88c1c0b3be909229e5d",
+      "a927cdfbc2a5a59ee023bb7d262aa50b251b0e604bca3a3c110207e85a22cf7e"
+    ],
+    "claim_limit": "Local serial counters are not globally atomic IDs; current accepted receipts checked against independent request sequence correspond to different actual request windows, not a demonstrated startup counter offset."
+  },
+  "transaction_windows": [
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793616990.3498187,
+      "robot_id": 1,
+      "transaction_index": 1,
+      "observed_start_wall": 1793616984.0840523,
+      "start_sensor_clouds": 114,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793616990.3492577,
+      "elapsed_observed_s": 6.265205383300781,
+      "sensor_clouds_delta": 5,
+      "end_sensor_clouds_during_mesh_transaction": 4,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": [
+        {
+          "source_wall": 1793616988.4132142,
+          "integration_seconds": 0.013999,
+          "allocated_blocks": 161
+        },
+        {
+          "source_wall": 1793616988.4358122,
+          "integration_seconds": 0.022189,
+          "allocated_blocks": 176
+        },
+        {
+          "source_wall": 1793616988.4701886,
+          "integration_seconds": 0.027659,
+          "allocated_blocks": 178
+        },
+        {
+          "source_wall": 1793616988.5163703,
+          "integration_seconds": 0.026281,
+          "allocated_blocks": 180
+        },
+        {
+          "source_wall": 1793616988.6966696,
+          "integration_seconds": 0.022626,
+          "allocated_blocks": 180
+        },
+        {
+          "source_wall": 1793616990.327922,
+          "integration_seconds": 0.019954,
+          "allocated_blocks": 182
+        }
+      ]
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617093.2711394,
+      "robot_id": 0,
+      "transaction_index": 1,
+      "observed_start_wall": 1793617072.5015054,
+      "start_sensor_clouds": 101,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617093.270618,
+      "elapsed_observed_s": 20.769112586975098,
+      "sensor_clouds_delta": 1,
+      "end_sensor_clouds_during_mesh_transaction": 1,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617167.4954011,
+      "robot_id": 0,
+      "transaction_index": 2,
+      "observed_start_wall": 1793617144.6676862,
+      "start_sensor_clouds": 103,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617167.4948108,
+      "elapsed_observed_s": 22.82712459564209,
+      "sensor_clouds_delta": 1,
+      "end_sensor_clouds_during_mesh_transaction": 2,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617211.6764078,
+      "robot_id": 0,
+      "transaction_index": 3,
+      "observed_start_wall": 1793617185.2188075,
+      "start_sensor_clouds": 104,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617211.6756132,
+      "elapsed_observed_s": 26.45680570602417,
+      "sensor_clouds_delta": 3,
+      "end_sensor_clouds_during_mesh_transaction": 4,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617257.1952622,
+      "robot_id": 1,
+      "transaction_index": 2,
+      "observed_start_wall": 1793617226.4264297,
+      "start_sensor_clouds": 126,
+      "phases": [
+        "await_native_seed",
+        "await_baseline"
+      ],
+      "ended_wall": 1793617257.194728,
+      "elapsed_observed_s": 30.768298149108887,
+      "sensor_clouds_delta": 0,
+      "end_sensor_clouds_during_mesh_transaction": 4,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617261.238697,
+      "robot_id": 0,
+      "transaction_index": 4,
+      "observed_start_wall": 1793617232.4957824,
+      "start_sensor_clouds": 109,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617261.2377684,
+      "elapsed_observed_s": 28.74198603630066,
+      "sensor_clouds_delta": 4,
+      "end_sensor_clouds_during_mesh_transaction": 7,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617342.3101404,
+      "robot_id": 0,
+      "transaction_index": 5,
+      "observed_start_wall": 1793617314.2619886,
+      "start_sensor_clouds": 115,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617342.3083677,
+      "elapsed_observed_s": 28.04637908935547,
+      "sensor_clouds_delta": 1,
+      "end_sensor_clouds_during_mesh_transaction": 8,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617364.145947,
+      "robot_id": 1,
+      "transaction_index": 3,
+      "observed_start_wall": 1793617332.1905572,
+      "start_sensor_clouds": 127,
+      "phases": [
+        "await_native_seed",
+        "await_baseline"
+      ],
+      "ended_wall": 1793617364.145424,
+      "elapsed_observed_s": 31.954866647720337,
+      "sensor_clouds_delta": 1,
+      "end_sensor_clouds_during_mesh_transaction": 5,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": [
+        {
+          "source_wall": 1793617360.1172986,
+          "integration_seconds": 0.038747,
+          "allocated_blocks": 227
+        }
+      ]
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617423.560948,
+      "robot_id": 0,
+      "transaction_index": 6,
+      "observed_start_wall": 1793617389.4197218,
+      "start_sensor_clouds": 121,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617423.5598483,
+      "elapsed_observed_s": 34.1401264667511,
+      "sensor_clouds_delta": 5,
+      "end_sensor_clouds_during_mesh_transaction": 13,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617480.4918776,
+      "robot_id": 0,
+      "transaction_index": 7,
+      "observed_start_wall": 1793617468.977957,
+      "start_sensor_clouds": 127,
+      "phases": [
+        "await_native_seed",
+        "await_baseline",
+        "await_path_echo",
+        "await_deformed_mesh"
+      ],
+      "ended_wall": 1793617480.4907587,
+      "elapsed_observed_s": 11.51280164718628,
+      "sensor_clouds_delta": 7,
+      "end_sensor_clouds_during_mesh_transaction": 19,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": []
+    },
+    {
+      "event": "pgmo_transaction_observed_end",
+      "wall": 1793617495.9521732,
+      "robot_id": 1,
+      "transaction_index": 4,
+      "observed_start_wall": 1793617463.7350678,
+      "start_sensor_clouds": 129,
+      "phases": [
+        "await_native_seed",
+        "await_baseline"
+      ],
+      "ended_wall": 1793617495.9516764,
+      "elapsed_observed_s": 32.21660852432251,
+      "sensor_clouds_delta": 2,
+      "end_sensor_clouds_during_mesh_transaction": 7,
+      "incomplete_window": false,
+      "actual_integration_completions_inside_observed_window": [
+        {
+          "source_wall": 1793617476.2344408,
+          "integration_seconds": 0.031344,
+          "allocated_blocks": 254
+        }
+      ]
+    }
+  ],
+  "conclusions": [
+    "Confirmed logical concurrency: UROS first PGMO transaction has6 actual native integration completion logs inside6.265s observed transaction window, blocks161->182. Prior unconditional TSDF input pause is removed.",
+    "Failed sustained local mapping: AMOV last actual integration at1793617020.085 despite continued fresh raw sensors/native VIO and later PGMO transactions; UROS has long integration and input gaps. Repeated raw mesh publication does not establish new map integration.",
+    "Confirmed stale output timestamps: dedicated7302.920-7310.944 read-only probe saw AMOV TF at7307.591 and matching cloud at7307.637 both stamped7251.575 (~56s stale). TF and cloud share the same source stamp, so a simple TF-vs-cloud timestamp mismatch at this observed pair is ruled out.",
+    "Native AMOV TSDF reports queue-too-long/drop warnings. Transformer canTransform failure silently returns false before its exception log; current logs do not prove whether the specific missing lookup is past/future/authority. Queue head blocking/cache expiry remains a plausible mechanism, not a proven full root cause.",
+    "Bridge ingress/native odometry and gyro remain active but RGBD output is intermittent and delayed. Shared-lock mesh work, RGBD per-topic transport backlog and stamp-pairing starvation require the next dedicated repair; CPU contention can amplify them but is not alone a demonstrated cause.",
+    "This run does not validate synchronized final global fusion: no fusion_ready observation; latest accepted maps are from different request windows and different final weight hashes.",
+    "AMOV is close to CPU saturation in the446available flight samples(P50/P95 92.98/97.80%). UROS59.04/73.31% still exhibits input/integration stalls, so global CPU saturation alone does not explain the entire failure. AMOV final55.7s resource monitoring is absent due to monitor sleep-race exception, not observed SLAM crash."
+  ],
+  "source_bridge_sha256": "6d69d8ef2d5ea6183c54354952648f340fb6990c6cdef4ad61e8b5d3137595d8"
+}

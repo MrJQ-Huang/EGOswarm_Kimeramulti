@@ -1,0 +1,5 @@
+{
+  "url": "https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git",
+  "commit": "92fe9f7227b2da819133eb8e0e8c7fc000f6ae20",
+  "status": " M src/planner/bspline_opt/src/bspline_optimizer.cpp\n M src/planner/path_searching/src/dyn_a_star.cpp\n M src/planner/plan_manage/launch/simulator.xml\n M src/planner/plan_manage/src/ego_replan_fsm.cpp\n M src/uav_simulator/Utils/multi_map_server/CMakeLists.txt\n?? .catkin_tools/\n?? build_orin.sh\n?? check_ego_simulation.py\n?? src/planner/plan_manage/launch/orin_swarm_demo.launch\n?? src/planner/plan_manage/launch/orin_swarm_demo.rviz\n?? start_ego.sh\n"
+}

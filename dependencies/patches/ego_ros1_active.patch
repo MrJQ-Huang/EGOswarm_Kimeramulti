@@ -1,0 +1,165 @@
+diff --git a/src/planner/bspline_opt/src/bspline_optimizer.cpp b/src/planner/bspline_opt/src/bspline_optimizer.cpp
+index 5f948cb..9950d19 100644
+--- a/src/planner/bspline_opt/src/bspline_optimizer.cpp
++++ b/src/planner/bspline_opt/src/bspline_optimizer.cpp
+@@ -1287,6 +1287,15 @@ namespace ego_planner
+         }
+       }
+ 
++      if (segment_ids.empty())
++      {
++        // Every A* search failed: no new obstacle constraints were generated.
++        // Repeating the identical rebound cannot recover a missing guide path.
++        force_stop_type_ = STOP_FOR_ERROR;
++        ROS_WARN_THROTTLE(1.0, "No A* segment succeeded; aborting this optimization candidate instead of repeating an empty rebound.");
++        return false;
++      }
++
+       for (size_t i = 1; i < segment_ids.size(); i++) // Avoid overlap
+       {
+         if (segment_ids[i - 1].second >= segment_ids[i].first)
+diff --git a/src/planner/path_searching/src/dyn_a_star.cpp b/src/planner/path_searching/src/dyn_a_star.cpp
+index 744daa9..a2cbda2 100755
+--- a/src/planner/path_searching/src/dyn_a_star.cpp
++++ b/src/planner/path_searching/src/dyn_a_star.cpp
+@@ -1,4 +1,7 @@
+ #include "path_searching/dyn_a_star.h"
++#include <array>
++#include <iomanip>
++#include <sstream>
+ 
+ using namespace std;
+ using namespace Eigen;
+@@ -159,11 +162,13 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
+     double tentative_gScore;
+ 
+     int num_iter = 0;
++    std::array<Vector3i, 8> diagnostic_tail;
+     while (!openSet_.empty())
+     {
+         num_iter++;
+         current = openSet_.top();
+         openSet_.pop();
++        diagnostic_tail[(num_iter - 1) % diagnostic_tail.size()] = current->index;
+ 
+         // if ( num_iter < 10000 )
+         //     cout << "current=" << current->index.transpose() << endl;
+@@ -236,6 +241,27 @@ bool AStar::AstarSearch(const double step_size, Vector3d start_pt, Vector3d end_
+         if ((time_2 - time_1).toSec() > 0.2)
+         {
+             ROS_WARN("Failed in A star path searching !!! 0.2 seconds time limit exceeded.");
++            // Bounded, throttled evidence only: keep the original 0.2 s budget.
++            Vector3d map_origin, map_size;
++            grid_map_->getRegion(map_origin, map_size);
++            std::ostringstream tail;
++            for (int j = std::max(0, num_iter - 8); j < num_iter; ++j)
++                tail << "[" << diagnostic_tail[j % diagnostic_tail.size()].transpose() << "]";
++            ROS_WARN_STREAM_THROTTLE(1.0, std::setprecision(17)
++                << "[AStar diagnostic] reason=timeout in=" << start_pt.transpose()
++                << " out=" << end_pt.transpose() << " step=" << step_size_
++                << " center=" << center_.transpose() << " pool=" << POOL_SIZE_.transpose()
++                << " start_index=" << start_idx.transpose() << " end_index=" << end_idx.transpose()
++                << " quantized_in=" << Index2Coord(start_idx).transpose()
++                << " quantized_out=" << Index2Coord(end_idx).transpose()
++                << " endpoint_occupancy=" << grid_map_->getInflateOccupancy(Index2Coord(start_idx))
++                << "," << grid_map_->getInflateOccupancy(Index2Coord(end_idx))
++                << " expanded=" << num_iter << " open=" << openSet_.size()
++                << " current=" << Index2Coord(current->index).transpose()
++                << " current_g=" << current->gScore << " current_f=" << current->fScore
++                << " elapsed_s=" << (time_2 - time_1).toSec()
++                << " map_origin=" << map_origin.transpose() << " map_size=" << map_size.transpose()
++                << " last_expanded_indices=" << tail.str());
+             return false;
+         }
+     }
+diff --git a/src/planner/plan_manage/launch/simulator.xml b/src/planner/plan_manage/launch/simulator.xml
+index 9950ea0..25a7905 100755
+--- a/src/planner/plan_manage/launch/simulator.xml
++++ b/src/planner/plan_manage/launch/simulator.xml
+@@ -6,9 +6,9 @@
+   <arg name="map_size_x_"/>
+   <arg name="map_size_y_"/>
+   <arg name="map_size_z_"/>
+-  <arg name="c_num"/>
+-  <arg name="p_num"/>
+-  <arg name="min_dist"/>
++  <arg name="c_num" default="0"/>
++  <arg name="p_num" default="0"/>
++  <arg name="min_dist" default="0.8"/>
+   <arg name="odometry_topic"/>
+   <arg name="drone_id"/>
+ 
+diff --git a/src/planner/plan_manage/src/ego_replan_fsm.cpp b/src/planner/plan_manage/src/ego_replan_fsm.cpp
+index 65a3290..ea6695b 100644
+--- a/src/planner/plan_manage/src/ego_replan_fsm.cpp
++++ b/src/planner/plan_manage/src/ego_replan_fsm.cpp
+@@ -1,5 +1,6 @@
+ 
+ #include <plan_manage/ego_replan_fsm.h>
++#include <cmath>
+ 
+ namespace ego_planner
+ {
+@@ -755,7 +756,29 @@ namespace ego_planner
+   bool EGOReplanFSM::callReboundReplan(bool flag_use_poly_init, bool flag_randomPolyTraj)
+   {
+ 
++    const auto &global = planner_manager_->global_data_;
++    const auto &parameters = planner_manager_->pp_;
++    const double target_step = planning_horizen_ / 20.0 / parameters.max_vel_;
++    if (!start_pt_.allFinite() || !start_vel_.allFinite() || !start_acc_.allFinite() ||
++        !end_pt_.allFinite() || !std::isfinite(planning_horizen_) || planning_horizen_ <= 0.0 ||
++        !std::isfinite(parameters.max_vel_) || parameters.max_vel_ <= 0.0 ||
++        !std::isfinite(parameters.max_acc_) || parameters.max_acc_ <= 0.0 ||
++        !std::isfinite(parameters.ctrl_pt_dist) || parameters.ctrl_pt_dist <= 0.0 ||
++        !std::isfinite(global.global_duration_) || global.global_duration_ <= 0.0 ||
++        !std::isfinite(global.last_progress_time_) || global.last_progress_time_ < 0.0 ||
++        !std::isfinite(target_step) || target_step <= 0.0 ||
++        global.last_progress_time_ + target_step <= global.last_progress_time_)
++    {
++      ROS_ERROR_THROTTLE(1.0, "Rejecting invalid local target state or sampling parameters.");
++      return false;
++    }
+     getLocalTarget();
++    if (!local_target_pt_.allFinite() || !local_target_vel_.allFinite() ||
++        !std::isfinite((local_target_pt_ - start_pt_).norm()))
++    {
++      ROS_ERROR_THROTTLE(1.0, "Rejecting a nonfinite local trajectory target.");
++      return false;
++    }
+ 
+     bool plan_and_refine_success =
+         planner_manager_->reboundReplan(start_pt_, start_vel_, start_acc_, local_target_pt_, local_target_vel_, (have_new_target_ || flag_use_poly_init), flag_randomPolyTraj);
+@@ -893,6 +916,10 @@ namespace ego_planner
+ 
+   void EGOReplanFSM::getLocalTarget()
+   {
++    // A short global trajectory may end exactly on the sampling grid. Always
++    // initialize a valid terminal target before searching for a horizon point.
++    local_target_pt_ = end_pt_;
++    local_target_vel_.setZero();
+     double t;
+ 
+     double t_step = planning_horizen_ / 20 / planner_manager_->pp_.max_vel_;
+@@ -932,7 +959,7 @@ namespace ego_planner
+         break;
+       }
+     }
+-    if (t > planner_manager_->global_data_.global_duration_) // Last global point
++    if (t >= planner_manager_->global_data_.global_duration_) // Last global point (including exact boundary)
+     {
+       local_target_pt_ = end_pt_;
+       planner_manager_->global_data_.last_progress_time_ = planner_manager_->global_data_.global_duration_;
+diff --git a/src/uav_simulator/Utils/multi_map_server/CMakeLists.txt b/src/uav_simulator/Utils/multi_map_server/CMakeLists.txt
+index f467b0b..6b3e166 100755
+--- a/src/uav_simulator/Utils/multi_map_server/CMakeLists.txt
++++ b/src/uav_simulator/Utils/multi_map_server/CMakeLists.txt
+@@ -164,7 +164,7 @@ add_executable(multi_map_visualization src/multi_map_visualization.cc)
+ 
+ ## Add cmake target dependencies of the executable/library
+ ## as an example, message headers may need to be generated before nodes
+-add_dependencies(multi_map_visualization multi_map_server_messages_cpp)
++add_dependencies(multi_map_visualization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ 
+ ## Specify libraries to link a library or executable target against
+ target_link_libraries(multi_map_visualization 

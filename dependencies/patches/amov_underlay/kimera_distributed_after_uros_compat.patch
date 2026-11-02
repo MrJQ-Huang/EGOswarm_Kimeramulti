@@ -1,0 +1,22 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,8 @@
+ cmake_minimum_required(VERSION 3.5)
+ project(kimera_distributed)
++
++# Keep private OpenCV4.2 headers ahead of cv_bridge-transitive system4.5.
++set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)
+ 
+ SET(CMAKE_BUILD_TYPE Release)
+ 
+@@ -17,6 +20,10 @@
+ )
+ 
+ find_package(GTSAM REQUIRED)
++
++set(OpenCV_DIR "/home/amov/kimera_deps/opencv42/sysroot/usr/lib/aarch64-linux-gnu/cmake/opencv4" CACHE PATH "Private Noetic OpenCV 4.2 config" FORCE)
++find_package(OpenCV 4.2 REQUIRED)
++include_directories(BEFORE ${OpenCV_INCLUDE_DIRS})
+ find_package(DBoW2 REQUIRED)
+ if(NOT TARGET DBoW2::DBoW2)
+   add_library(DBoW2::DBoW2 INTERFACE IMPORTED)

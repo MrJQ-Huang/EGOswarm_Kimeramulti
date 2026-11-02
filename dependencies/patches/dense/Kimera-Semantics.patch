@@ -1,0 +1,15 @@
+diff --git a/kimera_semantics_ros/CMakeLists.txt b/kimera_semantics_ros/CMakeLists.txt
+index 4b02142..9f8f150 100644
+--- a/kimera_semantics_ros/CMakeLists.txt
++++ b/kimera_semantics_ros/CMakeLists.txt
+@@ -1,6 +1,10 @@
+ cmake_minimum_required(VERSION 2.8.3)
+ project(kimera_semantics_ros)
+ 
++# PCL 1.10 in ROS Noetic requires C++14.
++set(CMAKE_CXX_STANDARD 14)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
+ find_package(catkin_simple REQUIRED)
+ 
+ catkin_simple()

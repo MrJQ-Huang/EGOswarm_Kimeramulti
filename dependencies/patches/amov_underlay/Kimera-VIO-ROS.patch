@@ -1,0 +1,32 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f632091..47af72f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,6 +1,10 @@
+ cmake_minimum_required(VERSION 2.8.3)
+ project(kimera_vio_ros)
+ 
++# Keep the private OpenCV 4.2 headers ahead of JetPack OpenCV 4.5 headers,
++# including when include paths are inherited through imported CMake targets.
++set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)
++
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+@@ -53,10 +57,12 @@ cs_add_executable(csv_publisher_node
+ )
+ target_link_libraries(csv_publisher_node ${PROJECT_NAME})
+ 
+-catkin_add_gtest(testKimeraVioRos
+-  test/testKimeraVioRos.cpp
+-)
+-target_link_libraries(testKimeraVioRos ${PROJECT_NAME})
++if(CATKIN_ENABLE_TESTING)
++  catkin_add_gtest(testKimeraVioRos test/testKimeraVioRos.cpp)
++  if(TARGET testKimeraVioRos)
++    target_link_libraries(testKimeraVioRos ${PROJECT_NAME})
++  endif()
++endif()
+ 
+ cs_install()
+ 

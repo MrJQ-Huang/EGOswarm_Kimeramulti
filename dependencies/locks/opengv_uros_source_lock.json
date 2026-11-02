@@ -1,0 +1,17 @@
+{
+  "wall_time": 1793600624.4040835,
+  "baseline_source": "/opt/kimera_ws/src/opengv",
+  "recorded_reference": "Declared immutable upstream pin from the existing odin1.repos manifest; exported checkout has no .git. Exact actual source is the separately SHA-locked archive including recorded portable CMake compatibility.",
+  "baseline_source_files": 280,
+  "baseline_source_index_sha256": "0b02fa14153083a2d5d6cd8dca9e223d3553c5b9a7103196757e4f1489e5509c",
+  "baseline_source_archive_sha256": "24ddf7b8e45231493f1e5e74f9a2908f2e02e4593973317bd44d7691d8a0a7a2",
+  "patch_sha256": "335b7362119470463727a2d4f81179e3dccee22cd23f91b8a5d3d7899d1d67d0",
+  "baseline_library_sha256": "f70f966fd2077c224be1d0e99fb0cfb99f09802481096c1dd8e16cf764ff21e8",
+  "prefix": "/experiment/native_full_stack_20261102/opengv_guarded/install",
+  "runtime_enabled": false,
+  "existing_build_compatibility": "Frozen source CMake already disables -march=native on x86; ARM uses upstream armv8-a. Candidate adds only Sturm guard.",
+  "declared_upstream_url": "https://github.com/laurentkneip/opengv.git",
+  "declared_upstream_commit": "91f4b19c73450833a40e463ad3648aae80b3a7f3",
+  "reference_manifest": "/workspace/artifacts/docker/context/docker/odin1.repos",
+  "reference_manifest_sha256": "6aeecfd662a3db042a40e0b88fb77697bf96abe1583c1e67f1498b145c833802"
+}

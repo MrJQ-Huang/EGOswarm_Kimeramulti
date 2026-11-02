@@ -1,0 +1,332 @@
+{
+  "schema_version": 1,
+  "title": "Broad warehouse loops with a shared eastbound visual corridor",
+  "frame_id": "world",
+  "map_size": [
+    44.0,
+    28.0,
+    5.0
+  ],
+  "bounds": {
+    "x": [
+      -20.0,
+      20.0
+    ],
+    "y": [
+      -12.0,
+      12.0
+    ],
+    "z": [
+      0.0,
+      4.0
+    ]
+  },
+  "floor_z": 0.0,
+  "nominal_flight_height": 1.0,
+  "obstacles": [
+    {
+      "type": "box",
+      "id": "boundary_west",
+      "center": [
+        -20.2,
+        0,
+        2
+      ],
+      "size": [
+        0.4,
+        24.8,
+        4
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_east",
+      "center": [
+        20.2,
+        0,
+        2
+      ],
+      "size": [
+        0.4,
+        24.8,
+        4
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_south",
+      "center": [
+        0,
+        -12.2,
+        2
+      ],
+      "size": [
+        40.8,
+        0.4,
+        4
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_north",
+      "center": [
+        0,
+        12.2,
+        2
+      ],
+      "size": [
+        40.8,
+        0.4,
+        4
+      ]
+    },
+    {
+      "type": "cylinder",
+      "id": "shared_west_round_pier",
+      "center": [
+        -8.5,
+        0
+      ],
+      "radius": 0.65,
+      "height": 3.4,
+      "base_z": 0.0
+    },
+    {
+      "type": "box",
+      "id": "shared_east_rectangular_pier",
+      "center": [
+        7.5,
+        0.3,
+        1.6
+      ],
+      "size": [
+        1.2,
+        1.6,
+        3.2
+      ]
+    },
+    {
+      "type": "cylinder",
+      "id": "offset_central_landmark",
+      "center": [
+        0,
+        1.8
+      ],
+      "radius": 0.55,
+      "height": 3.0,
+      "base_z": 0.0
+    },
+    {
+      "type": "box",
+      "id": "north_west_rack",
+      "center": [
+        -11,
+        4.2,
+        1.5
+      ],
+      "size": [
+        5,
+        2,
+        3
+      ]
+    },
+    {
+      "type": "box",
+      "id": "north_center_rack",
+      "center": [
+        -2,
+        4.6,
+        1.3
+      ],
+      "size": [
+        4,
+        2.4,
+        2.6
+      ]
+    },
+    {
+      "type": "box",
+      "id": "north_east_rack",
+      "center": [
+        9,
+        4,
+        1.75
+      ],
+      "size": [
+        6,
+        2,
+        3.5
+      ]
+    },
+    {
+      "type": "box",
+      "id": "south_west_rack",
+      "center": [
+        -11,
+        -4,
+        1.4
+      ],
+      "size": [
+        4,
+        2,
+        2.8
+      ]
+    },
+    {
+      "type": "box",
+      "id": "south_center_rack",
+      "center": [
+        -1,
+        -4.5,
+        1.6
+      ],
+      "size": [
+        5,
+        2.6,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "south_east_rack",
+      "center": [
+        10,
+        -4.5,
+        1.25
+      ],
+      "size": [
+        5,
+        2.2,
+        2.5
+      ]
+    },
+    {
+      "type": "cylinder",
+      "id": "north_return_round_marker",
+      "center": [
+        -4,
+        9.5
+      ],
+      "radius": 0.45,
+      "height": 2.8,
+      "base_z": 0.0
+    },
+    {
+      "type": "box",
+      "id": "south_return_low_marker",
+      "center": [
+        6,
+        -9.7,
+        1
+      ],
+      "size": [
+        1.8,
+        0.8,
+        2
+      ]
+    },
+    {
+      "type": "cylinder",
+      "id": "west_north_turn_column",
+      "center": [
+        -18,
+        5
+      ],
+      "radius": 0.45,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "west_south_turn_column",
+      "center": [
+        -18.5,
+        -5
+      ],
+      "radius": 0.65,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "east_north_turn_column",
+      "center": [
+        18,
+        3.5
+      ],
+      "radius": 0.45,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "east_south_turn_column",
+      "center": [
+        18,
+        -3.5
+      ],
+      "radius": 0.6,
+      "height": 3.2,
+      "base_z": 0.0
+    }
+  ],
+  "scenarios": {
+    "broad_loop": {
+      "title": "Stationary starts for two closed loops and eastbound overlap",
+      "starts": [
+        [
+          -16.0,
+          0.0,
+          1.0
+        ],
+        [
+          -13.5,
+          0.0,
+          1.0
+        ]
+      ],
+      "goals": [
+        [
+          -16.0,
+          0.0,
+          1.0
+        ],
+        [
+          -13.5,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "design": {
+    "interior_dimensions_m": [
+      40,
+      24,
+      4
+    ],
+    "primitive_count_including_floor": 20,
+    "planning_surface_step_m_recommended": 0.18,
+    "texture": "Existing raycast_geometry.py world-anchored multiscale surface tiles; identical scene bytes/order on both hosts are required. No 2D overlays or time-varying textures.",
+    "geometry_intent": "Two deliberately different piers obstruct the shared nominal goal chords. EGO must discover a bypass using its local obstacle cloud. North and south return aisles remain open.",
+    "sensor_recommendations": {
+      "camera": [
+        320,
+        240
+      ],
+      "fx_fy": [
+        160,
+        160
+      ],
+      "camera_rate_hz": 8,
+      "camera_max_range_m": 8,
+      "lidar_max_range_m": 8,
+      "lidar_channels": 16,
+      "lidar_angles": 180,
+      "lidar_rate_hz": 10
+    },
+    "compute_note": "19 obstacles plus one bounded floor; ray/primitive count is lower than the old 21-obstacle scene. Increase extent, not mesh/point density; planner world cloud is static and latched."
+  },
+  "nominal_planning_speed_m_s": 0.8,
+  "planning_cloud_step_m": 0.18
+}

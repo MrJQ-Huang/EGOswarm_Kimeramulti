@@ -1,0 +1,821 @@
+{
+  "format_version": 1,
+  "deployed_bridge_sha256": "6d69d8ef2d5ea6183c54354952648f340fb6990c6cdef4ad61e8b5d3137595d8",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 254,
+      "sha256": "d4a8d368f74ea93da626e38ebb663f9cd9231c5a3c85b5d0ba95efbba3eeb49c"
+    },
+    {
+      "path": "dependencies/license_origins.json",
+      "bytes": 21583,
+      "sha256": "e5cda11041b2bdcae67ff8e87f1c20dbc0dbd6ea54187def1d3724c4deb0db90"
+    },
+    {
+      "path": "dependencies/licenses/config_utilities/LICENSE",
+      "bytes": 1561,
+      "sha256": "5668556b45b57925843128b3f55dec5cc5281467180d8b9a9d286e12a6a471d5"
+    },
+    {
+      "path": "dependencies/licenses/DBoW2/LICENSE.txt",
+      "bytes": 2159,
+      "sha256": "c02e19ed871eb9dd11b01db600d3f3601c5a03c4121f6baeb2ebe215ecbeaf23"
+    },
+    {
+      "path": "dependencies/licenses/dbow2_catkin/LICENSE",
+      "bytes": 1068,
+      "sha256": "8a64cb8ed96a56cfc3caf1e6112bbd7d07fff4114b7edfc539427e679fc398f5"
+    },
+    {
+      "path": "dependencies/licenses/disparity_image_proc/LICENSE",
+      "bytes": 1493,
+      "sha256": "81730a63321940781711a2f603932e8288bb5726aa504412308d5e68f7a5c352"
+    },
+    {
+      "path": "dependencies/licenses/dpgo/LICENSE",
+      "bytes": 1090,
+      "sha256": "fccc2da3a79f530d2ef26d1327363fc6a8cecbb4eb93f5de3d8bde2ae804675a"
+    },
+    {
+      "path": "dependencies/licenses/dpgo_ros/LICENSE",
+      "bytes": 1090,
+      "sha256": "fccc2da3a79f530d2ef26d1327363fc6a8cecbb4eb93f5de3d8bde2ae804675a"
+    },
+    {
+      "path": "dependencies/licenses/ego_ros1/LICENSE",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "dependencies/licenses/eigen_catkin/LICENSE",
+      "bytes": 1528,
+      "sha256": "3e88da38c5d3ad339594f6f4e1ed280cbe1996b8b5f9f38f6fea3c625ee44a6a"
+    },
+    {
+      "path": "dependencies/licenses/gtsam/LICENSE",
+      "bytes": 1507,
+      "sha256": "798f8f25b01a3d5c1401bd81dce80c0433f0a50684ca29348a959cdfecee2b2c"
+    },
+    {
+      "path": "dependencies/licenses/gtsam/LICENSE.BSD",
+      "bytes": 1530,
+      "sha256": "ec9746ecc24d4b36c4c8412ced73a9c7351238396d1fd17b70b3ba1e6a2e5bd0"
+    },
+    {
+      "path": "dependencies/licenses/gtsam/wrap/LICENSE",
+      "bytes": 1530,
+      "sha256": "ec9746ecc24d4b36c4c8412ced73a9c7351238396d1fd17b70b3ba1e6a2e5bd0"
+    },
+    {
+      "path": "dependencies/licenses/json/LICENSE.MIT",
+      "bytes": 1076,
+      "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14"
+    },
+    {
+      "path": "dependencies/licenses/Kimera-PGMO/LICENSE",
+      "bytes": 1290,
+      "sha256": "2ed6d339e6b69d4fd859fbefc1ad34e075896ec29425453c11ed1da7e0f1db48"
+    },
+    {
+      "path": "dependencies/licenses/Kimera-Semantics/LICENSE.BSD",
+      "bytes": 1292,
+      "sha256": "62a0bee8ec99059a3f48c884a1f357bf0e18f837172ccd61fbc06208648913d8"
+    },
+    {
+      "path": "dependencies/licenses/kimera_multi_lcd/LICENSE",
+      "bytes": 1326,
+      "sha256": "e1f26297b6c7f5513ab02db0c81ed167b043e28b23ababd1f59ed6dc0b1f1629"
+    },
+    {
+      "path": "dependencies/licenses/kimera_ros/LICENSE.BSD",
+      "bytes": 1292,
+      "sha256": "62a0bee8ec99059a3f48c884a1f357bf0e18f837172ccd61fbc06208648913d8"
+    },
+    {
+      "path": "dependencies/licenses/kimera_rpgo/LICENSE.BSD",
+      "bytes": 1291,
+      "sha256": "9cf61e2c9ebb83fe29e3981ae79540fd7a82d2aefc3ce5f7242e2131e40e7d70"
+    },
+    {
+      "path": "dependencies/licenses/kimera_rviz_markers/LICENSE",
+      "bytes": 1069,
+      "sha256": "20045cea43a1d2070f3887cc89935d4d49a943dcf2426eb189db0b3946609de0"
+    },
+    {
+      "path": "dependencies/licenses/kimera_vio/LICENSE.BSD",
+      "bytes": 1291,
+      "sha256": "9cf61e2c9ebb83fe29e3981ae79540fd7a82d2aefc3ce5f7242e2131e40e7d70"
+    },
+    {
+      "path": "dependencies/licenses/kimera_vio/vocabulary/License-gpl.txt",
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "path": "dependencies/licenses/kimera_vio/vocabulary/LICENSE.txt",
+      "bytes": 447,
+      "sha256": "0fb7c5f8b739a8b60e625c0ae14ef67f2848a61a436ecc7467ab76f7e1c35dae"
+    },
+    {
+      "path": "dependencies/licenses/mesh_rviz_plugins/LICENSE",
+      "bytes": 1069,
+      "sha256": "20045cea43a1d2070f3887cc89935d4d49a943dcf2426eb189db0b3946609de0"
+    },
+    {
+      "path": "dependencies/licenses/minkindr/LICENSE",
+      "bytes": 1507,
+      "sha256": "b278c5d5b75f093931a6fb45f3be94557f78824b49a786e22410a018eb642549"
+    },
+    {
+      "path": "dependencies/licenses/minkindr_ros/LICENSE",
+      "bytes": 1473,
+      "sha256": "006a7c466878edb277fe0cdb1f7d1a875e58d690c2aeec144043d3a423adbd55"
+    },
+    {
+      "path": "dependencies/licenses/opengv/License.txt",
+      "bytes": 2321,
+      "sha256": "73318cebde5331e51cc0519cffc70e9465de7a41cdbe76cd635c96f399ae4be7"
+    },
+    {
+      "path": "dependencies/licenses/pose_graph_tools/LICENSE.BSD",
+      "bytes": 1291,
+      "sha256": "9cf61e2c9ebb83fe29e3981ae79540fd7a82d2aefc3ce5f7242e2131e40e7d70"
+    },
+    {
+      "path": "dependencies/licenses/spatial_hash/LICENSE",
+      "bytes": 1561,
+      "sha256": "86b5409f1327bb9f823cb18a5ad1a323a1e7fc42d846736dad3f39b220fffb2e"
+    },
+    {
+      "path": "dependencies/licenses/voxblox/LICENSE",
+      "bytes": 1473,
+      "sha256": "006a7c466878edb277fe0cdb1f7d1a875e58d690c2aeec144043d3a423adbd55"
+    },
+    {
+      "path": "dependencies/locks/dense_export_source_lock.json",
+      "bytes": 9575,
+      "sha256": "8ffc79c96d37b220302e0497ed354f8881e0ba26b69e000d25ea375b5553d577"
+    },
+    {
+      "path": "dependencies/locks/ego_ros1_deployment.json",
+      "bytes": 600,
+      "sha256": "a614f03a3f6da59ceb8c9a247209e4a1a4ceb17b6aa73c900ba52091b7fae6f3"
+    },
+    {
+      "path": "dependencies/locks/odin1.repos",
+      "bytes": 2265,
+      "sha256": "6aeecfd662a3db042a40e0b88fb77697bf96abe1583c1e67f1498b145c833802"
+    },
+    {
+      "path": "dependencies/locks/opengv_amov_amov_original_source_comparison.json",
+      "bytes": 688,
+      "sha256": "8127d4c7d3ee94452cc28b8bd07b3c0f4bb6ef619572ddf5c7f37eea2ed65e2e"
+    },
+    {
+      "path": "dependencies/locks/opengv_uros_source_lock.json",
+      "bytes": 1334,
+      "sha256": "4466bd95fa3ac4771fc33f6725d0a3060f0369b4e14ea78f1197c4573d1a4f1c"
+    },
+    {
+      "path": "dependencies/locks/wireless.repos",
+      "bytes": 898,
+      "sha256": "5116dbd28b1c512bb6a48811bb0fe1204028062d3760a4ea515e543fa813a253"
+    },
+    {
+      "path": "dependencies/patches/amov_underlay/Kimera-VIO-ROS.patch",
+      "bytes": 957,
+      "sha256": "ef69ef6b3a34e9f2da14b827dacc5d8806e48483a7538b3a7928c8483f397f76"
+    },
+    {
+      "path": "dependencies/patches/amov_underlay/kimera_distributed_after_uros_compat.patch",
+      "bytes": 676,
+      "sha256": "6868bc9f714ecf851e9d287889c7bacfeea1eda44073777b63a4fe0685860c3b"
+    },
+    {
+      "path": "dependencies/patches/amov_underlay/kimera_multi_lcd_after_uros_compat.patch",
+      "bytes": 936,
+      "sha256": "f4f38b57998e1376f52657fe13fc1eb4cf386762a95e596cf3cde0430d64f11e"
+    },
+    {
+      "path": "dependencies/patches/dense/gflags_catkin.patch",
+      "bytes": 1754,
+      "sha256": "f94b051b8546e020f19a536ccb8961ce0b165d02ae74febed251ffa1a3063ea9"
+    },
+    {
+      "path": "dependencies/patches/dense/Kimera-Semantics.patch",
+      "bytes": 456,
+      "sha256": "0f778615c8b516ef64580595eb086731ab7842af65eb4f4f274c486fe63cf758"
+    },
+    {
+      "path": "dependencies/patches/dense/minkindr_python_ignore.patch",
+      "bytes": 119,
+      "sha256": "06b8d1657ea2c8ed8bf435b08e8ebee18f7dc1a3d16e0b727911c33dc4383c20"
+    },
+    {
+      "path": "dependencies/patches/ego_ros1_active.patch",
+      "bytes": 7984,
+      "sha256": "b08d170615749b370973a4834beb347779288a32821679d2b54e46364a3bce97"
+    },
+    {
+      "path": "dependencies/patches/opengv_sturm_guard.patch",
+      "bytes": 2184,
+      "sha256": "335b7362119470463727a2d4f81179e3dccee22cd23f91b8a5d3d7899d1d67d0"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/DBoW2.patch",
+      "bytes": 1166,
+      "sha256": "9de0aa3f7b3c8cbb6164a16f7a82673ab220978006eb1d5c5a52bbcfb5ee98bf"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/dbow2_catkin.patch",
+      "bytes": 932,
+      "sha256": "2635d94254a232d9ccd38db4c2b790ec51622a0146d6d9c5ea8dd54ddd456326"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/dpgo.patch",
+      "bytes": 1009,
+      "sha256": "1b86768386169d6254b5603273ce8da069f489bc14f82d09ce56888291fca174"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/dpgo_ros.patch",
+      "bytes": 793,
+      "sha256": "814b12ed0989fc8076efd5a49f06f19350b725651172625780240948d0022e92"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/kimera_distributed.patch",
+      "bytes": 896,
+      "sha256": "e1349daf316f50b50d5a516c6b2f0988b2d4f55f578551a8b10a828cb9b7112f"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/kimera_multi_lcd.patch",
+      "bytes": 2593,
+      "sha256": "25b61a2fa6e5267fad14b6d586659b5f98d2fc888245f7b2772d6e8e85d4536b"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/kimera_ros.patch",
+      "bytes": 304,
+      "sha256": "4db822b46656aeea83fb1d7b12ab9bfc788ff2497493ec5710b1bafdb17b4462"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/kimera_vio.patch",
+      "bytes": 1018,
+      "sha256": "a2fcf779e39091cc16d677e4271b3668e7b95c88147e5b828739046e9c401fba"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/opengv.patch",
+      "bytes": 500,
+      "sha256": "aa543223c0787464e0af67ebd54877cce595738f60e37aa1646b9d2672de5596"
+    },
+    {
+      "path": "dependencies/patches/uros_underlay/roptlib.patch",
+      "bytes": 330,
+      "sha256": "fef9fe5bfad01713cc78ce403b108e95f066a4637b028326123ca602788b1a6f"
+    },
+    {
+      "path": "dependencies/README.md",
+      "bytes": 1961,
+      "sha256": "b9dff12a0fe9e7270030c50adc601ee9436030ee6bd8340b063e47472a40aa6f"
+    },
+    {
+      "path": "dependencies/source_manifest.json",
+      "bytes": 21891,
+      "sha256": "87bcf2a8166207a906c9d51b8344b7583a2028d309ecff38db948ef18731946d"
+    },
+    {
+      "path": "dependencies/system_wrappers/gflags_catkin/CMakeLists.txt",
+      "bytes": 152,
+      "sha256": "2816d695b3666ec55aa72fb8f7cd1b31a3dc5dd64bcc1b05c62cb70cae3737e0"
+    },
+    {
+      "path": "dependencies/system_wrappers/gflags_catkin/package.xml",
+      "bytes": 323,
+      "sha256": "f4c8c0c5fb61578c4df0d71a31ab59fe3e9f7eb5ca6e8e595596247d4032b9de"
+    },
+    {
+      "path": "dependencies/system_wrappers/opencv3_catkin/CMakeLists.txt",
+      "bytes": 204,
+      "sha256": "1c14de35d7b0e89b41199a3e130374724819a9dbfb5b5a9908bf864762370d47"
+    },
+    {
+      "path": "dependencies/system_wrappers/opencv3_catkin/package.xml",
+      "bytes": 326,
+      "sha256": "28f2dd6194d7573fc80c4c15587ea277e1eb17c2d7fa2a12ed6d4764d197a134"
+    },
+    {
+      "path": "dependencies/system_wrappers/opengv_catkin/CMakeLists.txt",
+      "bytes": 538,
+      "sha256": "e18d3f3c1f4c5c0f87202b6f074b2f2f1fd4fbee7220a5d4a5c85e30fce5b7e0"
+    },
+    {
+      "path": "dependencies/system_wrappers/opengv_catkin/package.xml",
+      "bytes": 323,
+      "sha256": "5cdeb7e327311978c9ffd5d335e6271627077d0cadf7c67b3b782c8f91769e2b"
+    },
+    {
+      "path": "docs/architecture.md",
+      "bytes": 4506,
+      "sha256": "6dd5a74de1dfb24f4c83d701682cc69c608446612e2e4a8399b98e079aa71575"
+    },
+    {
+      "path": "docs/deployment.md",
+      "bytes": 7444,
+      "sha256": "a9401a630440250e335b5dfb438f8123c8735f938f7b282aae5414734cdee98c"
+    },
+    {
+      "path": "docs/evidence/concurrency_analysis.json",
+      "bytes": 26307,
+      "sha256": "d6fbb21fdb09ef7331fd016fa805971dfca0ddbd623e1166048fc58a4f5dcdec"
+    },
+    {
+      "path": "docs/evidence/performance_analysis.json",
+      "bytes": 62437,
+      "sha256": "d3985c63da539a5838a702ada6f82a2e87c34c9a8eec63b3536e2b48c89ba735"
+    },
+    {
+      "path": "docs/known_issues.md",
+      "bytes": 4772,
+      "sha256": "2c63aee1af5b49b7e050d83a61b5e3a74c72a14fa9789e52334c642337b184a9"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/BackendParams.yaml",
+      "bytes": 2936,
+      "sha256": "404b4e717dcecd8bba3cbe2bd57f571b80c04a566520223f0c4f685b4380286f"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/DisplayParams.yaml",
+      "bytes": 120,
+      "sha256": "1bd23036478a36ff1a4251b93a09ca1dc990fee7523e1a67ce54be6fc1a4370b"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/FrontendParams.yaml",
+      "bytes": 2110,
+      "sha256": "0c02cbf714e5621f06efa75b8867836cdec76b8140f0c5a01d0b393ef15ae69e"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/ImuParams.yaml",
+      "bytes": 495,
+      "sha256": "43edfb595062b9a3f4f88465be627ca3df72031340e3ab315b7e401bc9518d54"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/LcdParams.yaml",
+      "bytes": 1396,
+      "sha256": "7561eb381bc84fb16f884fe748dc541aca01124de5a743d3c4c29ceadb96d62d"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/LeftCameraParams.yaml",
+      "bytes": 389,
+      "sha256": "e2d4e8e7495ebf11e38c6aff796e5f4c9a5e7e255c3b2dc9137b50b869017fb1"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/params/PipelineParams.yaml",
+      "bytes": 75,
+      "sha256": "3a15692165809cf66077740b63c5ca0d7710ac8e1c1134d1241caae36eee8eea"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/robot_names.yaml",
+      "bytes": 38,
+      "sha256": "708f49e9bf5e8bd90f9981c11262cde413a58e14cdc0a8c64854e6325febf09e"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/vio.launch",
+      "bytes": 1872,
+      "sha256": "0dc20a1a04b1a50f1f56217c45c15e0c84c9d9ced017be0f9081657c48214fc3"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/BackendParams.yaml",
+      "bytes": 2905,
+      "sha256": "e5eaed46f5cd4062839756b29d4d9096a9c3cf92e385e99fd9ca58f4bfaa6275"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/DisplayParams.yaml",
+      "bytes": 120,
+      "sha256": "1bd23036478a36ff1a4251b93a09ca1dc990fee7523e1a67ce54be6fc1a4370b"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/FrontendParams.yaml",
+      "bytes": 2145,
+      "sha256": "3b7aa4f6b725a58cdc8260cad713a3ff64697e0c6d02725ffb083d88145a7b05"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/ImuParams.yaml",
+      "bytes": 495,
+      "sha256": "43edfb595062b9a3f4f88465be627ca3df72031340e3ab315b7e401bc9518d54"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/LcdParams.yaml",
+      "bytes": 1556,
+      "sha256": "47f939a938ec5a11ed4e86894f5bacaba2e0d7bec58d301d957ea47219f9eb78"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/LeftCameraParams.yaml",
+      "bytes": 389,
+      "sha256": "e2d4e8e7495ebf11e38c6aff796e5f4c9a5e7e255c3b2dc9137b50b869017fb1"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/params/PipelineParams.yaml",
+      "bytes": 75,
+      "sha256": "3a15692165809cf66077740b63c5ca0d7710ac8e1c1134d1241caae36eee8eea"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/robot_names.yaml",
+      "bytes": 38,
+      "sha256": "708f49e9bf5e8bd90f9981c11262cde413a58e14cdc0a8c64854e6325febf09e"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/vio.launch",
+      "bytes": 1812,
+      "sha256": "7b85b6e7fba1d8487649a0ca242d70db5cd714e0f226ebb33244876bd61ad461"
+    },
+    {
+      "path": "experiment/harness/broad_loop_route.json",
+      "bytes": 37739,
+      "sha256": "d0b6169de4c2f01907af174215cc34a6d0284fc8e43010c6c21bcdfdef3c2c41"
+    },
+    {
+      "path": "experiment/harness/broad_loop_scene.json",
+      "bytes": 5933,
+      "sha256": "069cce44f16f450f7763a4d909a149608f0efdfb4116725e76fec936903fd04a"
+    },
+    {
+      "path": "experiment/harness/complex_drone.launch",
+      "bytes": 1546,
+      "sha256": "02ef850155753e771e743d78f204c563610faee28017a73f8fb41c99c80f37a6"
+    },
+    {
+      "path": "experiment/harness/complex_scene.json",
+      "bytes": 5891,
+      "sha256": "1535054a0b06d8156c47eb39e5af0bc19828cf797e0fe5d193327c723632cfc2"
+    },
+    {
+      "path": "experiment/harness/complex_world_view.py",
+      "bytes": 8701,
+      "sha256": "36580f9c0034dc0123d706600aae4711493796b5427ea9b56ddaa6702af930f4"
+    },
+    {
+      "path": "experiment/harness/env_amov.bash",
+      "bytes": 335,
+      "sha256": "331219ff510f600572a9604677bae6900e3d6eea4307d32e88c14a72a7d5d8ba"
+    },
+    {
+      "path": "experiment/harness/env_uros.bash",
+      "bytes": 336,
+      "sha256": "c5f6bc921b0d8f47aeb192dc38765d124de6b453bd898032e599b4ee31454954"
+    },
+    {
+      "path": "experiment/harness/multimodal/backend.launch",
+      "bytes": 2657,
+      "sha256": "12fafd8ccf3a10ef0bb5ef9ed7867e6cd3c291a60e91982190411c0895f226b2"
+    },
+    {
+      "path": "experiment/harness/multimodal/closed_loop_missions.py",
+      "bytes": 29993,
+      "sha256": "78f705f338adf95ec2dec4760fdea5e800d666518ff52c0deba8bc61daf87b6e"
+    },
+    {
+      "path": "experiment/harness/multimodal/continuous_body.py",
+      "bytes": 25921,
+      "sha256": "2cb46357c3cdca6667b7ac6f42eccfc271b223e863c66905231c6acb9ce4e21c"
+    },
+    {
+      "path": "experiment/harness/multimodal/live_trajectory_view.py",
+      "bytes": 18539,
+      "sha256": "3e0360d91fa8577673e7f13f77926c225d58e12600d5b59336573159da5d7bbc"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense.launch",
+      "bytes": 5240,
+      "sha256": "dba4ad1340d55f56f099d00b6c06579793d53158c379606e75df47fc4220bbd3"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_bridge.py",
+      "bytes": 72153,
+      "sha256": "6d69d8ef2d5ea6183c54354952648f340fb6990c6cdef4ad61e8b5d3137595d8"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_global_view.py",
+      "bytes": 15924,
+      "sha256": "929fdee3036acb19e1661f5ae8923051bfc4922aea26cd7f28a6de7170649f3b"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_pgmo.yaml",
+      "bytes": 729,
+      "sha256": "2f19bc9280507c6b9e9639235c28cbeaed3559303f1aef799a01b7e2e39901ae"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_runtime/CMakeLists.txt",
+      "bytes": 226,
+      "sha256": "8e53f024d90066acbb0f532565405e747f935ce280c8a65a938671dfc592c28e"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_runtime/package.xml",
+      "bytes": 789,
+      "sha256": "cac0f9607e956587af1ab58c66021576f7de3cb0bdf958b4bb3f20e1b42f33d0"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_dense_runtime/scripts/native_dense_bridge.py",
+      "bytes": 474,
+      "sha256": "aef8cd344d57e6296700564d635bb2ac45ea2c0c9141e5f85067bb99fcac6051"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_imu_pose_interpolation.py",
+      "bytes": 9795,
+      "sha256": "f64d752fa1327ea7d6803fae8d46b77f9e225cca50abd73c1fb2df7a9d832c2c"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_vio_graph_adapter.py",
+      "bytes": 16200,
+      "sha256": "285500c719d54978a9c7218506401d04d84307fe350284e18fc097a155442dfa"
+    },
+    {
+      "path": "experiment/harness/multimodal/peer_heartbeat.py",
+      "bytes": 927,
+      "sha256": "3a947d7de7a666a7cb5d09d7fb18b3c7131a76c6af7ec384acf2cee9596f7b68"
+    },
+    {
+      "path": "experiment/harness/multimodal/raycast_geometry.py",
+      "bytes": 12054,
+      "sha256": "c5abf092d5e8e2fdc9d2e5ebc8509ab8c997874d32e3e3ab55d68c5543713dd6"
+    },
+    {
+      "path": "experiment/harness/multimodal/raycast_kernel.cpp",
+      "bytes": 3365,
+      "sha256": "4f1fb5fbc54f2c06ee14b378dc34d1974299a0dc057527dc0d36c12d71d8f5a3"
+    },
+    {
+      "path": "experiment/harness/multimodal/rviz_native_amov_cloud.rviz",
+      "bytes": 2383,
+      "sha256": "681da736aa5740f7c7d28f72c1dbb53fa344b9e20d271479de2b3c4847592f70"
+    },
+    {
+      "path": "experiment/harness/multimodal/rviz_native_global_cloud.rviz",
+      "bytes": 2393,
+      "sha256": "fc877bf3d9c416cf001722c313c578fbecfc93ca0a361dc8623e89198a0bbd14"
+    },
+    {
+      "path": "experiment/harness/multimodal/rviz_native_uros_cloud.rviz",
+      "bytes": 2385,
+      "sha256": "da09b069100f7357d37bd12133cec5c61474630a93fc20d3c5425ab3fc71c164"
+    },
+    {
+      "path": "experiment/harness/multimodal/rviz_swarm_trajectories.rviz",
+      "bytes": 2590,
+      "sha256": "22457bcefb77ab1ff4461380f2091ffe2114c79f91239c3497b10aa12673da08"
+    },
+    {
+      "path": "experiment/harness/multimodal/sim_sensors.py",
+      "bytes": 20348,
+      "sha256": "2ce4c6109a3a4951e9f40114f3babba64b0cffd85be2cdc35f15039f69cdd838"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_interval_imu_replay.py",
+      "bytes": 11376,
+      "sha256": "7c56e572cc627faf8a234fdf083406cf8dfc260b018bd33fab17c8362b9ffa85"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_live_trajectory_view.py",
+      "bytes": 3993,
+      "sha256": "cc81d2f1d6a39967051816ad0755485f6e18f3adc0902ed8ca16a0110f4a9c28"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_dense_bridge.py",
+      "bytes": 30567,
+      "sha256": "f2f810fdda0870548ddf2548f83929151cd7a55634100c5346cd97fdb7d76771"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_dense_global_view.py",
+      "bytes": 8485,
+      "sha256": "340023a768703a7fe7befd4d671a67979b0888df0dfbb0332795fd6f712c441e"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_dense_local_stream.py",
+      "bytes": 5792,
+      "sha256": "8afae6c538c8bc994e26ba7589ab0a8e1c26f02a55af9068d19c2101d55b1f4f"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_imu_pose_interpolation.py",
+      "bytes": 10689,
+      "sha256": "3fa3926d92506736cc843c564bbf5e060d09176ff6f4bd732594a707c42d2350"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_vio_graph_adapter.py",
+      "bytes": 9191,
+      "sha256": "424c384d3e09c7645f1602f6638bbb335e5ead4caf617e158aa922a512c5ec0a"
+    },
+    {
+      "path": "experiment/harness/navigation_smoke_route.json",
+      "bytes": 26156,
+      "sha256": "98a2e823950456f971c0b2422381858f92f09d71c1f8e1f52a16593c75a03192"
+    },
+    {
+      "path": "experiment/harness/one_drone.launch",
+      "bytes": 2263,
+      "sha256": "f5a3f0eebb71d5430588eea78ef1964a57d1be469c777f8d0dbde764c650d061"
+    },
+    {
+      "path": "experiment/harness/range_sensor.py",
+      "bytes": 1808,
+      "sha256": "05223e59669427926efa3893885178b8011bf2ee8c8530c9ed0931dfa4e79841"
+    },
+    {
+      "path": "experiment/harness/scenario_supervisor.py",
+      "bytes": 5625,
+      "sha256": "32f93a24b5bd46e82e7f7db6821c5ef15736593fc4c0050b9c233a1c37a17d52"
+    },
+    {
+      "path": "experiment/harness/scene_geometry.py",
+      "bytes": 6816,
+      "sha256": "995bcd56ce53896506a86d737c8405e9c6a30eb9588fc2908e0388846c41c67d"
+    },
+    {
+      "path": "experiment/harness/validate_broad_loop.py",
+      "bytes": 7174,
+      "sha256": "10951788eb32ea10cf838a5e34f122d379f0a600d1f4b3dd0aa0ef10b42a058a"
+    },
+    {
+      "path": "experiment/multimodal/params/BackendParams.yaml",
+      "bytes": 2905,
+      "sha256": "e5eaed46f5cd4062839756b29d4d9096a9c3cf92e385e99fd9ca58f4bfaa6275"
+    },
+    {
+      "path": "experiment/multimodal/params/DisplayParams.yaml",
+      "bytes": 120,
+      "sha256": "1bd23036478a36ff1a4251b93a09ca1dc990fee7523e1a67ce54be6fc1a4370b"
+    },
+    {
+      "path": "experiment/multimodal/params/FrontendParams.yaml",
+      "bytes": 2145,
+      "sha256": "3b7aa4f6b725a58cdc8260cad713a3ff64697e0c6d02725ffb083d88145a7b05"
+    },
+    {
+      "path": "experiment/multimodal/params/ImuParams.yaml",
+      "bytes": 495,
+      "sha256": "43edfb595062b9a3f4f88465be627ca3df72031340e3ab315b7e401bc9518d54"
+    },
+    {
+      "path": "experiment/multimodal/params/LcdParams.yaml",
+      "bytes": 1556,
+      "sha256": "47f939a938ec5a11ed4e86894f5bacaba2e0d7bec58d301d957ea47219f9eb78"
+    },
+    {
+      "path": "experiment/multimodal/params/LeftCameraParams.yaml",
+      "bytes": 389,
+      "sha256": "e2d4e8e7495ebf11e38c6aff796e5f4c9a5e7e255c3b2dc9137b50b869017fb1"
+    },
+    {
+      "path": "experiment/multimodal/params/PipelineParams.yaml",
+      "bytes": 75,
+      "sha256": "3a15692165809cf66077740b63c5ca0d7710ac8e1c1134d1241caae36eee8eea"
+    },
+    {
+      "path": "experiment/multimodal/robot_names.yaml",
+      "bytes": 38,
+      "sha256": "708f49e9bf5e8bd90f9981c11262cde413a58e14cdc0a8c64854e6325febf09e"
+    },
+    {
+      "path": "experiment/multimodal/vio.launch",
+      "bytes": 1812,
+      "sha256": "7b85b6e7fba1d8487649a0ca242d70db5cd714e0f226ebb33244876bd61ad461"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/build_dense_overlay.sh",
+      "bytes": 2478,
+      "sha256": "9e54161ea93ebdcaf543266bebca1d94293bdf777c2fd403eaf024281de8672d"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/build_recipe.json",
+      "bytes": 6050,
+      "sha256": "bd609518baa4c8d2ee29fac17826d4b440ee8d7712d99d7c72d9fdb726c91f53"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/env_amov_full.bash",
+      "bytes": 878,
+      "sha256": "e58133d2182aa3bbc293000432ee9bb64d6f6d9f8743438ad9ac28ebf9dd223a"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/env_uros_full.bash",
+      "bytes": 967,
+      "sha256": "ed93de559fcf9a8a6ff646ffc053f785472c85a63ff0779fa89a14b0dfc7144a"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/execute_opengv_guarded_build.sh",
+      "bytes": 571,
+      "sha256": "9b0b20ff591ec7b15b29294063d573db44da1f264e47ebc36e477a38b88af852"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/execute_opengv_ransac_v2.sh",
+      "bytes": 600,
+      "sha256": "cf3fa9cde08694719f7ab9aa5534ee37dae9c3db3644b782c7ae26a698351f86"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/execute_uros_build.sh",
+      "bytes": 526,
+      "sha256": "355e6636cdb3a9fc59783b91b1432e2bb7b36e5082bbd1881c1157416d120059"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/install_dense_dependencies.sh",
+      "bytes": 1007,
+      "sha256": "93ffbde5cc627849485bea1cdda50d514ff0be5431361a70a5befbcaceca7464"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/manage_native_stack.py",
+      "bytes": 16001,
+      "sha256": "765947401e66439dd529e102c3c329598a8753d09956e458b80e7aecc880660e"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/native_concurrency_monitor.py",
+      "bytes": 16346,
+      "sha256": "d3b2daa325ac13054990d589533a74c2cb16c22f8766fb07b261813e00f724a3"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/native_tsdf_log_witness.py",
+      "bytes": 4775,
+      "sha256": "f00eecfc773b46990c401efba6fbc10f9afdb6db62a54097877ec8d40c4ecda3"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/opengv_full_ransac_test.cpp",
+      "bytes": 4839,
+      "sha256": "4df9d73d0eff502b0d3bdee6757741450c559f6997d8cf8575e710536135f22f"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/opengv_low_level_test.cpp",
+      "bytes": 3971,
+      "sha256": "157e75c410734a60c19f008339690219e9fca6602eda8d5c74eb71860eae9090"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/pgmo_test_fixture_only_initialization.patch",
+      "bytes": 824,
+      "sha256": "67e25a97303cde6f839f955fed3350cba97d5722cde9da21a02d61b2763b7e48"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/prepare_dense_workspace.py",
+      "bytes": 4696,
+      "sha256": "06bf8fe43c3647ca594198ff30c2544f1f41ff3e1da6e81ae5e704d4289702b5"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/prepare_disparity_supplement.py",
+      "bytes": 2378,
+      "sha256": "08d2b328311c6c199af5fb3424f0010aa21c543ea250d9b7fc0fd512dce95be0"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/prepare_pgmo_test_harness.py",
+      "bytes": 2004,
+      "sha256": "cf6ea5f6312730d4f56458610b2b59cdf2cd553e6fa83f735a42bccb8c15c9d8"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/run_dense_upstream_tests.sh",
+      "bytes": 1203,
+      "sha256": "f230268f4a5c430710d365c184c54d44629751d3e29666778713648563882ccd"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/run_pgmo_isolated_tests.sh",
+      "bytes": 1979,
+      "sha256": "c775f88014e9b07ee0b7c8a7ca6460c1104e21695250bd42a01a9c5d37ab4d76"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/run_pgmo_ros_tests.sh",
+      "bytes": 1112,
+      "sha256": "a7aac640df2988c548dfb4bceb5eefd03cea33d38f367dc2305bf3ea490dcda6"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/sample_native_host_resources.py",
+      "bytes": 16129,
+      "sha256": "172707fe6c313c65d97e66db9eb01439cd1d31c62657da10b6656cd404edff2a"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/source_lock.json",
+      "bytes": 9575,
+      "sha256": "8ffc79c96d37b220302e0497ed354f8881e0ba26b69e000d25ea375b5553d577"
+    },
+    {
+      "path": "experiment/native_full_stack_20261102/verify_dense_overlay.py",
+      "bytes": 3029,
+      "sha256": "c19cc803fb1ec79ba1a441b13dfb4113dd56b7f6dc9e70cd9b6ebf292607a7e5"
+    },
+    {
+      "path": "Makefile",
+      "bytes": 97,
+      "sha256": "75e4e864f8298656d9ed83fded6dd96b42dc966af18dcb1e153061976e767da8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4885,
+      "sha256": "2c5566c3dce247200319e5e92f327f36e0c96951ad3ef1cbfb5a6131c12031ae"
+    },
+    {
+      "path": "requirements-test.txt",
+      "bytes": 86,
+      "sha256": "6f5fd4b3feaeebd41fc0237bec805262fcef1f4d81dc98895606bc6468a765d5"
+    },
+    {
+      "path": "tools/fetch_sources.py",
+      "bytes": 4315,
+      "sha256": "c1767644361f188c502de8ef1172b4615dfe2966f904d1e1ed57264a7a0e16bf"
+    }
+  ]
+}

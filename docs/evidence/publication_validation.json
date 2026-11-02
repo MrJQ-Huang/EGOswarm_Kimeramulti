@@ -1,0 +1,20 @@
+{
+  "source_snapshot_matches_deployed_bridge": true,
+  "python_contract_tests": {
+    "passed": 66,
+    "failed": 0,
+    "native_full_stack_certification": false
+  },
+  "python_syntax": "passed",
+  "JSON_XML_parsing": "passed",
+  "credential_pattern_scan": "no_findings",
+  "raw_data_cache_binaries_included": false,
+  "upstream_source_pins": 38,
+  "dependency_fetch_smoke": {
+    "repository": "dense_gflags_catkin",
+    "status": "network_blocked",
+    "reason": "Direct Git HTTPS could not connect to github.com:443 on the current Windows host; the GitHub connector is used for publication."
+  },
+  "fresh_machine_full_native_build": "not_performed",
+  "known_runtime_mapping_defects_preserved_and_documented": true
+}

@@ -1,0 +1,36 @@
+--- a/include/DBoW2/TemplatedVocabulary.h
++++ b/include/DBoW2/TemplatedVocabulary.h
+@@ -1473,12 +1473,12 @@
+   m_nodes.resize(fn.size() + 1); // +1 to include root
+   m_nodes[0].id = 0;
+ 
+-  for(unsigned int i = 0; i < fn.size(); ++i)
+-  {
+-    NodeId nid = (int)fn[i]["nodeId"];
+-    NodeId pid = (int)fn[i]["parentId"];
+-    WordValue weight = (WordValue)fn[i]["weight"];
+-    std::string d = (std::string)fn[i]["descriptor"];
++  for(auto iter = fn.begin(); iter != fn.end(); ++iter)
++  {
++    NodeId nid = (int)(*iter)["nodeId"];
++    NodeId pid = (int)(*iter)["parentId"];
++    WordValue weight = (WordValue)(*iter)["weight"];
++    std::string d = (std::string)(*iter)["descriptor"];
+     
+     m_nodes[nid].id = nid;
+     m_nodes[nid].parent = pid;
+@@ -1493,10 +1493,10 @@
+   
+   m_words.resize(fn.size());
+ 
+-  for(unsigned int i = 0; i < fn.size(); ++i)
+-  {
+-    NodeId wid = (int)fn[i]["wordId"];
+-    NodeId nid = (int)fn[i]["nodeId"];
++  for(auto iter = fn.begin(); iter != fn.end(); ++iter)
++  {
++    NodeId wid = (int)(*iter)["wordId"];
++    NodeId nid = (int)(*iter)["nodeId"];
+     
+     m_nodes[nid].word_id = wid;
+     m_words[wid] = &m_nodes[nid];

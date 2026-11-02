@@ -1,0 +1,85 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -30,19 +30,8 @@
+ endif()
+ find_package(PCL REQUIRED)
+ 
+-configure_file(cmake/json.CMakeLists.txt.in json-download/CMakeLists.txt)
+-execute_process(
+-  COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/json-download" OUTPUT_QUIET
+-)
+-execute_process(
+-  COMMAND "${CMAKE_COMMAND}" --build .
+-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/json-download" OUTPUT_QUIET
+-)
+ 
+-set(JSON_BuildTests OFF CACHE INTERNAL "")
+-set(JSON_Install OFF CACHE INTERNAL "")
+-add_subdirectory(${CMAKE_BINARY_DIR}/json-src ${CMAKE_BINARY_DIR}/json-build)
++find_package(nlohmann_json 3.10 REQUIRED)
+ 
+ catkin_simple()
+ 
+@@ -68,7 +57,7 @@
+   nlohmann_json::nlohmann_json
+ )
+ 
+-include(cmake/vocab_download.cmake)
++# Use the same pinned ORB vocabulary as the SDK frontend.
+ 
+ # Unit tests 
+ # set(TEST_DATA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test/data")
+@@ -76,11 +65,19 @@
+ configure_file(test/test_config.h.in test/test_config.h)
+ include_directories(${CMAKE_CURRENT_BINARY_DIR}/test)
+ 
++if(CATKIN_ENABLE_TESTING)
++if(CATKIN_ENABLE_TESTING)
+ catkin_add_gtest(${PROJECT_NAME}-test_lcd test/test_lcd.cpp)
++endif()
+ target_link_libraries(${PROJECT_NAME}-test_lcd ${PROJECT_NAME})
++endif()
+ 
++if(CATKIN_ENABLE_TESTING)
++if(CATKIN_ENABLE_TESTING)
+ catkin_add_gtest(${PROJECT_NAME}-test_utils test/test_utils.cpp)
++endif()
+ target_link_libraries(${PROJECT_NAME}-test_utils ${PROJECT_NAME})
++endif()
+ 
+ cs_install()
+ 
+--- a/include/kimera_multi_lcd/loop_closure_detector.h
++++ b/include/kimera_multi_lcd/loop_closure_detector.h
+@@ -16,7 +16,7 @@
+ 
+ #include <iostream>
+ #include <map>
+-#include <opencv/cv.hpp>
++#include <opencv2/opencv.hpp>
+ #include <opencv2/features2d.hpp>
+ #include <opencv2/features2d/features2d.hpp>
+ #include <opencv2/opencv.hpp>
+--- a/include/kimera_multi_lcd/types.h
++++ b/include/kimera_multi_lcd/types.h
+@@ -12,7 +12,7 @@
+ #include <pcl/point_types.h>
+ #include <pcl_ros/point_cloud.h>
+ #include <pose_graph_tools_msgs/VLCFrameMsg.h>
+-#include <opencv/cv.hpp>
++#include <opencv2/opencv.hpp>
+ #include <opencv2/features2d.hpp>
+ #include <opencv2/features2d/features2d.hpp>
+ #include <opencv2/opencv.hpp>
+--- a/src/loop_closure_detector.cpp
++++ b/src/loop_closure_detector.cpp
+@@ -44,7 +44,7 @@
+       new LcdThirdPartyWrapper(params.lcd_tp_params_));
+ 
+   // Initiate orb matcher
+-  orb_feature_matcher_ = cv::DescriptorMatcher::create(3);
++  orb_feature_matcher_ = cv::DescriptorMatcher::create(cv::DescriptorMatcher::BRUTEFORCE_L1);
+ 
+   // Initialize bag-of-word database
+   vocab_.load(params.vocab_path_);

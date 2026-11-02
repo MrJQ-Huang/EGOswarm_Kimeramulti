@@ -1,0 +1,69 @@
+{
+  "repositories": {
+    "catkin_simple": {
+      "type": "git",
+      "url": "https://github.com/catkin/catkin_simple.git",
+      "version": "0e62848b12da76c8cc58a1add42b4f894d1ac21e"
+    },
+    "cmake_external_project_catkin": {
+      "type": "git",
+      "url": "https://github.com/zurich-eye/cmake_external_project_catkin.git",
+      "version": "7c2ab9a04c400b74914abe773c1e27e5b195ce9f"
+    },
+    "dbow2_catkin": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/dbow2_catkin.git",
+      "version": "210b907287deeb0f7133cda6da375a970e098fa5"
+    },
+    "eigen_catkin": {
+      "type": "git",
+      "url": "https://github.com/ethz-asl/eigen_catkin.git",
+      "version": "3323b388540fa95ec9da6f9cd887f70ead055edb"
+    },
+    "glog_catkin": {
+      "type": "git",
+      "url": "https://github.com/ethz-asl/glog_catkin.git",
+      "version": "40a9edadd15c59f8b57dc947d0135b0a007ea10b"
+    },
+    "gtsam": {
+      "type": "git",
+      "url": "https://github.com/borglab/gtsam.git",
+      "version": "c57988fe554e7213c77fe379c1d7c483de26ad33"
+    },
+    "kimera_ros": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/Kimera-VIO-ROS.git",
+      "version": "d13b7b94cf4bc99bf9ed35b09163850463f4ed8d"
+    },
+    "kimera_rpgo": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/Kimera-RPGO.git",
+      "version": "d28b4df0570d642a2bb00e511344ce1110f87519"
+    },
+    "kimera_vio": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/Kimera-VIO.git",
+      "version": "ce8c59b7b273ab5ac29db7e5572e1623760e19c7"
+    },
+    "mesh_rviz_plugins": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/mesh_rviz_plugins.git",
+      "version": "2ad232270b5728522fd504d5c337ed5e43bf46cf"
+    },
+    "pose_graph_tools": {
+      "type": "git",
+      "url": "https://github.com/MIT-SPARK/pose_graph_tools.git",
+      "version": "dbc893f918b06893d76fe9269e27ae56aaba4966"
+    },
+    "DBoW2": {
+      "type": "git",
+      "url": "https://github.com/dorian3d/DBoW2.git",
+      "version": "3924753db6145f12618e7de09b7e6b258db93c6e"
+    },
+    "opengv": {
+      "type": "git",
+      "url": "https://github.com/laurentkneip/opengv.git",
+      "version": "91f4b19c73450833a40e463ad3648aae80b3a7f3"
+    }
+  }
+}

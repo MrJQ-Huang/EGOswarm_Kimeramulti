@@ -1,0 +1,41 @@
+<launch>
+  <arg name="drone_id"/>
+  <arg name="init_x"/>
+  <arg name="init_y"/>
+  <arg name="init_z" default="1.0"/>
+  <arg name="target_x"/>
+  <arg name="target_y"/>
+  <arg name="target_z" default="1.0"/>
+  <arg name="map_size_x" default="24.0"/>
+  <arg name="map_size_y" default="16.0"/>
+  <arg name="map_size_z" default="4.0"/>
+  <group>
+    <remap from="/move_base_simple/goal" to="/two_pc/drone_$(arg drone_id)/goal"/>
+    <include file="$(find ego_planner)/launch/run_in_sim.launch">
+      <arg name="drone_id" value="$(arg drone_id)"/>
+      <arg name="init_x" value="$(arg init_x)"/>
+      <arg name="init_y" value="$(arg init_y)"/>
+      <arg name="init_z" value="$(arg init_z)"/>
+      <arg name="target_x" value="$(arg target_x)"/>
+      <arg name="target_y" value="$(arg target_y)"/>
+      <arg name="target_z" value="$(arg target_z)"/>
+      <arg name="map_size_x" value="$(arg map_size_x)"/>
+      <arg name="map_size_y" value="$(arg map_size_y)"/>
+      <arg name="map_size_z" value="$(arg map_size_z)"/>
+      <arg name="odom_topic" value="visual_slam/odom"/>
+    </include>
+  </group>
+  <!-- Manual, per-robot mission goals. No physical flight-control nodes are used. -->
+  <param name="drone_$(arg drone_id)_ego_planner_node/fsm/flight_type" value="1" type="int"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/fsm/realworld_experiment" value="true"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/prediction/obj_num" value="0"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/manager/max_vel" value="1.2"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/manager/max_acc" value="2.0"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/optimization/max_vel" value="1.2"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/optimization/max_acc" value="2.0"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/bspline/limit_vel" value="1.2"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/bspline/limit_acc" value="2.0"/>
+  <param name="drone_$(arg drone_id)_ego_planner_node/optimization/swarm_clearance" value="0.9"/>
+  <param name="drone_$(arg drone_id)_pcl_render_node/sensing_rate" value="10.0"/>
+  <param name="drone_$(arg drone_id)_pcl_render_node/estimation_rate" value="10.0"/>
+</launch>

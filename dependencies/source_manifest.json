@@ -1,0 +1,585 @@
+{
+  "format_version": 1,
+  "path_base": "dependencies",
+  "description": "Source fetch and patch manifest for the actual dual-host ROS1 compatibility experiment; compilation and runtime acceptance are separate gates.",
+  "default_hosts": [
+    "uros",
+    "amov"
+  ],
+  "repositories": [
+    {
+      "id": "ego_ros1",
+      "component": "EGO-Swarm ROS1",
+      "workspace": "ego_ws",
+      "directory": "ego_ws",
+      "url": "https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git",
+      "commit": "92fe9f7227b2da819133eb8e0e8c7fc000f6ae20",
+      "patches": {
+        "uros": [
+          "patches/ego_ros1_active.patch"
+        ],
+        "amov": [
+          "patches/ego_ros1_active.patch"
+        ]
+      },
+      "evidence": "Both actual runtime exports have identical bytes for every modified tracked file. AMOV Git diff is authoritative."
+    },
+    {
+      "id": "underlay_catkin_simple",
+      "component": "catkin_simple",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/catkin_simple",
+      "url": "https://github.com/catkin/catkin_simple.git",
+      "commit": "0e62848b12da76c8cc58a1add42b4f894d1ac21e",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_cmake_external_project_catkin",
+      "component": "cmake_external_project_catkin",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/cmake_external_project_catkin",
+      "url": "https://github.com/zurich-eye/cmake_external_project_catkin.git",
+      "commit": "7c2ab9a04c400b74914abe773c1e27e5b195ce9f",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_dbow2_catkin",
+      "component": "dbow2_catkin",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/dbow2_catkin",
+      "url": "https://github.com/MIT-SPARK/dbow2_catkin.git",
+      "commit": "210b907287deeb0f7133cda6da375a970e098fa5",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/dbow2_catkin.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/dbow2_catkin.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_eigen_catkin",
+      "component": "eigen_catkin",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/eigen_catkin",
+      "url": "https://github.com/ethz-asl/eigen_catkin.git",
+      "commit": "3323b388540fa95ec9da6f9cd887f70ead055edb",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_glog_catkin",
+      "component": "glog_catkin",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/glog_catkin",
+      "url": "https://github.com/ethz-asl/glog_catkin.git",
+      "commit": "40a9edadd15c59f8b57dc947d0135b0a007ea10b",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_gtsam",
+      "component": "gtsam",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/gtsam",
+      "url": "https://github.com/borglab/gtsam.git",
+      "commit": "c57988fe554e7213c77fe379c1d7c483de26ad33",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_kimera_ros",
+      "component": "kimera_ros",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/kimera_ros",
+      "url": "https://github.com/MIT-SPARK/Kimera-VIO-ROS.git",
+      "commit": "d13b7b94cf4bc99bf9ed35b09163850463f4ed8d",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/kimera_ros.patch"
+        ],
+        "amov": [
+          "patches/amov_underlay/Kimera-VIO-ROS.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_kimera_rpgo",
+      "component": "kimera_rpgo",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/kimera_rpgo",
+      "url": "https://github.com/MIT-SPARK/Kimera-RPGO.git",
+      "commit": "d28b4df0570d642a2bb00e511344ce1110f87519",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_kimera_vio",
+      "component": "kimera_vio",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/kimera_vio",
+      "url": "https://github.com/MIT-SPARK/Kimera-VIO.git",
+      "commit": "ce8c59b7b273ab5ac29db7e5572e1623760e19c7",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/kimera_vio.patch"
+        ],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_mesh_rviz_plugins",
+      "component": "mesh_rviz_plugins",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/mesh_rviz_plugins",
+      "url": "https://github.com/MIT-SPARK/mesh_rviz_plugins.git",
+      "commit": "2ad232270b5728522fd504d5c337ed5e43bf46cf",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_pose_graph_tools",
+      "component": "pose_graph_tools",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/pose_graph_tools",
+      "url": "https://github.com/MIT-SPARK/pose_graph_tools.git",
+      "commit": "dbc893f918b06893d76fe9269e27ae56aaba4966",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_DBoW2",
+      "component": "DBoW2",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/DBoW2",
+      "url": "https://github.com/dorian3d/DBoW2.git",
+      "commit": "3924753db6145f12618e7de09b7e6b258db93c6e",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/DBoW2.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/DBoW2.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_opengv",
+      "component": "opengv",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/opengv",
+      "url": "https://github.com/laurentkneip/opengv.git",
+      "commit": "91f4b19c73450833a40e463ad3648aae80b3a7f3",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/opengv.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/opengv.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_kimera_multi_lcd",
+      "component": "kimera_multi_lcd",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/kimera_multi_lcd",
+      "url": "https://github.com/MIT-SPARK/Kimera-Multi-LCD.git",
+      "commit": "e9f73da9213b72c370dc079a86db354e7c0654bb",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/kimera_multi_lcd.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/kimera_multi_lcd.patch",
+          "patches/amov_underlay/kimera_multi_lcd_after_uros_compat.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_kimera_distributed",
+      "component": "kimera_distributed",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/kimera_distributed",
+      "url": "https://github.com/MIT-SPARK/Kimera-Distributed.git",
+      "commit": "542c801346e54adc202f5318c6db22a48e9e5966",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/kimera_distributed.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/kimera_distributed.patch",
+          "patches/amov_underlay/kimera_distributed_after_uros_compat.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_dpgo",
+      "component": "dpgo",
+      "workspace": "wireless_deps",
+      "directory": "wireless_deps/dpgo",
+      "url": "https://github.com/mit-acl/dpgo.git",
+      "commit": "a238090c6427ad509370bd6c302bcac82c1be95f",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/dpgo.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/dpgo.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_dpgo_ros",
+      "component": "dpgo_ros",
+      "workspace": "kimera_ws",
+      "directory": "kimera_ws/src/dpgo_ros",
+      "url": "https://github.com/mit-acl/dpgo_ros.git",
+      "commit": "e28f2bc27c87cc96e12d812d16ddececca995745",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/dpgo_ros.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/dpgo_ros.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_roptlib",
+      "component": "roptlib",
+      "workspace": "wireless_deps",
+      "directory": "wireless_deps/roptlib",
+      "url": "https://github.com/yuluntian/ROPTLIB.git",
+      "commit": "0125d947d91554492563e8f8f6ccbe0a3a483f67",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/roptlib.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/roptlib.patch"
+        ]
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "underlay_json",
+      "component": "json",
+      "workspace": "wireless_deps",
+      "directory": "wireless_deps/json",
+      "url": "https://github.com/nlohmann/json.git",
+      "commit": "4f8fba14066156b73f1189a2b8bd568bde5284c5",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "Pinned build-context manifest; source export has no .git on UROS. Local compatibility diff is captured against its preserved original build context."
+    },
+    {
+      "id": "dense_Kimera-PGMO",
+      "component": "Kimera-PGMO",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/Kimera-PGMO",
+      "url": "https://github.com/MIT-SPARK/Kimera-PGMO.git",
+      "commit": "7a67674b677468e6c28152596c9aae66cd24ee4b",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_Kimera-Semantics",
+      "component": "Kimera-Semantics",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/Kimera-Semantics",
+      "url": "https://github.com/MIT-SPARK/Kimera-Semantics.git",
+      "commit": "1ed69c61f4d1d71a812336574ef298e6210ebcd2",
+      "patches": {
+        "uros": [
+          "patches/dense/Kimera-Semantics.patch"
+        ],
+        "amov": [
+          "patches/dense/Kimera-Semantics.patch"
+        ]
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_voxblox",
+      "component": "voxblox",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/voxblox",
+      "url": "https://github.com/ethz-asl/voxblox.git",
+      "commit": "c8066b04075d2fee509de295346b1c0b788c4f38",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_mesh_rviz_plugins",
+      "component": "mesh_rviz_plugins",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/mesh_rviz_plugins",
+      "url": "https://github.com/MIT-SPARK/mesh_rviz_plugins.git",
+      "commit": "2ad232270b5728522fd504d5c337ed5e43bf46cf",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_eigen_checks",
+      "component": "eigen_checks",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/eigen_checks",
+      "url": "https://github.com/ethz-asl/eigen_checks.git",
+      "commit": "22a6247a3df11bc285d43d1a030f4e874a413997",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_minkindr",
+      "component": "minkindr",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/minkindr",
+      "url": "https://github.com/ethz-asl/minkindr.git",
+      "commit": "564f12639a8447d4d3e5e7707851424302941056",
+      "patches": {
+        "uros": [
+          "patches/dense/minkindr_python_ignore.patch"
+        ],
+        "amov": [
+          "patches/dense/minkindr_python_ignore.patch"
+        ]
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_minkindr_ros",
+      "component": "minkindr_ros",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/minkindr_ros",
+      "url": "https://github.com/ethz-asl/minkindr_ros.git",
+      "commit": "5528b042124fe056a7cf53f96c8b39e1e32ec2b9",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_spatial_hash",
+      "component": "spatial_hash",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/spatial_hash",
+      "url": "https://github.com/MIT-SPARK/Spatial-Hash.git",
+      "commit": "8045892f34978d78870d806a50f8e5aefdbe52fc",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_gflags_catkin",
+      "component": "gflags_catkin",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/gflags_catkin",
+      "url": "https://github.com/ethz-asl/gflags_catkin.git",
+      "commit": "fc38fc525f7d48881aebb27a7b9978453556bbd4",
+      "patches": {
+        "uros": [
+          "patches/dense/gflags_catkin.patch"
+        ],
+        "amov": [
+          "patches/dense/gflags_catkin.patch"
+        ]
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_config_utilities",
+      "component": "config_utilities",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/config_utilities",
+      "url": "https://github.com/MIT-SPARK/config_utilities.git",
+      "commit": "106e1a92b84020d36a6cd78c7fbd517dcf1b8555",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_protobuf_catkin",
+      "component": "protobuf_catkin",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/protobuf_catkin",
+      "url": "https://github.com/ethz-asl/protobuf_catkin.git",
+      "commit": "721a6cc17e7e937e7accfb88a9967b26134db6f9",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_kimera_rviz_markers",
+      "component": "kimera_rviz_markers",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/kimera_rviz_markers",
+      "url": "https://github.com/MIT-SPARK/kimera_rviz_markers.git",
+      "commit": "f342baf99fa55f9351795785bea1262ed8b451db",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_catkin_simple",
+      "component": "catkin_simple",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/catkin_simple",
+      "url": "https://github.com/catkin/catkin_simple.git",
+      "commit": "0e62848b12da76c8cc58a1add42b4f894d1ac21e",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_eigen_catkin",
+      "component": "eigen_catkin",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/eigen_catkin",
+      "url": "https://github.com/ethz-asl/eigen_catkin.git",
+      "commit": "3323b388540fa95ec9da6f9cd887f70ead055edb",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_glog_catkin",
+      "component": "glog_catkin",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/glog_catkin",
+      "url": "https://github.com/ethz-asl/glog_catkin.git",
+      "commit": "40a9edadd15c59f8b57dc947d0135b0a007ea10b",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_pose_graph_tools",
+      "component": "pose_graph_tools",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/pose_graph_tools",
+      "url": "https://github.com/MIT-SPARK/pose_graph_tools.git",
+      "commit": "dbc893f918b06893d76fe9269e27ae56aaba4966",
+      "patches": {
+        "uros": [],
+        "amov": []
+      },
+      "evidence": "AMOV Git-derived source lock; matches the source-only dense overlay bundle."
+    },
+    {
+      "id": "dense_disparity_image_proc",
+      "component": "disparity_image_proc",
+      "workspace": "dense_ws",
+      "directory": "dense_ws/src/disparity_image_proc",
+      "url": "https://github.com/MIT-SPARK/disparity_image_proc.git",
+      "commit": "c35c2ff6da31eb5ceceb326e4997a7edf8589db0",
+      "patches": {
+        "uros": [],
+        "amov": []
+      }
+    },
+    {
+      "id": "guard_opengv",
+      "component": "OpenGV isolated runtime guard",
+      "workspace": "opengv_guarded",
+      "directory": "opengv_guarded/source",
+      "url": "https://github.com/laurentkneip/opengv.git",
+      "commit": "91f4b19c73450833a40e463ad3648aae80b3a7f3",
+      "patches": {
+        "uros": [
+          "patches/uros_underlay/opengv.patch",
+          "patches/opengv_sturm_guard.patch"
+        ],
+        "amov": [
+          "patches/uros_underlay/opengv.patch",
+          "patches/opengv_sturm_guard.patch"
+        ]
+      },
+      "evidence": "Both hosts explicitly load this separately rebuilt shared library. Does not overwrite the underlay OpenGV. Original baseline is retained."
+    }
+  ],
+  "extra_source_directories": [
+    {
+      "source": "system_wrappers",
+      "destination": "kimera_ws/src",
+      "hosts": [
+        "uros"
+      ],
+      "reason": "Small system-library catkin adapters from the preserved UROS Noetic build context."
+    }
+  ],
+  "post_fetch_notes": [
+    "Do not apply both patch_noetic.py and the equivalent recorded patches: they duplicate the same changes.",
+    "VIO sparse-feature compatibility guards were applied only to UROS; AMOV VIO source is its pristine recorded Git commit.",
+    "For the VIO underlay, create CATKIN_IGNORE in standalone DBoW2 and opengv; opengv_catkin and dbow2_catkin build them externally.",
+    "Dense minkindr patch reproduces the ignored optional Python package; the empty-file Git patch preserves the deployed empty CATKIN_IGNORE.",
+    "PGMO is a modern API compatibility port; it is not the original Kimera-Multi v1.0.0 package combination.",
+    "Build OpenGV guard independently for each architecture. Generate a new runtime_gate.sha256 from the tested local shared library, never reuse the other architecture checksum.",
+    "The rejected nearest-depth-query VIO candidate is deliberately absent."
+  ]
+}

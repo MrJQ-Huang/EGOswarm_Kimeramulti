@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "title": "Warehouse Slalom - Two Computer EGO-Swarm",
+  "frame_id": "world",
+  "map_size": [
+    24.0,
+    16.0,
+    4.0
+  ],
+  "bounds": {
+    "x": [
+      -10.5,
+      10.5
+    ],
+    "y": [
+      -4.5,
+      4.5
+    ],
+    "z": [
+      0.0,
+      3.5
+    ]
+  },
+  "floor_z": 0.0,
+  "nominal_flight_height": 1.0,
+  "obstacles": [
+    {
+      "type": "box",
+      "id": "boundary_west",
+      "center": [
+        -10.65,
+        0.0,
+        1.6
+      ],
+      "size": [
+        0.3,
+        9.6,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_east",
+      "center": [
+        10.65,
+        0.0,
+        1.6
+      ],
+      "size": [
+        0.3,
+        9.6,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_south",
+      "center": [
+        0.0,
+        -4.65,
+        1.6
+      ],
+      "size": [
+        21.6,
+        0.3,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "boundary_north",
+      "center": [
+        0.0,
+        4.65,
+        1.6
+      ],
+      "size": [
+        21.6,
+        0.3,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "slalom_wall_west",
+      "center": [
+        -4.0,
+        -2.0,
+        1.6
+      ],
+      "size": [
+        0.5,
+        5.0,
+        3.2
+      ]
+    },
+    {
+      "type": "box",
+      "id": "slalom_wall_east",
+      "center": [
+        4.0,
+        2.0,
+        1.6
+      ],
+      "size": [
+        0.5,
+        5.0,
+        3.2
+      ]
+    },
+    {
+      "type": "cylinder",
+      "id": "central_column",
+      "center": [
+        0.0,
+        0.0
+      ],
+      "radius": 0.6,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_01",
+      "center": [
+        -8.0,
+        -3.1
+      ],
+      "radius": 0.32,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_02",
+      "center": [
+        -6.1,
+        -2.7
+      ],
+      "radius": 0.35,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_03",
+      "center": [
+        -7.3,
+        3.2
+      ],
+      "radius": 0.32,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_04",
+      "center": [
+        -5.7,
+        3.5
+      ],
+      "radius": 0.35,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_05",
+      "center": [
+        -1.9,
+        3.2
+      ],
+      "radius": 0.34,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_06",
+      "center": [
+        -1.6,
+        -2.8
+      ],
+      "radius": 0.32,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_07",
+      "center": [
+        1.7,
+        2.9
+      ],
+      "radius": 0.35,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_08",
+      "center": [
+        1.8,
+        -3.2
+      ],
+      "radius": 0.33,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_09",
+      "center": [
+        5.8,
+        -3.4
+      ],
+      "radius": 0.35,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_10",
+      "center": [
+        7.8,
+        -3.1
+      ],
+      "radius": 0.32,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_11",
+      "center": [
+        6.5,
+        3.0
+      ],
+      "radius": 0.33,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "cylinder",
+      "id": "side_column_12",
+      "center": [
+        8.5,
+        3.3
+      ],
+      "radius": 0.36,
+      "height": 3.2,
+      "base_z": 0.0
+    },
+    {
+      "type": "box",
+      "id": "south_storage_rack",
+      "center": [
+        -1.8,
+        -3.8,
+        1.0
+      ],
+      "size": [
+        2.0,
+        0.65,
+        2.0
+      ]
+    },
+    {
+      "type": "box",
+      "id": "north_storage_rack",
+      "center": [
+        1.4,
+        3.8,
+        1.0
+      ],
+      "size": [
+        2.2,
+        0.65,
+        2.0
+      ]
+    }
+  ],
+  "scenarios": {
+    "oppose": {
+      "title": "Opposing Flights Through the Slalom",
+      "starts": [
+        [
+          -8.0,
+          -0.8,
+          1.0
+        ],
+        [
+          8.0,
+          0.8,
+          1.0
+        ]
+      ],
+      "goals": [
+        [
+          8.0,
+          0.8,
+          1.0
+        ],
+        [
+          -8.0,
+          -0.8,
+          1.0
+        ]
+      ]
+    },
+    "convoy": {
+      "title": "Same Direction Flights Through the Slalom",
+      "starts": [
+        [
+          -8.6,
+          -1.0,
+          1.0
+        ],
+        [
+          -6.7,
+          1.0,
+          1.0
+        ]
+      ],
+      "goals": [
+        [
+          8.2,
+          -1.0,
+          1.0
+        ],
+        [
+          8.2,
+          1.2,
+          1.0
+        ]
+      ]
+    },
+    "convoy_mapping": {
+      "title": "Following Flights with Shared Visual Coverage",
+      "starts": [
+        [
+          -8.6,
+          -1,
+          1
+        ],
+        [
+          -6.7,
+          -1,
+          1
+        ]
+      ],
+      "goals": [
+        [
+          6.3,
+          -1,
+          1
+        ],
+        [
+          8.2,
+          -1,
+          1
+        ]
+      ]
+    }
+  }
+}

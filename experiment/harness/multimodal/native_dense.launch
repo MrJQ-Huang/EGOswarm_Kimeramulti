@@ -1,0 +1,78 @@
+<launch>
+  <!-- Pinned modern PGMO native geometry chain; not the old LIO/SDK draft.
+       Start a new bridge + VIO + dense epoch before sensors. Native SLAM only.
+       S2 mode=local outputs sim_N/vio_odom. S3/S4 mode=joint outputs kimera_world
+       after native observed completed DPGO input. Never switch modes in place. -->
+  <arg name="robot_id"/>
+  <arg name="robot_name"/>
+  <arg name="run_id"/>
+  <arg name="cutoff"/>
+  <arg name="harness_directory"/>
+  <arg name="output_directory"/>
+  <arg name="mode" default="local"/>
+  <arg name="global_frame" default="kimera_world"/>
+  <arg name="output_frame" default="$(eval arg('robot_name') + '/vio_odom' if arg('mode') == 'local' else arg('global_frame'))"/>
+  <arg name="cloud_rate" default="2.0"/>
+  <arg name="max_odom_gap" default="0.6"/>
+  <arg name="sensor_rotation_interpolation" default="gyro_endpoint"/>
+  <arg name="max_gyro_gap" default="0.05"/>
+  <arg name="gyro_sample_convention" default="left_endpoint_interval_equivalent"/>
+  <arg name="mesh_phase_timeout" default="30.0"/>
+  <arg name="voxel_size" default="0.15"/>
+  <arg name="require_cross" default="false"/>
+  <arg name="recorded_native_bag" default=""/>
+  <arg name="recorded_native_bag_sha256" default=""/>
+  <arg name="replay_caller" default="/native_dense_replay"/>
+  <arg name="require_cross_flag" default="$(eval '--require-cross' if arg('require_cross') in [True, 'true', 'True', '1'] else '')"/>
+  <arg name="recorded_input_flags" default="$(eval '--recorded-native-bag ' + arg('recorded_native_bag') + ' --recorded-native-bag-sha256 ' + arg('recorded_native_bag_sha256') + ' --replay-caller ' + arg('replay_caller') if arg('recorded_native_bag') else '')"/>
+  <group ns="$(arg robot_name)">
+    <node pkg="native_dense_runtime" type="native_dense_bridge.py"
+          name="native_dense_bridge" output="screen" required="true"
+          args="--robot-id $(arg robot_id) --robot-name $(arg robot_name) --run-id $(arg run_id) --cutoff $(arg cutoff) --mode $(arg mode) --global-frame $(arg global_frame) --output-directory $(arg output_directory)/bridge --cloud-rate $(arg cloud_rate) --max-odom-gap $(arg max_odom_gap) --sensor-rotation-interpolation $(arg sensor_rotation_interpolation) --gyro-sample-convention $(arg gyro_sample_convention) --max-gyro-gap $(arg max_gyro_gap) --mesh-phase-timeout $(arg mesh_phase_timeout) $(arg require_cross_flag) $(arg recorded_input_flags)">
+      <env name="NATIVE_DENSE_HARNESS" value="$(arg harness_directory)"/>
+    </node>
+    <node pkg="voxblox_ros" type="tsdf_server" name="native_tsdf" output="screen" required="true">
+      <param name="world_frame" value="$(arg robot_name)/vio_odom"/>
+      <param name="sensor_frame" value="$(arg robot_name)/native_dense_optical"/>
+      <param name="use_tf_transforms" value="true"/>
+      <param name="tsdf_voxel_size" value="$(arg voxel_size)"/>
+      <param name="tsdf_voxels_per_side" value="16"/>
+      <param name="max_ray_length_m" value="8.0"/>
+      <param name="min_ray_length_m" value="0.3"/>
+      <param name="min_time_between_msgs_sec" value="0.0"/>
+      <param name="integrator_threads" value="1"/>
+      <param name="voxel_carving_enabled" value="true"/>
+      <param name="enable_icp" value="false"/>
+      <param name="publish_pointclouds" value="false"/>
+      <param name="update_mesh_every_n_sec" value="1.0"/>
+      <param name="mesh_filename" value="$(arg output_directory)/native_raw_tsdf_mesh.ply"/>
+      <remap from="pointcloud" to="/$(arg robot_name)/native_dense/rgbd_points"/>
+    </node>
+    <node pkg="kimera_pgmo_ros" type="voxblox_mesh_frontend_node" name="native_mesh_frontend"
+          output="screen" required="true">
+      <param name="robot_id" value="$(arg robot_id)"/>
+      <param name="frame_id" value="$(arg robot_name)/vio_odom"/>
+      <param name="time_horizon" value="3600.0"/>
+      <param name="mesh_resolution" value="$(arg voxel_size)"/>
+      <param name="d_graph_resolution" value="1.0"/>
+      <param name="track_mesh_graph_mapping" value="true"/>
+      <param name="graph_compression_method" value="BLOCK"/>
+      <param name="full_compression_method" value="VOXEL_CLEARING"/>
+      <param name="log_output" value="true"/>
+      <param name="log_path" value="$(arg output_directory)"/>
+      <param name="queue_size" value="2"/>
+      <remap from="~mesh_in" to="/$(arg robot_name)/native_tsdf/mesh"/>
+    </node>
+    <node pkg="kimera_pgmo_ros" type="kimera_pgmo_node" name="native_pgmo" output="screen" required="true">
+      <rosparam file="$(arg harness_directory)/native_dense_pgmo.yaml"/>
+      <param name="robot_id" value="$(arg robot_id)"/>
+      <param name="frame_id" value="$(arg output_frame)"/>
+      <param name="output_prefix" value="$(arg output_directory)"/>
+      <remap from="~mesh_graph_incremental" to="/$(arg robot_name)/native_dense/mesh_graph_incremental"/>
+      <remap from="~full_mesh" to="/$(arg robot_name)/native_dense/full_mesh"/>
+      <remap from="~pose_graph_incremental" to="/$(arg robot_name)/native_dense/pose_graph_incremental"/>
+      <remap from="~input_path" to="/$(arg robot_name)/native_dense/approved_body_path"/>
+      <remap from="/tf" to="/$(arg robot_name)/native_pgmo/tf_debug"/>
+    </node>
+  </group>
+</launch>

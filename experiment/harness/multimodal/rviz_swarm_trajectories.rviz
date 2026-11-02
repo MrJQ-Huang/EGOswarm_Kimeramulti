@@ -1,0 +1,121 @@
+Panels:
+- Class: rviz/Displays
+  Name: Displays
+  Property Tree Widget:
+    Expanded:
+    - /Global Options1
+  Tree Height: 700
+- Class: rviz/Views
+  Name: Views
+Preferences:
+  PromptSaveOnExit: false
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Class: rviz/Grid
+    Name: World grid
+    Enabled: true
+    Value: true
+    Alpha: 0.12
+    Cell Size: 1
+    Plane: XY
+    Plane Cell Count: 48
+    Reference Frame: <Fixed Frame>
+    Color: 82; 105; 130
+    Line Style:
+      Value: Lines
+      Line Width: 0.02
+  - Class: rviz/MarkerArray
+    Name: Environment gray
+    Enabled: true
+    Value: true
+    Marker Topic: /visualization/swarm/environment
+    Queue Size: 2
+  - Class: rviz/Path
+    Name: AMOV actual cyan thick solid
+    Enabled: true
+    Value: true
+    Topic: /visualization/swarm/actual_0
+    Buffer Length: 1
+    Color: 52; 216; 237
+    Alpha: 1
+    Line Style: Billboards
+    Line Width: 0.14
+    Pose Style: None
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+  - Class: rviz/Path
+    Name: UROS actual orange thick solid
+    Enabled: true
+    Value: true
+    Topic: /visualization/swarm/actual_1
+    Buffer Length: 1
+    Color: 255; 160; 75
+    Alpha: 1
+    Line Style: Billboards
+    Line Width: 0.14
+    Pose Style: None
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+  - Class: rviz/MarkerArray
+    Name: Native VIO same colors thin dashed
+    Enabled: true
+    Value: true
+    Marker Topic: /visualization/swarm/vio_markers
+    Queue Size: 2
+  - Class: rviz/MarkerArray
+    Name: Joint DPGO same colors points
+    Enabled: true
+    Value: true
+    Marker Topic: /visualization/swarm/optimized_markers
+    Queue Size: 2
+  - Class: rviz/MarkerArray
+    Name: Actual body position and heading
+    Enabled: true
+    Value: true
+    Marker Topic: /visualization/swarm/vehicles
+    Queue Size: 2
+  Enabled: true
+  Global Options:
+    Fixed Frame: world
+    Frame Rate: 10
+    Background Color: 10; 18; 32
+    Default Light: true
+  Name: root
+  Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+  - Class: rviz/FocusCamera
+  - Class: rviz/Measure
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Name: Current View
+      Distance: 56
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0.8
+      Pitch: 1.08
+      Yaw: -1.570796
+      Near Clip Distance: 0.01
+      Field of View: 0.785398
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+    Saved: null
+Window Geometry:
+  Width: 1280
+  Height: 900
+  X: 80
+  Y: 70
+  Hide Left Dock: false
+  Hide Right Dock: true
+  Displays:
+    collapsed: false
+  Views:
+    collapsed: true

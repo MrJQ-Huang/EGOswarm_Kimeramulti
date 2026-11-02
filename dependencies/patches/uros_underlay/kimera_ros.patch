@@ -1,0 +1,15 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -53,10 +53,12 @@
+ )
+ target_link_libraries(csv_publisher_node ${PROJECT_NAME})
+ 
++if(CATKIN_ENABLE_TESTING)
+ catkin_add_gtest(testKimeraVioRos
+   test/testKimeraVioRos.cpp
+ )
+ target_link_libraries(testKimeraVioRos ${PROJECT_NAME})
++endif()
+ 
+ cs_install()
+ 

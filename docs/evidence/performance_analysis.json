@@ -1,0 +1,1863 @@
+{
+  "run_id": "native_restart_20261102_184554",
+  "mission_window_wall": [
+    1793616909.898219,
+    1793617410.344858
+  ],
+  "duration_s": 500.44663882255554,
+  "summary_zh": "整机CPU资源压力主要在AMOV；UROS bridge接近单核上限，串行锁/消息积压是独立问题。UROS并未整机CPU饱和，不能把所有故障归因于UROS硬件不足。全局不同轮结果未同步是另一个协议/实现问题。",
+  "definitions": {
+    "host_cpu_busy_percent": "100 * delta(total-idle-iowait) / delta(total) from /proc/stat; all online CPUs, scale 0..100. iowait is included as idle, not separately retained.",
+    "process_cpu_percent_one_core": "100 * delta(utime+stime)/CLK_TCK / sample_monotonic_interval. 100 means one full logical CPU. Multi-threaded processes may exceed100.",
+    "process_cpu_percent_host_normalized": "process_cpu_percent_one_core / online_affinity_count. AMOV divisor4, UROS divisor8; SMT threads are not equal to full independent physical cores.",
+    "host_selected_scope": "Exact executable/script processes with current ROS_MASTER_URI, including RViz. Excludes rosbag recorder, roscore, Docker/roslaunch wrappers, monitor, desktop and kernel work. All-host CPU includes those workloads.",
+    "role_percentiles": "Per-role P50/P95 independently calculated over mission samples. Percentiles do not add; means can add where sample windows match.",
+    "memory": "Selected RSS sums are not PSS/USS; shared pages may be counted multiple times.",
+    "network": "Whole-host interfaces including SSH, RViz and diagnostics; not native-SLAM-only throughput. Do not sum loopback and physical interfaces."
+  },
+  "hosts": {
+    "amov": {
+      "hardware": {
+        "architecture": "aarch64",
+        "model": "NVIDIA Orin NX Developer Kit",
+        "physical_cores_available": 4,
+        "logical_cpus_available_during_run": 4,
+        "online_cpu_indices_snapshot": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "installed_visible_cpus": 8,
+        "ram_total_bytes_during_run": 16256143360,
+        "container_limits": null,
+        "snapshot_timing": "Read-only hardware query after run. Sampler metadata captured online-affinity count during run."
+      },
+      "sample_scope": {
+        "samples": 445,
+        "first_sample_wall": 1793616910.6812158,
+        "last_sample_wall": 1793617354.6816995,
+        "unsampled_right_edge_s": 55.66315841674805,
+        "amov_failure_caveat": "Final55.663s missing due to sampler sleep-race exception; no inference of SLAM exit."
+      },
+      "mission_metrics": {
+        "ram_total_bytes": {
+          "samples": 445,
+          "min": 16256143360.0,
+          "p50": 16256143360.0,
+          "p95": 16256143360.0,
+          "max": 16256143360.0,
+          "mean": 16256143360.0
+        },
+        "ram_available_bytes": {
+          "samples": 445,
+          "min": 10189828096.0,
+          "p50": 10857734144.0,
+          "p95": 11565733478.4,
+          "max": 11693678592.0,
+          "mean": 10878705673.204494
+        },
+        "ram_unavailable_bytes": {
+          "samples": 445,
+          "min": 4562464768.0,
+          "p50": 5398409216.0,
+          "p95": 5928615936.0,
+          "max": 6066315264.0,
+          "mean": 5377437686.795506
+        },
+        "swap_total_bytes": {
+          "samples": 445,
+          "min": 12423016448.0,
+          "p50": 12423016448.0,
+          "p95": 12423016448.0,
+          "max": 12423016448.0,
+          "mean": 12423016448.0
+        },
+        "swap_used_bytes": {
+          "samples": 445,
+          "min": 2097152.0,
+          "p50": 2097152.0,
+          "p95": 2097152.0,
+          "max": 2097152.0,
+          "mean": 2097152.0
+        },
+        "host_cpu_busy_percent": {
+          "samples": 445,
+          "min": 74.55012853470437,
+          "p50": 93.0,
+          "p95": 97.79992521839628,
+          "max": 99.23857868020305,
+          "mean": 92.6711919769885
+        },
+        "selected_process_count": {
+          "samples": 445,
+          "min": 16.0,
+          "p50": 16.0,
+          "p95": 16.0,
+          "max": 16.0,
+          "mean": 16.0
+        },
+        "selected_rss_bytes": {
+          "samples": 445,
+          "min": 2622435328.0,
+          "p50": 3411873792.0,
+          "p95": 3936300236.7999997,
+          "max": 4062392320.0,
+          "mean": 3394906291.4876404
+        },
+        "selected_cpu_percent_one_core": {
+          "samples": 445,
+          "min": 234.18105005306217,
+          "p50": 321.9982502621481,
+          "p95": 348.80077631628467,
+          "max": 375.9810697287601,
+          "mean": 320.0309803904758
+        },
+        "selected_cpu_percent_host_normalized": {
+          "samples": 445,
+          "min": 58.54526251326554,
+          "p50": 80.49956256553702,
+          "p95": 87.20019407907117,
+          "max": 93.99526743219002,
+          "mean": 80.00774509761895
+        }
+      },
+      "by_role": {
+        "adapter_or_simulation:continuous_body.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 37.00338011072086,
+            "p50": 47.00433582098842,
+            "p95": 51.68474352213671,
+            "max": 53.98308796211358,
+            "mean": 47.24032158662407
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 9.250845027680215,
+            "p50": 11.751083955247106,
+            "p95": 12.921185880534178,
+            "max": 13.495771990528395,
+            "mean": 11.810080396656017
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 48594944.0,
+            "p50": 48594944.0,
+            "p95": 48594944.0,
+            "max": 48594944.0,
+            "mean": 48594944.0
+          }
+        },
+        "adapter_or_simulation:native_dense_bridge.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 14.999820752141357,
+            "p50": 51.001715799621735,
+            "p95": 67.99859102877613,
+            "max": 77.99889514552311,
+            "mean": 50.67881708922576
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 3.7499551880353392,
+            "p50": 12.750428949905434,
+            "p95": 16.999647757194033,
+            "max": 19.499723786380777,
+            "mean": 12.66970427230644
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 88723456.0,
+            "p50": 345931776.0,
+            "p95": 428100812.8,
+            "max": 439316480.0,
+            "mean": 314759237.03370786
+          }
+        },
+        "adapter_or_simulation:native_vio_graph_adapter.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 1.9995008366073348,
+            "p50": 3.000141423670331,
+            "p95": 4.000316978726162,
+            "max": 5.001406540561962,
+            "mean": 3.3932615237556036
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.4998752091518337,
+            "p50": 0.7500353559175827,
+            "p95": 1.0000792446815405,
+            "max": 1.2503516351404904,
+            "mean": 0.8483153809389009
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 45240320.0,
+            "p50": 47337472.0,
+            "p95": 47337472.0,
+            "max": 47337472.0,
+            "mean": 47330310.90337079
+          }
+        },
+        "adapter_or_simulation:peer_heartbeat.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 1.0000627129433548,
+            "max": 1.999864605159633,
+            "mean": 0.27193169932507655
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.2500156782358387,
+            "max": 0.49996615128990823,
+            "mean": 0.06798292483126914
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 44064768.0,
+            "p50": 44064768.0,
+            "p95": 44064768.0,
+            "max": 44064768.0,
+            "mean": 44064768.0
+          }
+        },
+        "adapter_or_simulation:scenario_supervisor.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 1.0000064656425531,
+            "max": 1.0018056244027493,
+            "mean": 0.1595415066969762
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.2500016164106383,
+            "max": 0.25045140610068733,
+            "mean": 0.03988537667424405
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 44146688.0,
+            "p50": 44146688.0,
+            "p95": 44146688.0,
+            "max": 44146688.0,
+            "mean": 44146688.0
+          }
+        },
+        "adapter_or_simulation:sim_sensors.py": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 49.03791219059848,
+            "p50": 79.00325769918958,
+            "p95": 90.00503839946563,
+            "max": 98.00091434857659,
+            "mean": 78.16394166797535
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 12.25947804764962,
+            "p50": 19.750814424797394,
+            "p95": 22.501259599866408,
+            "max": 24.500228587144147,
+            "mean": 19.540985416993838
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 55914496.0,
+            "p50": 61124608.0,
+            "p95": 68092723.19999999,
+            "max": 72646656.0,
+            "mean": 62103229.84269663
+          }
+        },
+        "ego:ego_planner_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 11.99985507772762,
+            "p50": 19.998439861722304,
+            "p95": 27.99972982048738,
+            "max": 31.9998005133451,
+            "mean": 19.948239458143117
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 2.999963769431905,
+            "p50": 4.999609965430576,
+            "p95": 6.999932455121845,
+            "max": 7.999950128336275,
+            "mean": 4.987059864535779
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 181997568.0,
+            "p50": 182517760.0,
+            "p95": 182562816.0,
+            "max": 182718464.0,
+            "mean": 182475594.21123594
+          }
+        },
+        "ego:odom_visualization": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.9978798067671563,
+            "p50": 2.999363046264886,
+            "p95": 3.999235564545436,
+            "max": 4.000593976180102,
+            "mean": 2.5573343410904372
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.24946995169178907,
+            "p50": 0.7498407615662215,
+            "p95": 0.999808891136359,
+            "max": 1.0001484940450256,
+            "mean": 0.6393335852726093
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 13406208.0,
+            "p50": 14237696.0,
+            "p95": 15024128.0,
+            "max": 15802368.0,
+            "mean": 14337178.175280899
+          }
+        },
+        "ego:pcl_render_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.9976226452831322,
+            "p50": 2.0000136280997163,
+            "p95": 3.000223877340753,
+            "max": 4.000257464573165,
+            "mean": 2.15058589271919
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.24940566132078304,
+            "p50": 0.5000034070249291,
+            "p95": 0.7500559693351883,
+            "max": 1.0000643661432913,
+            "mean": 0.5376464731797975
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 66416640.0,
+            "p50": 66957312.0,
+            "p95": 66957312.0,
+            "max": 66957312.0,
+            "mean": 66940909.59101123
+          }
+        },
+        "ego:traj_server": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 1.0000093300875161,
+            "p50": 3.999964544310891,
+            "p95": 5.000011239015852,
+            "max": 5.003002541967798,
+            "mean": 3.82242802849804
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.25000233252187903,
+            "p50": 0.9999911360777227,
+            "p95": 1.250002809753963,
+            "max": 1.2507506354919495,
+            "mean": 0.95560700712451
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 16646144.0,
+            "p50": 16646144.0,
+            "p95": 16646144.0,
+            "max": 16646144.0,
+            "mean": 16646144.0
+          }
+        },
+        "native:dpgo_ros_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.9999764175549787,
+            "p95": 28.00611446121948,
+            "max": 40.99922712363271,
+            "mean": 4.698686206699254
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.24999410438874467,
+            "p95": 7.00152861530487,
+            "max": 10.249806780908177,
+            "mean": 1.1746715516748134
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 15437824.0,
+            "p50": 18116608.0,
+            "p95": 19041484.8,
+            "max": 19570688.0,
+            "mean": 17845020.188764043
+          }
+        },
+        "native:kimera_distributed_loop_closure_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 29.00479977229735,
+            "p95": 85.00055946155663,
+            "max": 96.99914165445384,
+            "mean": 35.86276669414701
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 7.2511999430743375,
+            "p95": 21.25013986538916,
+            "max": 24.24978541361346,
+            "mean": 8.965691673536753
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 1097342976.0,
+            "p50": 1182879744.0,
+            "p95": 1405355622.3999999,
+            "max": 1431199744.0,
+            "mean": 1226327433.4921348
+          }
+        },
+        "native:kimera_pgmo_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 3.999930737211529,
+            "p95": 42.806505218405526,
+            "max": 80.0131564034316,
+            "mean": 12.188555922694087
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.9999826843028823,
+            "p95": 10.701626304601382,
+            "max": 20.0032891008579,
+            "mean": 3.047138980673522
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 29757440.0,
+            "p50": 59576320.0,
+            "p95": 64491520.0,
+            "max": 66383872.0,
+            "mean": 55630868.71011236
+          }
+        },
+        "native:kimera_vio_ros_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 33.00030789288803,
+            "p50": 55.00005829994547,
+            "p95": 71.98859070335283,
+            "max": 84.99915111337165,
+            "mean": 55.768706251071805
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 8.250076973222008,
+            "p50": 13.750014574986368,
+            "p95": 17.997147675838207,
+            "max": 21.249787778342913,
+            "mean": 13.942176562767951
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 780931072.0,
+            "p50": 1145966592.0,
+            "p95": 1371493990.3999999,
+            "max": 1454108672.0,
+            "mean": 1130623933.2674158
+          }
+        },
+        "native:tsdf_server": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.9999915720710296,
+            "p95": 3.0000916384516016,
+            "max": 13.999934844291975,
+            "mean": 1.029230825052714
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.2499978930177574,
+            "p95": 0.7500229096129004,
+            "max": 3.4999837110729937,
+            "mean": 0.2573077062631785
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 64110592.0,
+            "p50": 73134080.0,
+            "p95": 73134080.0,
+            "max": 73134080.0,
+            "mean": 72047618.30112359
+          }
+        },
+        "native:voxblox_mesh_frontend_node": {
+          "cpu_percent_one_core": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 1.9999954420085682,
+            "p95": 3.999720912453101,
+            "max": 7.999962768166843,
+            "mean": 2.0966316967573477
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.49999886050214204,
+            "p95": 0.9999302281132753,
+            "max": 1.9999906920417108,
+            "mean": 0.5241579241893369
+          },
+          "rss_bytes": {
+            "samples": 445,
+            "min": 27172864.0,
+            "p50": 53272576.0,
+            "p95": 53272576.0,
+            "max": 53272576.0,
+            "mean": 51032413.77078652
+          }
+        }
+      },
+      "interfaces": {
+        "docker0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "dummy0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "eth0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 126.00246502687705,
+            "max": 1040.004626981312,
+            "mean": 22.5015043882879
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 10014,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "l4tbr0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "lo": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 13201787.565983007,
+            "p50": 20915663.961454153,
+            "p95": 32481448.970444124,
+            "max": 65804515.340605564,
+            "mean": 22295984.342409145
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 13201787.565983007,
+            "p50": 20915663.961454153,
+            "p95": 32481448.970444124,
+            "max": 65804515.340605564,
+            "mean": 22295984.342409145
+          },
+          "counter_delta": {
+            "rx_bytes": 9896784007,
+            "tx_bytes": 9896784007,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "rndis0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "usb0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "wlan0": {
+          "rx_bytes_per_s": {
+            "samples": 445,
+            "min": 51385.47942654702,
+            "p50": 279130.770806177,
+            "p95": 523218.4778485268,
+            "max": 767026.6082973557,
+            "mean": 287443.5010305097
+          },
+          "tx_bytes_per_s": {
+            "samples": 445,
+            "min": 216226.8092494234,
+            "p50": 363115.2159213735,
+            "p95": 717688.3415804767,
+            "max": 1909317.4066661748,
+            "mean": 431730.80734514183
+          },
+          "counter_delta": {
+            "rx_bytes": 127808731,
+            "tx_bytes": 191678854,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        }
+      },
+      "not_measured": [
+        "Historical per-core utilization, per-thread profiles, lock hold/wait durations, block-device latency/iowait breakdown, swap-in/out rates, GPU utilization, thermal/power throttling, WiFi retransmissions and per-topic network breakdown"
+      ],
+      "power_mode_after_run": {
+        "query_wall": 1793618392.015523,
+        "reported_mode": "15W",
+        "reported_mode_id": 2,
+        "query_partial_error": "Mode query returned0; EMC cap parameter subquery permission denied. Mode, online cores and CPU caps independently read.",
+        "mode_config_read_only": {
+          "source": "/etc/nvpmodel.conf POWER_MODEL ID=2 NAME=15W",
+          "cpu_online": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "cpu_offline": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "CPU_A78_0_MIN_FREQ_khz": 729600,
+          "CPU_A78_0_MAX_FREQ_khz": 1420800
+        },
+        "sysfs_online": {
+          "0": "1",
+          "1": "1",
+          "2": "1",
+          "3": "1",
+          "4": "0",
+          "5": "0",
+          "6": "0",
+          "7": "0"
+        },
+        "sysfs_cpu_frequency_khz": {
+          "0": {
+            "scaling_cur_freq": "1420800",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1420800",
+            "scaling_governor": "schedutil"
+          },
+          "1": {
+            "scaling_cur_freq": "1420800",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1420800",
+            "scaling_governor": "schedutil"
+          },
+          "2": {
+            "scaling_cur_freq": "1420800",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1420800",
+            "scaling_governor": "schedutil"
+          },
+          "3": {
+            "scaling_cur_freq": "1420800",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1420800",
+            "scaling_governor": "schedutil"
+          },
+          "4": {
+            "scaling_cur_freq": "729600",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1984000",
+            "scaling_governor": "schedutil"
+          },
+          "5": {
+            "scaling_cur_freq": "729600",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1984000",
+            "scaling_governor": "schedutil"
+          },
+          "6": {
+            "scaling_cur_freq": "729600",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1984000",
+            "scaling_governor": "schedutil"
+          },
+          "7": {
+            "scaling_cur_freq": "729600",
+            "scaling_min_freq": "729600",
+            "scaling_max_freq": "1984000",
+            "scaling_governor": "schedutil"
+          }
+        },
+        "thermal_after_run_mC": {
+          "CV0-therm": 47250,
+          "CPU-therm": 49750,
+          "iwlwifi_1": 63000,
+          "SOC2-therm": 49093,
+          "SOC0-therm": 49281,
+          "CV1-therm": 47781,
+          "GPU-therm": 47687,
+          "tj-therm": 50281,
+          "SOC1-therm": 50281,
+          "CV2-therm": 47656
+        },
+        "caveat": "Snapshot is after flight; no historical per-core clock or thermal data captured during mission. Online count4 is independently confirmed by mission sampler metadata. No power-mode or governor changes made."
+      },
+      "group_cpu_mean": {
+        "simulation": {
+          "one_core_percent": 125.40426325459941,
+          "host_normalized_percent": 31.351065813649853
+        },
+        "bridge": {
+          "one_core_percent": 50.67881708922576,
+          "host_normalized_percent": 12.66970427230644
+        },
+        "vio": {
+          "one_core_percent": 55.768706251071805,
+          "host_normalized_percent": 13.942176562767951
+        },
+        "distributed_loop_closure": {
+          "one_core_percent": 35.86276669414701,
+          "host_normalized_percent": 8.965691673536753
+        },
+        "global_optimization": {
+          "one_core_percent": 16.887242129393343,
+          "host_normalized_percent": 4.221810532348336
+        },
+        "local_dense": {
+          "one_core_percent": 3.1258625218100615,
+          "host_normalized_percent": 0.7814656304525154
+        },
+        "visualization": {
+          "one_core_percent": 0,
+          "host_normalized_percent": 0
+        },
+        "ego": {
+          "one_core_percent": 28.478587720450783,
+          "host_normalized_percent": 7.119646930112696
+        }
+      }
+    },
+    "uros": {
+      "hardware": {
+        "architecture": "x86_64",
+        "model": "Intel(R) Core(TM) i7-7820HQ CPU @ 2.90GHz",
+        "physical_cores_available": 4,
+        "logical_cpus_available_during_run": 8,
+        "online_cpu_indices_snapshot": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "installed_visible_cpus": 8,
+        "ram_total_bytes_during_run": 16613007360,
+        "container_limits": {
+          "NanoCpus": 0,
+          "CpuQuota": 0,
+          "CpuPeriod": 0,
+          "CpusetCpus": "",
+          "Memory": 0,
+          "MemorySwap": 0,
+          "NetworkMode": "host"
+        },
+        "snapshot_timing": "Read-only hardware query after run. Sampler metadata captured online-affinity count during run."
+      },
+      "sample_scope": {
+        "samples": 500,
+        "first_sample_wall": 1793616910.6301315,
+        "last_sample_wall": 1793617409.6304264,
+        "unsampled_right_edge_s": 0.7144315242767334,
+        "amov_failure_caveat": null
+      },
+      "mission_metrics": {
+        "ram_total_bytes": {
+          "samples": 500,
+          "min": 16613007360.0,
+          "p50": 16613007360.0,
+          "p95": 16613007360.0,
+          "max": 16613007360.0,
+          "mean": 16613007360.0
+        },
+        "ram_available_bytes": {
+          "samples": 500,
+          "min": 8502767616.0,
+          "p50": 9048840192.0,
+          "p95": 10110633369.599998,
+          "max": 10266468352.0,
+          "mean": 9160323129.344
+        },
+        "ram_unavailable_bytes": {
+          "samples": 500,
+          "min": 6346539008.0,
+          "p50": 7564167168.0,
+          "p95": 7931565465.6,
+          "max": 8110239744.0,
+          "mean": 7452684230.656
+        },
+        "swap_total_bytes": {
+          "samples": 500,
+          "min": 2147479552.0,
+          "p50": 2147479552.0,
+          "p95": 2147479552.0,
+          "max": 2147479552.0,
+          "mean": 2147479552.0
+        },
+        "swap_used_bytes": {
+          "samples": 500,
+          "min": 1563766784.0,
+          "p50": 1563766784.0,
+          "p95": 1718378496.0,
+          "max": 1725124608.0,
+          "mean": 1592246329.344
+        },
+        "host_cpu_busy_percent": {
+          "samples": 500,
+          "min": 33.933161953727506,
+          "p50": 59.050647413311026,
+          "p95": 73.32594532550883,
+          "max": 85.71428571428571,
+          "mean": 58.884173263126925
+        },
+        "selected_process_count": {
+          "samples": 500,
+          "min": 22.0,
+          "p50": 22.0,
+          "p95": 23.0,
+          "max": 23.0,
+          "mean": 22.058
+        },
+        "selected_rss_bytes": {
+          "samples": 500,
+          "min": 3300777984.0,
+          "p50": 4291129344.0,
+          "p95": 4906977894.4,
+          "max": 4949204992.0,
+          "mean": 4289285251.072
+        },
+        "selected_cpu_percent_one_core": {
+          "samples": 500,
+          "min": 216.04074831163524,
+          "p50": 390.9941510159317,
+          "p95": 458.0274195196314,
+          "max": 499.08773997287335,
+          "mean": 383.80116481995384
+        },
+        "selected_cpu_percent_host_normalized": {
+          "samples": 500,
+          "min": 27.005093538954405,
+          "p50": 48.874268876991465,
+          "p95": 57.253427439953924,
+          "max": 62.38596749660917,
+          "mean": 47.97514560249423
+        }
+      },
+      "by_role": {
+        "adapter_or_simulation:continuous_body.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 25.994941592483382,
+            "p50": 31.998881574743827,
+            "p95": 35.00456299137352,
+            "max": 38.02122805063594,
+            "mean": 31.85594255611576
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 3.2493676990604228,
+            "p50": 3.9998601968429783,
+            "p95": 4.37557037392169,
+            "max": 4.752653506329493,
+            "mean": 3.98199281951447
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 44707840.0,
+            "p50": 44969984.0,
+            "p95": 44969984.0,
+            "max": 44969984.0,
+            "mean": 44968935.424
+          }
+        },
+        "adapter_or_simulation:live_trajectory_view.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 7.995577054637895,
+            "p50": 48.99992515190962,
+            "p95": 95.99819601257138,
+            "max": 100.78497022617277,
+            "mean": 48.28852608664894
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.9994471318297369,
+            "p50": 6.124990643988703,
+            "p95": 11.999774501571423,
+            "max": 12.598121278271597,
+            "mean": 6.036065760831118
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 50135040.0,
+            "p50": 66256896.0,
+            "p95": 81854464.0,
+            "max": 82771968.0,
+            "mean": 66217050.112
+          }
+        },
+        "adapter_or_simulation:native_dense_bridge.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 15.996887133835926,
+            "p50": 95.0031818109288,
+            "p95": 99.0008047010032,
+            "max": 100.99941077153528,
+            "mean": 88.73606376086245
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 1.9996108917294908,
+            "p50": 11.8753977263661,
+            "p95": 12.3751005876254,
+            "max": 12.62492634644191,
+            "mean": 11.092007970107806
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 71827456.0,
+            "p50": 383893504.0,
+            "p95": 498808012.8,
+            "max": 530489344.0,
+            "mean": 364713934.848
+          }
+        },
+        "adapter_or_simulation:native_dense_global_view.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.997889996059671,
+            "p95": 1.9993302564096511,
+            "max": 50.02793164557361,
+            "mean": 1.0800189211718025
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.12473624950745887,
+            "p95": 0.2499162820512064,
+            "max": 6.253491455696701,
+            "mean": 0.13500236514647532
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 46854144.0,
+            "p50": 92712960.0,
+            "p95": 99651584.0,
+            "max": 99909632.0,
+            "mean": 83722199.04
+          }
+        },
+        "adapter_or_simulation:native_vio_graph_adapter.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 1.9998490524116002,
+            "p95": 2.0036413511710878,
+            "max": 3.000238266836432,
+            "mean": 1.6460000300411235
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.24998113155145002,
+            "p95": 0.25045516889638597,
+            "max": 0.375029783354554,
+            "mean": 0.20575000375514044
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 47628288.0,
+            "p50": 47628288.0,
+            "p95": 47759360.0,
+            "max": 47759360.0,
+            "mean": 47676522.496
+          }
+        },
+        "adapter_or_simulation:peer_heartbeat.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 1.0000132191468645,
+            "max": 2.0000442528876854,
+            "mean": 0.1459906186780491
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.12500165239335806,
+            "max": 0.2500055316109607,
+            "mean": 0.018248827334756138
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 44814336.0,
+            "p50": 44814336.0,
+            "p95": 44814336.0,
+            "max": 44814336.0,
+            "mean": 44814336.0
+          }
+        },
+        "adapter_or_simulation:scenario_supervisor.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.999870918574873,
+            "max": 1.0021286565872582,
+            "mean": 0.06399738137541779
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.12498386482185912,
+            "max": 0.12526608207340728,
+            "mean": 0.007999672671927223
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 42536960.0,
+            "p50": 42536960.0,
+            "p95": 42536960.0,
+            "max": 42536960.0,
+            "mean": 42536960.0
+          }
+        },
+        "adapter_or_simulation:sim_sensors.py": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 47.00027100321868,
+            "p50": 74.00158729660365,
+            "p95": 81.09479020123182,
+            "max": 88.00140071840895,
+            "mean": 74.14408361145762
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 5.875033875402335,
+            "p50": 9.250198412075456,
+            "p95": 10.136848775153977,
+            "max": 11.000175089801118,
+            "mean": 9.268010451432202
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 53751808.0,
+            "p50": 60012544.0,
+            "p95": 69228339.19999999,
+            "max": 72163328.0,
+            "mean": 60918751.232
+          }
+        },
+        "ego:ego_planner_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 13.007101226474708,
+            "p50": 25.971101086123603,
+            "p95": 38.000842693301166,
+            "max": 45.99930241981886,
+            "mean": 26.661984490813058
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 1.6258876533093385,
+            "p50": 3.2463876357654504,
+            "p95": 4.750105336662646,
+            "max": 5.749912802477358,
+            "mean": 3.3327480613516323
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 226471936.0,
+            "p50": 227082240.0,
+            "p95": 227233792.0,
+            "max": 227430400.0,
+            "mean": 227084705.792
+          }
+        },
+        "ego:odom_visualization": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 1.9999295924566787,
+            "p95": 2.9996272271902016,
+            "max": 3.0037555414503636,
+            "mean": 1.74799230411043
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.24999119905708483,
+            "p95": 0.3749534033987752,
+            "max": 0.37546944268129545,
+            "mean": 0.21849903801380374
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 14667776.0,
+            "p50": 15595520.0,
+            "p95": 16617881.6,
+            "max": 17047552.0,
+            "mean": 15627501.568
+          }
+        },
+        "ego:pcl_render_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 1.000012370154512,
+            "p95": 2.0001577256978753,
+            "max": 3.0048510676271984,
+            "mean": 1.1420013008674963
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.125001546269314,
+            "p95": 0.2500197157122344,
+            "max": 0.3756063834533998,
+            "mean": 0.14275016260843704
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 64172032.0,
+            "p50": 64434176.0,
+            "p95": 64434176.0,
+            "max": 64434176.0,
+            "mean": 64432603.136
+          }
+        },
+        "ego:traj_server": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 2.0000113750640116,
+            "p95": 3.000295924148781,
+            "max": 3.0077042312519797,
+            "mean": 2.090000845800011
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.25000142188300145,
+            "p95": 0.3750369905185976,
+            "max": 0.37596302890649747,
+            "mean": 0.2612501057250014
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 59899904.0,
+            "p50": 60030976.0,
+            "p95": 60030976.0,
+            "max": 60030976.0,
+            "mean": 60027043.84
+          }
+        },
+        "native:dpgo_ros_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 17.995088831701292,
+            "max": 27.000374764283467,
+            "mean": 2.9199522855739866
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 2.2493861039626615,
+            "max": 3.3750468455354334,
+            "mean": 0.3649940356967483
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 18456576.0,
+            "p50": 22366208.0,
+            "p95": 24051712.0,
+            "max": 24637440.0,
+            "mean": 22109650.944
+          }
+        },
+        "native:kimera_distributed_loop_closure_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.9999228164619662,
+            "p95": 8.999990938469344,
+            "max": 33.06546833781446,
+            "mean": 1.7801805306951655
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.12499035205774578,
+            "p95": 1.124998867308668,
+            "max": 4.133183542226807,
+            "mean": 0.22252256633689568
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 895700992.0,
+            "p50": 937308160.0,
+            "p95": 1059342745.6,
+            "max": 1085943808.0,
+            "mean": 957215031.296
+          }
+        },
+        "native:kimera_pgmo_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 21.013328305840336,
+            "p95": 47.00236539401194,
+            "max": 89.00004281152236,
+            "mean": 22.164765249744434
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 2.626666038230042,
+            "p95": 5.875295674251492,
+            "max": 11.125005351440295,
+            "mean": 2.7705956562180543
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 30957568.0,
+            "p50": 92516352.0,
+            "p95": 100589568.0,
+            "max": 101351424.0,
+            "mean": 85347958.784
+          }
+        },
+        "native:kimera_vio_ros_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 25.000146199581692,
+            "p50": 40.97269095175133,
+            "p95": 58.0013913006836,
+            "max": 66.02277270742773,
+            "mean": 41.52552000584813
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 3.1250182749477116,
+            "p50": 5.1215863689689165,
+            "p95": 7.25017391258545,
+            "max": 8.252846588428467,
+            "mean": 5.190690000731016
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 786653184.0,
+            "p50": 1207685120.0,
+            "p95": 1529932185.6,
+            "max": 1556586496.0,
+            "mean": 1218396692.48
+          }
+        },
+        "native:tsdf_server": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 4.99996386047567,
+            "max": 22.00015294576687,
+            "mean": 1.0579700972010067
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.6249954825594588,
+            "max": 2.750019118220859,
+            "mean": 0.13224626215012583
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 73113600.0,
+            "p50": 87822336.0,
+            "p95": 91226112.0,
+            "max": 91406336.0,
+            "mean": 87278182.4
+          }
+        },
+        "native:voxblox_mesh_frontend_node": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 1.9999588718370989,
+            "p95": 3.999970638585077,
+            "max": 7.999947848604101,
+            "mean": 1.9459926392300597
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.24999485897963736,
+            "p95": 0.49999632982313463,
+            "max": 0.9999934810755127,
+            "mean": 0.24324907990375746
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 27258880.0,
+            "p50": 65994752.0,
+            "p95": 70239641.6,
+            "max": 73351168.0,
+            "mean": 63533547.52
+          }
+        },
+        "visualization:rviz": {
+          "cpu_percent_one_core": {
+            "samples": 500,
+            "min": 14.991472640577435,
+            "p50": 34.999392603276036,
+            "p95": 45.055587258365506,
+            "max": 109.01383887286178,
+            "mean": 34.80418210371889
+          },
+          "cpu_percent_host_normalized": {
+            "samples": 500,
+            "min": 1.8739340800721793,
+            "p50": 4.3749240754095045,
+            "p95": 5.631948407295688,
+            "max": 13.626729859107723,
+            "mean": 4.350522762964861
+          },
+          "rss_bytes": {
+            "samples": 500,
+            "min": 699015168.0,
+            "p50": 724705280.0,
+            "p95": 780139315.1999992,
+            "max": 951484416.0,
+            "mean": 732663644.16
+          }
+        }
+      },
+      "interfaces": {
+        "Meta": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 615
+          }
+        },
+        "docker0": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "lo": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 23885374.862295426,
+            "p50": 33633916.0289042,
+            "p95": 42903627.89569091,
+            "max": 68464748.93927437,
+            "mean": 34126561.31368697
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 23885374.862295426,
+            "p50": 33633916.0289042,
+            "p95": 42903627.89569091,
+            "max": 68464748.93927437,
+            "mean": 34126561.31368697
+          },
+          "counter_delta": {
+            "rx_bytes": 17037865857,
+            "tx_bytes": 17037865857,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "wlp2s0": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 218771.28702807668,
+            "p50": 343680.6852288194,
+            "p95": 718954.3080267006,
+            "max": 1943028.54215217,
+            "mean": 409694.7278413301
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 63484.64639607374,
+            "p50": 302201.39831662143,
+            "p95": 590195.7937254483,
+            "max": 841607.6272833571,
+            "mean": 324014.17380691675
+          },
+          "counter_delta": {
+            "rx_bytes": 204435335,
+            "tx_bytes": 161890146,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "zteywtk5nq": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 0,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        },
+        "ztfcayrafq": {
+          "rx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 258.001775300006,
+            "mean": 2.9763973090658324
+          },
+          "tx_bytes_per_s": {
+            "samples": 500,
+            "min": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "counter_delta": {
+            "rx_bytes": 1488,
+            "tx_bytes": 0,
+            "rx_errors": 0,
+            "tx_errors": 0,
+            "rx_drops": 0,
+            "tx_drops": 0
+          }
+        }
+      },
+      "not_measured": [
+        "Historical per-core utilization, per-thread profiles, lock hold/wait durations, block-device latency/iowait breakdown, swap-in/out rates, GPU utilization, thermal/power throttling, WiFi retransmissions and per-topic network breakdown"
+      ],
+      "group_cpu_mean": {
+        "simulation": {
+          "one_core_percent": 106.00002616757338,
+          "host_normalized_percent": 13.250003270946673
+        },
+        "bridge": {
+          "one_core_percent": 88.73606376086245,
+          "host_normalized_percent": 11.092007970107806
+        },
+        "vio": {
+          "one_core_percent": 41.52552000584813,
+          "host_normalized_percent": 5.190690000731016
+        },
+        "distributed_loop_closure": {
+          "one_core_percent": 1.7801805306951655,
+          "host_normalized_percent": 0.22252256633689568
+        },
+        "global_optimization": {
+          "one_core_percent": 25.084717535318422,
+          "host_normalized_percent": 3.1355896919148027
+        },
+        "local_dense": {
+          "one_core_percent": 3.0039627364310664,
+          "host_normalized_percent": 0.3754953420538833
+        },
+        "visualization": {
+          "one_core_percent": 84.17272711153963,
+          "host_normalized_percent": 10.521590888942454
+        },
+        "ego": {
+          "one_core_percent": 31.641978941590992,
+          "host_normalized_percent": 3.955247367698874
+        }
+      }
+    }
+  },
+  "pipeline_evidence": {
+    "amov": {
+      "raw_rgb_observed_hz": 6.815313527734344,
+      "native_odom_observed_hz": 2.1146841564226984,
+      "tsdf_input_observed_hz": 0.15176203577726638,
+      "tsdf_input_header_lag_s": {
+        "samples": 73,
+        "min": 0.2404155731201172,
+        "p50": 18.014627695083618,
+        "p95": 102.70767745971675,
+        "max": 123.46207427978516
+      },
+      "actual_integrations": {
+        "whole_monitored_run": 95,
+        "during_flight": 47,
+        "last_completion_wall": 1793617020.0854821,
+        "last_allocated_blocks": 119,
+        "last_completion_age_at_flight_end_s": 390.25937581062317,
+        "largest_flight_integration_gap_including_right_censored_ending_s": 390.25937581062317,
+        "integration_duration_s": {
+          "samples": 47,
+          "min": 0.019187,
+          "p50": 0.04791,
+          "p95": 0.1272015,
+          "max": 0.278719
+        },
+        "throttled_queue_drop_warnings": [
+          1793617190.9931276,
+          1793617252.6357763,
+          1793617331.9293964,
+          1793617394.5059028,
+          1793617455.7337513
+        ],
+        "counter_caveat": "Native completion logs lack cloud stamp; input-count difference cannot distinguish pending, queue-dropped or callback-dropped frames individually.",
+        "last_completion_wall_scope": "Latest completion in the whole monitored run, which can be after the flight end.",
+        "last_completion_age_at_flight_end_scope": "Age of the last completion within the flight window, not END minus whole-run last_completion_wall."
+      },
+      "bridge_queue": {
+        "samples": 499,
+        "min": 0.0,
+        "p50": 194.0,
+        "p95": 523.0,
+        "max": 1012.0
+      },
+      "bridge_max_ingress_queue_delay_s": 10.894794994997937,
+      "rgbd_pending_buffer_dropped": 30
+    },
+    "uros": {
+      "raw_rgb_observed_hz": 9.428492660288056,
+      "native_odom_observed_hz": 2.364612435878216,
+      "tsdf_input_observed_hz": 0.16975680494058137,
+      "tsdf_input_header_lag_s": {
+        "samples": 75,
+        "min": 0.0986485481262207,
+        "p50": 0.3578956127166748,
+        "p95": 76.7296444416046,
+        "max": 106.41877961158752
+      },
+      "actual_integrations": {
+        "whole_monitored_run": 130,
+        "during_flight": 84,
+        "last_completion_wall": 1793617476.2344408,
+        "last_allocated_blocks": 254,
+        "last_completion_age_at_flight_end_s": 22.399837017059326,
+        "largest_flight_integration_gap_including_right_censored_ending_s": 101.31112313270569,
+        "integration_duration_s": {
+          "samples": 84,
+          "min": 0.006704,
+          "p50": 0.010474,
+          "p95": 0.025891899999999992,
+          "max": 0.038747
+        },
+        "throttled_queue_drop_warnings": [],
+        "counter_caveat": "Native completion logs lack cloud stamp; input-count difference cannot distinguish pending, queue-dropped or callback-dropped frames individually.",
+        "last_completion_wall_scope": "Latest completion in the whole monitored run, which can be after the flight end.",
+        "last_completion_age_at_flight_end_scope": "Age of the last completion within the flight window, not END minus whole-run last_completion_wall."
+      },
+      "bridge_queue": {
+        "samples": 496,
+        "min": 0.0,
+        "p50": 97.5,
+        "p95": 175.25,
+        "max": 353.0
+      },
+      "bridge_max_ingress_queue_delay_s": 3.9234451560187154,
+      "rgbd_pending_buffer_dropped": 234
+    }
+  },
+  "global_consistency": {
+    "existing_verifier_final": {
+      "fusion_ready": false,
+      "reason": "Latest native meshes have mixed optimizer generations: completed_round_serial",
+      "points": 0,
+      "robot_point_counts": null,
+      "completed_round_serial": null,
+      "optimizer_owner": null,
+      "final_native_weight_batch_sha256": null,
+      "snapshot_identity": null,
+      "archive_count": 0,
+      "received_wall": 1793617511.7257934
+    },
+    "ready_observations": 0,
+    "any_same_generation_global_snapshot_observed": false,
+    "accepted_serials_at_monitor_stop": [
+      40,
+      25
+    ],
+    "accepted_weight_hashes_at_monitor_stop": [
+      "7f72800ab863fc9aae05f10682f886231cb146bf49d0f88c1c0b3be909229e5d",
+      "a927cdfbc2a5a59ee023bb7d262aa50b251b0e604bca3a3c110207e85a22cf7e"
+    ],
+    "claim_limit": "Local serial counters are not globally atomic IDs; current accepted receipts checked against independent request sequence correspond to different actual request windows, not a demonstrated startup counter offset."
+  },
+  "conclusions": [
+    {
+      "status": "confirmed",
+      "finding_zh": "AMOV本轮在线4核的整机CPU接近饱和，是实时仿真/SLAM的资源压力点。实验后只读nvpmodel查询显示15W模式(ID2)，该模式配置正是四核在线且CPU上限1.4208GHz；未修改模式。"
+    },
+    {
+      "status": "confirmed",
+      "finding_zh": "UROS native_dense_bridge进程接近一个CPU核的持续占用(P50/P95 95/99%)，全机未饱和仍严重丢失建图吞吐，故单线程/串行链路是独立瓶颈。AMOV bridge约51/68%单核且全机已饱和，不能声称AMOV bridge本轮独占一整核。"
+    },
+    {
+      "status": "source_confirmed_runtime_causality_not_fully_profiled",
+      "finding_zh": "bridge的RGBD处理、全网格验证/序列化、队列控制共享RLock；旧版事务期间直接暂停TSDF输入已去除，但共享锁和消息积压没有完全拆分。尚无火焰图/锁计时证明每部分耗时占比。"
+    },
+    {
+      "status": "confirmed",
+      "finding_zh": "实际native TSDF单次积分为几十毫秒量级，积分进程本轮CPU远未满核，但输入低频/严重迟到且出现队列丢弃。不能据此说TSDF计算算法本身把电脑算满。"
+    },
+    {
+      "status": "confirmed_and_unresolved",
+      "finding_zh": "AMOV实际积分最后390.259秒停止，原始传感器和native VIO仍新鲜。已观察到匹配点云/TF共同滞后约56秒，因此不能简单归为TF与点云彼此时间戳不同。TF lookup失败具体是缓存过期/未来/authority/队首阻塞尚待专门埋点。"
+    },
+    {
+      "status": "confirmed",
+      "finding_zh": "原生全局地图结果来自不同实际优化请求窗口和不同权重哈希，最终40/25；展示器正确拒绝混合代际。增加CPU不能自动补齐一致性协议。"
+    },
+    {
+      "status": "not_supported_as_primary_cause",
+      "finding_zh": "两机仍有约8–10GB可用RAM，没有内存耗尽证据。UROS存在约1.5–1.6GiB历史swap占用，但没有采集swap I/O，不能据此认定正在频繁换页。"
+    },
+    {
+      "status": "not_proven",
+      "finding_zh": "物理接口流量没有证明局域网带宽耗尽；接口零错误/丢包计数不排除WiFi重传和延迟。当前不足以把网络排除或认作主因。"
+    },
+    {
+      "status": "not_measured",
+      "finding_zh": "未采集GPU与逐线程热点；没有证据表明加GPU会加速当前CPU Python桥接/序列化/锁链路。"
+    }
+  ],
+  "recommended_next_steps": [
+    "先把本地传感器->带时间戳TF/点云->TSDF的路径与全网格/全局事务处理拆成独立执行路径，定义有界队列、旧帧丢弃策略及显式延迟指标。",
+    "给bridge各阶段/锁等待、ROS ingress、RGBD配对、TF lookup失败原因加时间统计，修复数据滞留后再评估算力需求。",
+    "同bag输入做关闭GUI/简化模拟射线传感器/关闭全局后端的对照，用实际积分数、数据延迟、VIO误差验收，不能仅看CPU下降。",
+    "AMOV已只读确认15W模式。先核对电源/散热，再把不同功耗模式作为有记录的独立对照；硬件调整不能代替桥接链路修复。",
+    "修复双机优化轮标识与共同快照提交；本地建图成功和全局同轮融合分别验收。"
+  ],
+  "evidence_paths": {
+    "resource_sample_files": "Private original per-host restart_host_resources.jsonl retained for reproducibility; process arguments/PIDs are deliberately excluded from this public report.",
+    "resource_sampler_source": "deployment/native/sample_native_host_resources.py",
+    "concurrency_report": "latest native restart concurrency_analysis.json",
+    "hardware_source": "Read-only lscpu/sysfs/nvpmodel queries; mode config /etc/nvpmodel.conf.",
+    "claim_limit": "Post-run hardware snapshot does not establish historical CPU clock/thermal behavior."
+  }
+}

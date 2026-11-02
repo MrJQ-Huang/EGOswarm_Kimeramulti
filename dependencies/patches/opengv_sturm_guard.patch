@@ -1,0 +1,54 @@
+--- a/src/math/Sturm.cpp
++++ b/src/math/Sturm.cpp
+@@ -136,6 +136,10 @@
+     std::cout << "Error: cannot evaluate number of roots" <<std::endl;
+     return 0;
+   }
++  // Numerical degeneracy can violate Sturm-chain monotonicity.
++  // Reject that bracket instead of underflowing size_t.
++  if( _lowerBoundChanges < _upperBoundChanges )
++    return 0;
+   return _lowerBoundChanges - _upperBoundChanges;
+ }
+ 
+@@ -190,11 +194,16 @@
+ opengv::math::Sturm::findRoots2( std::vector<double> & roots, double eps_x, double eps_val )
+ {
+   double absoluteBound = computeLagrangianBound();
++  if( !std::isfinite(absoluteBound) || absoluteBound < 0.0 )
++    return;
+   std::list<Bracket::Ptr> stack;
+   stack.push_back(Bracket::Ptr(new Bracket(-absoluteBound,absoluteBound)));
+   stack.back()->setLowerBoundChanges( evaluateChain2(stack.back()->lowerBound()) );
+   stack.back()->setUpperBoundChanges( evaluateChain2(stack.back()->upperBound()) );
+-  roots.reserve(stack.back()->numberRoots());
++  const size_t rootCount = stack.back()->numberRoots();
++  if( rootCount == 0 || rootCount >= _dimension )
++    return;
++  roots.reserve(rootCount);
+   
+   //some variables for pollishing
+   Eigen::MatrixXd monomials(_dimension,1);
+@@ -310,15 +319,20 @@
+ opengv::math::Sturm::bracketRoots( std::vector<double> & roots, double eps )
+ {
+   double absoluteBound = computeLagrangianBound();
++  if( !std::isfinite(absoluteBound) || absoluteBound < 0.0 )
++    return;
+   std::list<Bracket::Ptr> stack;
+   stack.push_back(Bracket::Ptr(new Bracket(-absoluteBound,absoluteBound)));
+   stack.back()->setLowerBoundChanges( evaluateChain2(stack.back()->lowerBound()) );
+   stack.back()->setUpperBoundChanges( evaluateChain2(stack.back()->upperBound()) );
+   
++  const size_t rootCount = stack.back()->numberRoots();
++  if( rootCount == 0 || rootCount >= _dimension )
++    return;
+   double localEps = eps;
+   if( eps < 0.0 )
+-    localEps = absoluteBound / (10.0 * stack.back()->numberRoots());
+-  roots.reserve(stack.back()->numberRoots());
++    localEps = absoluteBound / (10.0 * rootCount);
++  roots.reserve(rootCount);
+   
+   while( !stack.empty() )
+   {  

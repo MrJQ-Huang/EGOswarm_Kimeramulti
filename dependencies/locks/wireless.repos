@@ -1,0 +1,28 @@
+{
+  "repositories": {
+    "kimera_multi_lcd": {
+      "url": "https://github.com/MIT-SPARK/Kimera-Multi-LCD.git",
+      "version": "e9f73da9213b72c370dc079a86db354e7c0654bb"
+    },
+    "kimera_distributed": {
+      "url": "https://github.com/MIT-SPARK/Kimera-Distributed.git",
+      "version": "542c801346e54adc202f5318c6db22a48e9e5966"
+    },
+    "dpgo": {
+      "url": "https://github.com/mit-acl/dpgo.git",
+      "version": "a238090c6427ad509370bd6c302bcac82c1be95f"
+    },
+    "dpgo_ros": {
+      "url": "https://github.com/mit-acl/dpgo_ros.git",
+      "version": "e28f2bc27c87cc96e12d812d16ddececca995745"
+    },
+    "roptlib": {
+      "url": "https://github.com/yuluntian/ROPTLIB.git",
+      "version": "0125d947d91554492563e8f8f6ccbe0a3a483f67"
+    },
+    "json": {
+      "url": "https://github.com/nlohmann/json.git",
+      "version": "4f8fba14066156b73f1189a2b8bd568bde5284c5"
+    }
+  }
+}

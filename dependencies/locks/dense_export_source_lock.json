@@ -1,0 +1,179 @@
+{
+  "created_wall": 1793599141.5127263,
+  "host": "amov",
+  "architecture": "aarch64",
+  "kind": "source_only_dense_closure",
+  "layout": "src/<original repository directory>; source_lock.json; source_metadata/<repo>.diff, .status, .files.json",
+  "repos": [
+    {
+      "directory": "src/Kimera-PGMO",
+      "origin": "https://github.com/MIT-SPARK/Kimera-PGMO.git",
+      "commit": "7a67674b677468e6c28152596c9aae66cd24ee4b",
+      "git_tree": "7af2d1105dde892af5ca75c59a17add6c9ac1bcb",
+      "dirty_status": "",
+      "sha256_path_content_index": "858b9294696733361922fe40f6487f08ca102f409c211c0c8668e484216d5fba",
+      "file_count": 160,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/Kimera-Semantics",
+      "origin": "https://github.com/MIT-SPARK/Kimera-Semantics.git",
+      "commit": "1ed69c61f4d1d71a812336574ef298e6210ebcd2",
+      "git_tree": "009597d9317bfd8c61419a90dfb4a5e7d8b21dfa",
+      "dirty_status": "M kimera_semantics_ros/CMakeLists.txt",
+      "sha256_path_content_index": "1977d2a57223d3bbd96f50e92358a740595ee25b6e3ad04eff55dcc8e68d0c90",
+      "file_count": 84,
+      "diff_sha256": "0f778615c8b516ef64580595eb086731ab7842af65eb4f4f274c486fe63cf758"
+    },
+    {
+      "directory": "src/voxblox",
+      "origin": "https://github.com/ethz-asl/voxblox.git",
+      "commit": "c8066b04075d2fee509de295346b1c0b788c4f38",
+      "git_tree": "fa28c1cc9d8271a2cec89d5a8c84e66fe8afe810",
+      "dirty_status": "",
+      "sha256_path_content_index": "64b7c4ef07157c84f2aed9ca77cfc1d7f2b90e7e95f3aa141e702ce9a9af2792",
+      "file_count": 175,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/mesh_rviz_plugins",
+      "origin": "https://github.com/MIT-SPARK/mesh_rviz_plugins.git",
+      "commit": "2ad232270b5728522fd504d5c337ed5e43bf46cf",
+      "git_tree": "1934f7ba3d5702458bae5dc45be90e6089ea1df0",
+      "dirty_status": "",
+      "sha256_path_content_index": "5273e9ff5f5b813d93cceeb9f860b1a0554749925ee0926cafc7c1f570cebaa5",
+      "file_count": 16,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/eigen_checks",
+      "origin": "https://github.com/ethz-asl/eigen_checks.git",
+      "commit": "22a6247a3df11bc285d43d1a030f4e874a413997",
+      "git_tree": "7917602b88a7a4d3df4520a554df317d5a1fe3c5",
+      "dirty_status": "",
+      "sha256_path_content_index": "e8d88852a46e6e21c00992964b28507c9f961cb9b9805f7deec166130e1e6df2",
+      "file_count": 21,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/minkindr",
+      "origin": "https://github.com/ethz-asl/minkindr.git",
+      "commit": "564f12639a8447d4d3e5e7707851424302941056",
+      "git_tree": "95c349a03d1d71c0afb3b443ed570b5fc77928ce",
+      "dirty_status": "?? minkindr_python/CATKIN_IGNORE",
+      "sha256_path_content_index": "501f4c2020a3bcc19f0d73e5c2c5e61edf3f5558798e51f3f59170ae4859a64e",
+      "file_count": 32,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/minkindr_ros",
+      "origin": "https://github.com/ethz-asl/minkindr_ros.git",
+      "commit": "5528b042124fe056a7cf53f96c8b39e1e32ec2b9",
+      "git_tree": "081ada20319846f00f1b1709d5058f4f61832950",
+      "dirty_status": "",
+      "sha256_path_content_index": "7b1781400c722063db4b08316c6ce1328458e0c74fe9a7bb1d5ce98c9815d167",
+      "file_count": 11,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/spatial_hash",
+      "origin": "https://github.com/MIT-SPARK/Spatial-Hash.git",
+      "commit": "8045892f34978d78870d806a50f8e5aefdbe52fc",
+      "git_tree": "e5ba6a656ca28b666a6e3f00fb0d67f81a7b428e",
+      "dirty_status": "",
+      "sha256_path_content_index": "5114d663a6d1bd566faf77502289f78bdec47e6ef2ad57cf645b3cd6f4042a9c",
+      "file_count": 38,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/gflags_catkin",
+      "origin": "https://github.com/ethz-asl/gflags_catkin.git",
+      "commit": "fc38fc525f7d48881aebb27a7b9978453556bbd4",
+      "git_tree": "c54a7a6c5d7e767dabebd1171379c4a01fc58df2",
+      "dirty_status": "M CMakeLists.txt",
+      "sha256_path_content_index": "a8c9af04e6af8bf0d3817761bc835dcd461ea9dbd617cdd09c66b5097dc93145",
+      "file_count": 4,
+      "diff_sha256": "f94b051b8546e020f19a536ccb8961ce0b165d02ae74febed251ffa1a3063ea9"
+    },
+    {
+      "directory": "src/config_utilities",
+      "origin": "https://github.com/MIT-SPARK/config_utilities.git",
+      "commit": "106e1a92b84020d36a6cd78c7fbd517dcf1b8555",
+      "git_tree": "8b967f01324d66f9b635eecfce6a2211cb87378d",
+      "dirty_status": "",
+      "sha256_path_content_index": "7221aa51622fefb0a20f13f4a7b481cda05e8194c95a9cdd4a7d30257b93fde6",
+      "file_count": 125,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/protobuf_catkin",
+      "origin": "https://github.com/ethz-asl/protobuf_catkin.git",
+      "commit": "721a6cc17e7e937e7accfb88a9967b26134db6f9",
+      "git_tree": "54f9d9651df0c0839516a94f6b74431de70e8e47",
+      "dirty_status": "",
+      "sha256_path_content_index": "fed57540cb05ec3d9e861b04fb037bedf9e796928b9947d7d114f819097763cd",
+      "file_count": 7,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/kimera_rviz_markers",
+      "origin": "https://github.com/MIT-SPARK/kimera_rviz_markers.git",
+      "commit": "f342baf99fa55f9351795785bea1262ed8b451db",
+      "git_tree": "cca0fd1117556e14ccfd3ef25a79215bcc2adf66",
+      "dirty_status": "",
+      "sha256_path_content_index": "7b052911833dcfc97631a6bd131975747b3acaffec3149929439cf73e1297e57",
+      "file_count": 11,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/catkin_simple",
+      "origin": "https://github.com/catkin/catkin_simple.git",
+      "commit": "0e62848b12da76c8cc58a1add42b4f894d1ac21e",
+      "git_tree": "6f746aab185b8b25d5851a3bede0c0e1f369c7a6",
+      "dirty_status": "",
+      "sha256_path_content_index": "94907d633b41cd6df5f383c295691ebe4c5186b1a117b881709f51fa8c333184",
+      "file_count": 18,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/eigen_catkin",
+      "origin": "https://github.com/ethz-asl/eigen_catkin.git",
+      "commit": "3323b388540fa95ec9da6f9cd887f70ead055edb",
+      "git_tree": "af4711d9d2fce5b0d8836020f0ff5ed4b6c3bca8",
+      "dirty_status": "",
+      "sha256_path_content_index": "92a4c6a70483d4d3bac914809d6efb3e6fcdc98cb5bcb33dc270b6e9ecf5fffc",
+      "file_count": 10,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/glog_catkin",
+      "origin": "https://github.com/ethz-asl/glog_catkin.git",
+      "commit": "40a9edadd15c59f8b57dc947d0135b0a007ea10b",
+      "git_tree": "1ac9e303c71afceb247aabbbb8562f8943e7a421",
+      "dirty_status": "",
+      "sha256_path_content_index": "2e62e2e121440fb5ab4b1017185feec1a2c8d8de62c6e292ab61be21ff133a02",
+      "file_count": 7,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "directory": "src/pose_graph_tools",
+      "origin": "https://github.com/MIT-SPARK/pose_graph_tools.git",
+      "commit": "dbc893f918b06893d76fe9269e27ae56aaba4966",
+      "git_tree": "416705cf409f4b4664a164bf04a470f74c40a2b4",
+      "dirty_status": "",
+      "sha256_path_content_index": "762f4c4a665aba0544572ef5f39c13a5d138448ff16085105b6386bf4301b58c",
+      "file_count": 43,
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "build_profile": "authors: []\nblacklist: []\nbuild_space: build\ncatkin_make_args: []\ncmake_args:\n- -DCMAKE_PROJECT_INCLUDE=/home/amov/kimera_deps/prefer_opencv42.cmake\n- -DCMAKE_BUILD_TYPE=Release\n- -DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG\n- -DCATKIN_ENABLE_TESTING=ON\n- -DBUILD_TESTING=OFF\n- -DKIMERA_BUILD_TESTS=OFF\n- -DKIMERA_PGMO_ENABLE_TESTS=OFF\n- -DCONFIG_UTILS_BUILD_TESTS=OFF\n- -DCONFIG_UTILS_BUILD_DEMOS=OFF\n- -DUSE_SYSTEM_EIGEN=ON\n- -DUSE_SYSTEM_GLOG=ON\n- -DUSE_SYSTEM_PROTOBUF=ON\n- -DGTSAM_DIR=/home/amov/kimera_deps/install/lib/cmake/GTSAM\n- -DGTSAM_UNSTABLE_DIR=/home/amov/kimera_deps/install/lib/cmake/GTSAM_UNSTABLE\n- -Dopengv_DIR=/home/amov/kimera_deps/install/lib/cmake/opengv-1.0\n- -DDBoW2_DIR=/home/amov/kimera_deps/install/lib/cmake/DBoW2\n- -DKimeraRPGO_DIR=/home/amov/kimera_deps/install/lib/cmake/KimeraRPGO\n- -DOpenCV_DIR=/home/amov/kimera_deps/opencv42/sysroot/usr/lib/aarch64-linux-gnu/cmake/opencv4\n- -DPYTHON_EXECUTABLE=/usr/bin/python3\ndevel_layout: merged\ndevel_space: devel\nextend_path: /opt/ros/noetic\nextends: null\ninstall: false\ninstall_space: install\nisolate_install: false\njobs_args: []\nlicenses:\n- TODO\nlog_space: logs\nmaintainers: []\nmake_args: []\nsource_space: src\nuse_env_cache: false\nuse_internal_make_jobserver: true\nwhitelist: []\n",
+  "excluded": [
+    ".git",
+    "build",
+    "devel",
+    "install",
+    "logs",
+    "__pycache__"
+  ],
+  "binary_policy": "No compiled artifacts included. Compile independently for each CPU architecture."
+}

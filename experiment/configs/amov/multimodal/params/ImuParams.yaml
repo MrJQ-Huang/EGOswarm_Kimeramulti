@@ -1,0 +1,19 @@
+%YAML:1.0
+---
+imu_preintegration_type: 1
+T_BS:
+  rows: 4
+  cols: 4
+  data: [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
+rate_hz: 100.
+gyroscope_noise_density: 0.001
+gyroscope_random_walk: 0.00001
+accelerometer_noise_density: 0.01
+accelerometer_random_walk: 0.0001
+do_imu_rate_time_alignment: 0
+time_alignment_window_size_s: 10.
+time_alignment_variance_threshold_scaling: 0.
+imu_integration_sigma: 1.e-8
+imu_bias_init_sigma: 1.e-4
+imu_time_shift: 0.
+n_gravity: [0., 0., -9.8]

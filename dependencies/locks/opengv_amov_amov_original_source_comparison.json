@@ -1,0 +1,23 @@
+{
+  "wall": 1793601208.9870665,
+  "amov_installed_source": "/home/amov/kimera_deps/src/opengv",
+  "selected_common_source": "/home/amov/Drone/two_pc_ego_20261030/native_full_stack_20261102/opengv_guarded/source",
+  "matching_files": 277,
+  "different_files": [
+    {
+      "path": "CATKIN_IGNORE",
+      "baseline_exists": false
+    },
+    {
+      "path": "CMakeLists.txt",
+      "baseline_exists": true
+    },
+    {
+      "path": "src/math/Sturm.cpp",
+      "baseline_exists": true
+    }
+  ],
+  "baseline_library_sha256": "c1ee5861f58ddf1e0cb7f86028eaf6363810b1b22845d1e2961e06499613132e",
+  "runtime_enabled": false,
+  "baseline_git_commit": "91f4b19c73450833a40e463ad3648aae80b3a7f3"
+}

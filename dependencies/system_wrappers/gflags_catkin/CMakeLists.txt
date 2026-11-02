@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
+project(gflags_catkin)
+find_package(catkin REQUIRED)
+find_package(gflags REQUIRED)
+catkin_package(LIBRARIES gflags)
