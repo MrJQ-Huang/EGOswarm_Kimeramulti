@@ -17,7 +17,7 @@ import numpy as np
 from raycast_geometry import RayScene, R_BC, rotation_xyzw, body_rate, camera_rays, lidar_rays
 
 
-def arguments():
+def arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--drone-id', type=int, default=0)
     parser.add_argument('--scene', type=Path, default=Path(__file__).resolve().parent.parent/'complex_scene.json')
@@ -26,6 +26,10 @@ def arguments():
     parser.add_argument('--camera-rate', type=float, default=10.); parser.add_argument('--lidar-rate', type=float, default=10.)
     parser.add_argument('--camera-range', type=float, default=12.); parser.add_argument('--lidar-range', type=float, default=8.)
     parser.add_argument('--lidar-channels', type=int, default=16); parser.add_argument('--lidar-angles', type=int, default=180)
+    parser.add_argument('--lidar-stride', type=int, default=1,
+                        help='Publish every Nth measured LiDAR hit; physical rays and local EGO cloud stay unchanged.')
+    parser.add_argument('--no-truth-relay', action='store_true',
+                        help='Do not duplicate body odometry; centralized telemetry reads the actual body directly.')
     parser.add_argument('--warmup-seconds', type=float, default=4.)
     parser.add_argument('--acceleration-source', choices=('fake-odom', 'position-command'), default='fake-odom')
     parser.add_argument('--body-imu', nargs='?', const='auto', default=None,
@@ -33,7 +37,25 @@ def arguments():
     parser.add_argument('--publish-planner-cloud', action='store_true', help='Also send occluded LiDAR hits in world frame to EGO local cloud topic.')
     parser.add_argument('--print-calibration', action='store_true')
     parser.add_argument('--self-test', action='store_true'); parser.add_argument('--output-directory', type=Path)
-    return parser.parse_args()
+    if argv is None:
+        import sys
+        argv = sys.argv[1:]
+    # ROS resolves these remappings when init_node creates the publishers.
+    # argparse must not consume __name:= or the private edge topic remaps.
+    args = parser.parse_args([value for value in argv if ':=' not in value])
+    if args.lidar_stride < 1:
+        parser.error('lidar-stride must be a positive integer')
+    return args
+
+
+def sparse_lidar_hits(values, stride):
+    """Select measured points unchanged, without changing the sensor model."""
+    if isinstance(stride, bool) or not isinstance(stride, int) or stride < 1:
+        raise ValueError('LiDAR output stride must be a positive integer')
+    values = np.asarray(values)
+    if values.ndim != 2 or values.shape[1] != 3:
+        raise ValueError('LiDAR hits must have shape N x 3')
+    return np.ascontiguousarray(values[::stride])
 
 
 def calibration(args):
@@ -50,6 +72,11 @@ def calibration(args):
             'exposure': 'instantaneous global shutter at exact odom header stamp; no motion blur',
             'lidar': {'channels': args.lidar_channels, 'azimuth_angles': args.lidar_angles,
                       'vertical_fov_degrees': [-25., 15.], 'scan_model': 'instantaneous, no spinning distortion'},
+            'lidar_output': {'measured_hit_stride': getattr(args, 'lidar_stride', 1),
+                             'physical_ray_model_unchanged': True,
+                             'selection': 'Every Nth measured hit in physical scan order; no invented points',
+                             'local_ego_planning_cloud_thinned': False},
+            'renderer_truth_relay_enabled': not getattr(args, 'no_truth_relay', False),
             'imu': {'gravity_magnitude_m_s2': 9.8, 'noise': 'deterministic ideal baseline, no added noise or bias',
                     'source': (('/sim_%d/body/imu'%args.drone_id if args.body_imu == 'auto' else args.body_imu)
                                if args.body_imu else 'legacy fake-odom derivative'),
@@ -170,7 +197,8 @@ def run_ros(args):
                    ('imu', '/kimera/imu', Imu, 400, False),
                    ('lidar', '/lidar/points', PointCloud2, 1, False),
                    ('truth', '/ground_truth/odometry', Odometry, 2, False),
-                   ('ready', '/sensors/ready', Bool, 1, True)]}
+                   ('ready', '/sensors/ready', Bool, 1, True)]
+               if key != 'truth' or not args.no_truth_relay}
     planner = rospy.Publisher('/drone_%d_pcl_render_node/cloud'%args.drone_id, PointCloud2, queue_size=1) if args.publish_planner_cloud else None
     publish['ready'].publish(Bool(data=False))
     lock = threading.Lock(); state = {'odom': None, 'previous': None, 'command': None, 'still_since': None, 'ready': False,
@@ -221,7 +249,7 @@ def run_ros(args):
             # The actual body owns all inertial kinematics. In relay mode no
             # command acceleration, odometry angular field, or q difference is
             # ever used to generate IMU measurements.
-            publish['truth'].publish(msg)
+            if 'truth' in publish: publish['truth'].publish(msg)
             if actual_imu is None or abs((msg.header.stamp-actual_imu.header.stamp).to_sec()) > .05:
                 if not state['ready']: state['still_since'] = None
                 return
@@ -249,7 +277,7 @@ def run_ros(args):
         imu.angular_velocity_covariance = [1e-8, 0., 0., 0., 1e-8, 0., 0., 0., 1e-8]
         imu.linear_acceleration_covariance = [1e-6, 0., 0., 0., 1e-6, 0., 0., 0., 1e-6]
         publish['imu'].publish(imu)
-        publish['truth'].publish(msg)
+        if 'truth' in publish: publish['truth'].publish(msg)
         update_ready(msg, omega)
 
     subscribers = [rospy.Subscriber('/drone_%d_visual_slam/odom'%args.drone_id, Odometry, odom_callback, queue_size=100, tcp_nodelay=True),
@@ -295,7 +323,8 @@ def run_ros(args):
                                    (time.monotonic()-tick)*1000, frames/max(time.monotonic()-began, .001), np.count_nonzero(mask))
         if stamp >= next_lidar:
             local, world = renderer.lidar_frame(position, rotation)
-            publish['lidar'].publish(cloud(local, Header(stamp=odom.header.stamp, frame_id=lidar_frame)))
+            publish['lidar'].publish(cloud(sparse_lidar_hits(local, args.lidar_stride),
+                                           Header(stamp=odom.header.stamp, frame_id=lidar_frame)))
             if planner: planner.publish(cloud(world, Header(stamp=odom.header.stamp, frame_id=odom.header.frame_id)))
             next_lidar = stamp+1./args.lidar_rate
         rate.sleep()

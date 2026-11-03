@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Per-host ideal 5 m omnidirectional point-cloud sensor; no occlusion or noise."""
 import argparse
+import hashlib
+import json
+from pathlib import Path
 import threading
 import numpy as np
 import rospy
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs import point_cloud2
-from std_msgs.msg import Header
+from std_msgs.msg import Header, String
+from planning_world import planning_occupancy_points
 
-p=argparse.ArgumentParser();p.add_argument('--drone-id',type=int,required=True);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--drone-id',type=int,required=True)
+p.add_argument('--scene',type=Path,help='Build the same ideal planning occupancy locally instead of receiving a hub cloud')
+a=p.parse_args()
 rospy.init_node('drone_%d_ideal_range_sensor'%a.drone_id)
 lock=threading.Lock();world=None;pose=None;stamp=None
 pub=rospy.Publisher('/drone_%d_pcl_render_node/cloud'%a.drone_id,PointCloud2,queue_size=1)
@@ -35,7 +41,16 @@ def tick(_):
      is_bigendian=False,point_step=12,row_step=len(local)*12,is_dense=True,data=local.tobytes())
  pub.publish(msg)
 
-subs=[rospy.Subscriber('/map_generator/global_cloud',PointCloud2,on_world,queue_size=1),
-      rospy.Subscriber('/drone_%d_visual_slam/odom'%a.drone_id,Odometry,on_odom,queue_size=1,tcp_nodelay=True)]
+subs=[rospy.Subscriber('/drone_%d_visual_slam/odom'%a.drone_id,Odometry,on_odom,queue_size=1,tcp_nodelay=True)]
+if a.scene:
+ description=json.loads(a.scene.read_text());step=description.get('planning_cloud_step_m',.12)
+ world=np.asarray(planning_occupancy_points(description,step=step),dtype=np.float32).reshape((-1,3))
+ metadata=rospy.Publisher('/sim_%d/planning_world_metadata'%a.drone_id,String,queue_size=1,latch=True)
+ metadata.publish(String(data=json.dumps(dict(source='edge-local ideal EGO planning occupancy',
+     scene_sha256=hashlib.sha256(a.scene.read_bytes()).hexdigest(),planning_cloud_step_m=step,
+     point_count=len(world),planning_only=True,kimera_input=False,receives_hub_planning_cloud=False))))
+ rospy.loginfo('Local range sensor %d built %d world points from %s',a.drone_id,len(world),a.scene)
+else:
+ subs.append(rospy.Subscriber('/map_generator/global_cloud',PointCloud2,on_world,queue_size=1))
 timer=rospy.Timer(rospy.Duration(.1),tick)
 rospy.spin()

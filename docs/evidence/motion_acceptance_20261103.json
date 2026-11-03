@@ -1,0 +1,83 @@
+{
+  "run_id": "motion_acceptance_20261103_175258",
+  "date": "2026-11-03",
+  "scope": "One completed two-drone simulation run; centralized native Kimera VIO/LCD/DPGO/PGMO with edge EGO planning/control",
+  "acceptance_passed": true,
+  "mission_duration_s": 498.92161679267883,
+  "motion_duration_s": 496.78869128227234,
+  "completed_laps": 2,
+  "completed_stages": 20,
+  "native_stage_proofs": 20,
+  "actual_path_lengths_m": [
+    160.2877246023377,
+    159.04459848581874
+  ],
+  "final_closure_errors_m": [
+    0.022809767877612165,
+    0.0029950649520727873
+  ],
+  "minimum_body_center_distance_m": 2.061616702151604,
+  "safety_abort": false,
+  "safety_thresholds_relaxed": false,
+  "peer_spline_old_message_rejections": {
+    "amov_receiving_uros": 0,
+    "uros_receiving_amov": 2
+  },
+  "telemetry": {
+    "0": {
+      "received_hz": 29.70880831023995,
+      "source_age_p95_ms": 29.35916379999999,
+      "maximum_recorder_receipt_gap_ms": 325.2382,
+      "recorder_gaps_over_600ms": 0
+    },
+    "1": {
+      "received_hz": 29.28609337391971,
+      "source_age_p95_ms": 12.205034199999913,
+      "maximum_recorder_receipt_gap_ms": 232.008035,
+      "recorder_gaps_over_600ms": 0
+    }
+  },
+  "native_tsdf_actual_completions": {
+    "0": 2408,
+    "1": 2414
+  },
+  "native_tsdf_maximum_completion_gap_s": {
+    "0": 1.2588822841644287,
+    "1": 0.5788426399230957
+  },
+  "map": {
+    "source_archive": "native_pair_0010.json",
+    "snapshot_identity": "98384398e1402f526d7dff22f95e2001244e31efe636f5e678dac39f32997449",
+    "vertices": 202567,
+    "triangles": 258118,
+    "frame": "kimera_world",
+    "export_manifest_hash_files_verified": 18,
+    "covers_second_lap_end": true,
+    "recorded_matching_cloud_verified": true,
+    "binding": "matched_native_observations_no_shared_atomic_round_id",
+    "exact_shared_optimizer_round_id_available": false
+  },
+  "first_valid_map_covering_lap2_after_completion_s": 16.218,
+  "host_cpu_mean_percent": {
+    "mrjq311": 13.773644664487342,
+    "amov": 37.7198763766033,
+    "uros": 15.191275005279584
+  },
+  "host_ram_peak_GiB": {
+    "mrjq311": 15.254680633544922,
+    "amov": 1.9231376647949219,
+    "uros": 3.401226043701172
+  },
+  "gpu_utilization_mean_percent": 5.923541247484909,
+  "resource_scope": "Actual motion window; whole-host/whole-GPU, not exclusive process attribution",
+  "recording_profile": "map",
+  "raw_sensor_replay_recorded": false,
+  "bag_bytes": 24884456,
+  "limits": [
+    "This is a completed simulation run, not a real-aircraft test or a repeatability/network-partition guarantee.",
+    "Source age includes sender/transport/local scheduling and residual clock offset.",
+    "Two native EGO peer trajectories were rejected by the unchanged 250ms rule; no control/safety failure followed.",
+    "Global mesh uses existing matched-native observation binding without a shared atomic optimizer round ID.",
+    "The two native meshes are concatenated in the common accepted frame; no vertex welding, new registration or hidden geometry fitting is performed."
+  ]
+}

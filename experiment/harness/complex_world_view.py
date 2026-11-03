@@ -20,47 +20,17 @@ from sensor_msgs.msg import PointCloud2
 from sensor_msgs import point_cloud2
 from std_msgs.msg import Header, String
 from visualization_msgs.msg import Marker, MarkerArray
-from scene_geometry import points
+from planning_world import planning_occupancy_points
+from multimodal.telemetry_contract import actual_odometry_topic, actual_odometry_caller
 
 
-def solid_axis(low,high,step):
- """Centered lattice with endpoints; gaps are <=step and the center is present."""
- center=(low+high)/2.;count=int(math.floor((high-low)/2./step))
- return sorted({round(v,9) for v in [low,high]+[center+i*step for i in range(-count,count+1)]})
-
-
-def planning_occupancy_points(description,step):
- """Surface floor + solid boxes/cylinders, only for the oracle EGO input.
-
- Retain scene_geometry.points' surface contract unchanged for all other users.
- Interior samples prevent a thick closed obstacle shell from leaving its core
- falsely free in EGO's inflated occupancy grid. This is not sensor simulation.
- """
- if not math.isfinite(step) or step<=0:raise ValueError('Planning step must be positive and finite')
- result=set(points(description,step=step))
- def add(x,y,z):result.add((round(x,9),round(y,9),round(z,9)))
- for obstacle in description['obstacles']:
-  if obstacle['type']=='box':
-   axes=[solid_axis(c-size/2,c+size/2,step) for c,size in zip(obstacle['center'],obstacle['size'])]
-   for x in axes[0]:
-    for y in axes[1]:
-     for z in axes[2]:add(x,y,z)
-  elif obstacle['type']=='cylinder':
-   x,y=obstacle['center'];radius=obstacle['radius'];bottom=obstacle.get('base_z',0.)
-   offsets=solid_axis(-radius,radius,step);heights=solid_axis(bottom,bottom+obstacle['height'],step)
-   for dx in offsets:
-    for dy in offsets:
-     if dx*dx+dy*dy<=radius*radius+1e-12:
-      for z in heights:add(x+dx,y+dy,z)
-  else:raise ValueError('Unsupported solid planning obstacle '+str(obstacle['type']))
- return sorted(result)
 
 base=Path(__file__).resolve().parent
-p=argparse.ArgumentParser();p.add_argument('--scene',type=Path,default=base/'complex_scene.json');p.add_argument('--path-capacity',type=int,default=12000);args=p.parse_args(rospy.myargv()[1:])
+p=argparse.ArgumentParser();p.add_argument('--scene',type=Path,default=base/'complex_scene.json');p.add_argument('--path-capacity',type=int,default=12000);p.add_argument('--central-telemetry',action='store_true',help='Display local ingress telemetry; each edge owns its planning map');args=p.parse_args(rospy.myargv()[1:])
 scene=json.loads(args.scene.read_text())
 rospy.init_node('two_pc_complex_world_and_view')
-world=rospy.Publisher('/map_generator/global_cloud',PointCloud2,queue_size=1,latch=True)
-planning_metadata=rospy.Publisher('/two_pc/planning_world_metadata',String,queue_size=1,latch=True)
+world=(rospy.Publisher('/map_generator/global_cloud',PointCloud2,queue_size=1,latch=True) if not args.central_telemetry else None)
+planning_metadata=(rospy.Publisher('/two_pc/planning_world_metadata',String,queue_size=1,latch=True) if not args.central_telemetry else None)
 scene_pub=rospy.Publisher('/two_pc/complex_environment',MarkerArray,queue_size=1,latch=True)
 vehicle_pub=rospy.Publisher('/two_pc/vehicles',MarkerArray,queue_size=1)
 paths=[rospy.Publisher('/two_pc/drone_%d/path'%i,RosPath,queue_size=1,latch=True) for i in (0,1)]
@@ -84,19 +54,24 @@ for idx,o in enumerate(scene['obstacles']):
   size=[o['radius']*2,o['radius']*2,o['height']];kind=Marker.CYLINDER
  color=(.34,.43,.55,.8) if o['type']=='box' else (.69,.46,.24,.95)
  environment.markers.append(marker('obstacles',idx,kind,pos,size,color))
-planning_step=scene.get('planning_cloud_step_m',.12);sample_started=time.perf_counter()
-xyz=planning_occupancy_points(scene,step=planning_step)
-planning_metadata.publish(String(data=json.dumps(dict(source='oracle static solid occupancy baseline for EGO planning only',
-    planning_only=True,slam_map=False,kimera_input=False,occlusion_model='none; ideal 5m radius filter is applied by range_sensor.py',
-    cloud_topic='/map_generator/global_cloud',scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest(),
-    obstacle_sampling='box and finite-cylinder interiors plus surfaces',floor_sampling='surface only',
-    planning_cloud_step_m=planning_step,point_count=len(xyz),generation_seconds=time.perf_counter()-sample_started,
-    sensor_rendering='Separate RGB-D/LiDAR raycast surface renderer unchanged; never use this oracle cloud as a SLAM observation'))))
-world.publish(point_cloud2.create_cloud_xyz32(Header(stamp=rospy.Time.now(),frame_id='world'),xyz))
+if not args.central_telemetry:
+ planning_step=scene.get('planning_cloud_step_m',.12);sample_started=time.perf_counter()
+ xyz=planning_occupancy_points(scene,step=planning_step)
+ planning_metadata.publish(String(data=json.dumps(dict(source='oracle static solid occupancy baseline for EGO planning only',
+     planning_only=True,slam_map=False,kimera_input=False,occlusion_model='none; ideal 5m radius filter is applied by range_sensor.py',
+     cloud_topic='/map_generator/global_cloud',scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest(),
+     obstacle_sampling='box and finite-cylinder interiors plus surfaces',floor_sampling='surface only',
+     planning_cloud_step_m=planning_step,point_count=len(xyz),generation_seconds=time.perf_counter()-sample_started,
+     sensor_rendering='Separate RGB-D/LiDAR raycast surface renderer unchanged; never use this oracle cloud as a SLAM observation'))))
+ world.publish(point_cloud2.create_cloud_xyz32(Header(stamp=rospy.Time.now(),frame_id='world'),xyz))
+ rospy.loginfo('Oracle EGO occupancy baseline: %d obstacles, %d solid/surface points; not a SLAM map',len(scene['obstacles']),len(xyz))
+else:
+ rospy.loginfo('Central display only: edge-local EGO planning maps are independent of this node')
 scene_pub.publish(environment)
-rospy.loginfo('Oracle EGO occupancy baseline: %d obstacles, %d solid/surface points; not a SLAM map',len(scene['obstacles']),len(xyz))
 
 def on_odom(msg,i):
+ if args.central_telemetry and (getattr(msg,'_connection_header',None) or {}).get('callerid')!=actual_odometry_caller(i,True):
+  rospy.logwarn_throttle(5.,'World display rejected actual telemetry from a foreign publisher');return
  with lock:
   previous=latest[i];latest[i]=msg;now=rospy.get_time()
   if previous:
@@ -155,7 +130,8 @@ def tick(_):
  arr.markers.append(text('hud',2,(0,-5.3,.4),detail,(.8,.86,.94,1),.28))
  vehicle_pub.publish(arr)
 
-subs=[rospy.Subscriber('/drone_%d_visual_slam/odom'%i,Odometry,on_odom,callback_args=i,queue_size=20,tcp_nodelay=True) for i in (0,1)]
+subs=[rospy.Subscriber(actual_odometry_topic(i,args.central_telemetry),Odometry,on_odom,callback_args=i,
+                       queue_size=1 if args.central_telemetry else 20,tcp_nodelay=True) for i in (0,1)]
 subs.append(rospy.Subscriber('/two_pc/scene_state',String,on_state,queue_size=1))
 timer=rospy.Timer(rospy.Duration(.1),tick)
 rospy.spin()

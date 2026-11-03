@@ -2,6 +2,9 @@
 """Local TSDF continuity and display separation; native replay is a separate gate."""
 import copy
 from collections import Counter
+import json
+from pathlib import Path
+import tempfile
 from types import SimpleNamespace as S
 import unittest
 from unittest.mock import patch
@@ -23,6 +26,71 @@ class LocalDenseStreams(unittest.TestCase):
                                    PointField=PointField, TransformStamped=S, create=True)
         self.types.start()
         self.addCleanup(self.types.stop)
+
+    def test_external_sensor_mode_has_one_sensor_producer_and_keeps_native_backend_inputs(self):
+        raw_topics = {'/sim_0/kimera/'+suffix for suffix in
+                      ('imu', 'rgb/camera_info', 'rgb/image_raw', 'depth/image_raw')}
+        backend_topics = {'/sim_0/'+suffix for suffix in
+                          ('kimera_vio_ros/odometry', 'kimera_vio_ros/pose_graph_incremental',
+                           'native_mesh_frontend/full_mesh', 'native_pgmo/optimized_mesh',
+                           'kimera_distributed/optimized_nodes')}
+        backend_topics.update('/sim_%d/dpgo_ros_node/%s' % (robot, kind)
+                              for robot in (0, 1) for kind in ('command', 'measurement_weights'))
+        for external in (False, True):
+            with self.subTest(external_sensor_stream=external), tempfile.TemporaryDirectory() as folder:
+                publishers, subscriptions = {}, {}
+
+                def publisher(topic, kind, **options):
+                    messages = []
+                    value = S(messages=messages, publish=messages.append, get_num_connections=lambda: 0)
+                    publishers[topic] = value
+                    return value
+
+                def subscriber(topic, kind, callback, **options):
+                    subscriptions[topic] = S(callback=callback, **options)
+                    return subscriptions[topic]
+
+                ros = S(Publisher=publisher, Subscriber=subscriber, is_shutdown=lambda: False,
+                        Duration=lambda seconds: seconds, Timer=lambda duration, callback: S(callback=callback))
+                args = S(robot_id=0, robot_name='sim_0', run_id='separate_sensor_process', cutoff=1.,
+                         mode='joint', global_frame='kimera_world', max_gyro_gap=.05,
+                         gyro_sample_convention='left_endpoint_interval_equivalent',
+                         sensor_rotation_interpolation='gyro_endpoint', max_odom_gap=.6,
+                         weight_updates=25, output_directory=Path(folder), recorded_native_bag=None,
+                         recorded_native_bag_sha256=None, replay_caller='/native_dense_replay',
+                         require_cross=False, mesh_phase_timeout=30.)
+                # Omitting the option exercises compatibility with callers that
+                # construct the older argument namespace rather than argparse.
+                if external: args.external_sensor_stream = True
+                types = {name: S for name in ('PoseGraph', 'KimeraPgmoMesh', 'RosPath', 'String',
+                                              'Odometry', 'Imu', 'CameraInfo', 'Image', 'Command',
+                                              'RelativeMeasurementWeights')}
+                with patch.multiple(dense, rospy=ros,
+                                    tf2_ros=S(TransformBroadcaster=lambda: S()), create=True, **types):
+                    bridge = dense.NativeDenseBridge(args)
+                    try:
+                        self.assertTrue(backend_topics.issubset(subscriptions))
+                        self.assertIsInstance(bridge.rounds, dense.RoundLedger)
+                        self.assertEqual(raw_topics.intersection(subscriptions), set() if external else raw_topics)
+                        self.assertEqual('/sim_0/native_dense/rgbd_points' in publishers, not external)
+                        bridge.tick(None)
+                        self.assertIsNone(bridge.fatal)
+                        status = publishers['/sim_0/native_dense/status'].messages[-1]
+                        self.assertEqual(json.loads(status.data)['sensor_stream_in_independent_process'], external)
+                        if external:
+                            # Even an accidentally queued frame cannot make this
+                            # backend publish a second TSDF cloud or consume it.
+                            frame_pair = object()
+                            bridge.gauge_checked = True; bridge.camera = S()
+                            bridge.pending_images[2_000_000_000] = frame_pair
+                            for phase in ('await_native_seed', 'await_baseline', 'await_path_echo', 'await_deformed_mesh'):
+                                bridge.transaction = dict(phase=phase)
+                                bridge.publish_sensor()
+                                self.assertIs(bridge.pending_images[2_000_000_000], frame_pair)
+                                self.assertEqual(bridge.last_rgbd_ns, 0)
+                                self.assertEqual(bridge.counts['sensor_clouds'], 0)
+                    finally:
+                        bridge.events.close()
 
     def test_sensor_continues_in_every_pgmo_phase_without_changing_frozen_mesh(self):
         for phase in ('await_native_seed', 'await_baseline', 'await_path_echo', 'await_deformed_mesh'):

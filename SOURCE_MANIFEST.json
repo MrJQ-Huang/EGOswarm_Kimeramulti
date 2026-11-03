@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "deployed_bridge_sha256": "6d69d8ef2d5ea6183c54354952648f340fb6990c6cdef4ad61e8b5d3137595d8",
+  "deployed_bridge_sha256": "1cc01d87445519320c580bbc780ad8b510d85f76608d25af8b6bdd8eeb17b8e6",
   "files": [
     {
       "path": ".gitattributes",
@@ -13,19 +13,44 @@
       "sha256": "d4a8d368f74ea93da626e38ebb663f9cd9231c5a3c85b5d0ba95efbba3eeb49c"
     },
     {
+      "path": "Makefile",
+      "bytes": 182,
+      "sha256": "1714955462bba1defe6bbc15a5726464e90a866b84ddfdca084baa92894620bd"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7558,
+      "sha256": "a1bcd314945893fcc39ad069e27a13e71bd2cbf0fc03fd8e65407fdd43fd9393"
+    },
+    {
+      "path": "dependencies/README.md",
+      "bytes": 1961,
+      "sha256": "b9dff12a0fe9e7270030c50adc601ee9436030ee6bd8340b063e47472a40aa6f"
+    },
+    {
       "path": "dependencies/license_origins.json",
       "bytes": 21583,
       "sha256": "e5cda11041b2bdcae67ff8e87f1c20dbc0dbd6ea54187def1d3724c4deb0db90"
     },
     {
-      "path": "dependencies/licenses/config_utilities/LICENSE",
-      "bytes": 1561,
-      "sha256": "5668556b45b57925843128b3f55dec5cc5281467180d8b9a9d286e12a6a471d5"
-    },
-    {
       "path": "dependencies/licenses/DBoW2/LICENSE.txt",
       "bytes": 2159,
       "sha256": "c02e19ed871eb9dd11b01db600d3f3601c5a03c4121f6baeb2ebe215ecbeaf23"
+    },
+    {
+      "path": "dependencies/licenses/Kimera-PGMO/LICENSE",
+      "bytes": 1290,
+      "sha256": "2ed6d339e6b69d4fd859fbefc1ad34e075896ec29425453c11ed1da7e0f1db48"
+    },
+    {
+      "path": "dependencies/licenses/Kimera-Semantics/LICENSE.BSD",
+      "bytes": 1292,
+      "sha256": "62a0bee8ec99059a3f48c884a1f357bf0e18f837172ccd61fbc06208648913d8"
+    },
+    {
+      "path": "dependencies/licenses/config_utilities/LICENSE",
+      "bytes": 1561,
+      "sha256": "5668556b45b57925843128b3f55dec5cc5281467180d8b9a9d286e12a6a471d5"
     },
     {
       "path": "dependencies/licenses/dbow2_catkin/LICENSE",
@@ -78,16 +103,6 @@
       "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14"
     },
     {
-      "path": "dependencies/licenses/Kimera-PGMO/LICENSE",
-      "bytes": 1290,
-      "sha256": "2ed6d339e6b69d4fd859fbefc1ad34e075896ec29425453c11ed1da7e0f1db48"
-    },
-    {
-      "path": "dependencies/licenses/Kimera-Semantics/LICENSE.BSD",
-      "bytes": 1292,
-      "sha256": "62a0bee8ec99059a3f48c884a1f357bf0e18f837172ccd61fbc06208648913d8"
-    },
-    {
       "path": "dependencies/licenses/kimera_multi_lcd/LICENSE",
       "bytes": 1326,
       "sha256": "e1f26297b6c7f5513ab02db0c81ed167b043e28b23ababd1f59ed6dc0b1f1629"
@@ -113,14 +128,14 @@
       "sha256": "9cf61e2c9ebb83fe29e3981ae79540fd7a82d2aefc3ce5f7242e2131e40e7d70"
     },
     {
-      "path": "dependencies/licenses/kimera_vio/vocabulary/License-gpl.txt",
-      "bytes": 35147,
-      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
-    },
-    {
       "path": "dependencies/licenses/kimera_vio/vocabulary/LICENSE.txt",
       "bytes": 447,
       "sha256": "0fb7c5f8b739a8b60e625c0ae14ef67f2848a61a436ecc7467ab76f7e1c35dae"
+    },
+    {
+      "path": "dependencies/licenses/kimera_vio/vocabulary/License-gpl.txt",
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
     },
     {
       "path": "dependencies/licenses/mesh_rviz_plugins/LICENSE",
@@ -168,6 +183,11 @@
       "sha256": "a614f03a3f6da59ceb8c9a247209e4a1a4ceb17b6aa73c900ba52091b7fae6f3"
     },
     {
+      "path": "dependencies/locks/hub_gpu_runtime.json",
+      "bytes": 1654,
+      "sha256": "1c48459a4ba1567b6cb1ec1051e2910c0bdee2274b526ae86fc0e417488ceac9"
+    },
+    {
       "path": "dependencies/locks/odin1.repos",
       "bytes": 2265,
       "sha256": "6aeecfd662a3db042a40e0b88fb77697bf96abe1583c1e67f1498b145c833802"
@@ -203,14 +223,14 @@
       "sha256": "f4f38b57998e1376f52657fe13fc1eb4cf386762a95e596cf3cde0430d64f11e"
     },
     {
-      "path": "dependencies/patches/dense/gflags_catkin.patch",
-      "bytes": 1754,
-      "sha256": "f94b051b8546e020f19a536ccb8961ce0b165d02ae74febed251ffa1a3063ea9"
-    },
-    {
       "path": "dependencies/patches/dense/Kimera-Semantics.patch",
       "bytes": 456,
       "sha256": "0f778615c8b516ef64580595eb086731ab7842af65eb4f4f274c486fe63cf758"
+    },
+    {
+      "path": "dependencies/patches/dense/gflags_catkin.patch",
+      "bytes": 1754,
+      "sha256": "f94b051b8546e020f19a536ccb8961ce0b165d02ae74febed251ffa1a3063ea9"
     },
     {
       "path": "dependencies/patches/dense/minkindr_python_ignore.patch",
@@ -278,11 +298,6 @@
       "sha256": "fef9fe5bfad01713cc78ce403b108e95f066a4637b028326123ca602788b1a6f"
     },
     {
-      "path": "dependencies/README.md",
-      "bytes": 1961,
-      "sha256": "b9dff12a0fe9e7270030c50adc601ee9436030ee6bd8340b063e47472a40aa6f"
-    },
-    {
       "path": "dependencies/source_manifest.json",
       "bytes": 21891,
       "sha256": "87bcf2a8166207a906c9d51b8344b7583a2028d309ecff38db948ef18731946d"
@@ -319,18 +334,23 @@
     },
     {
       "path": "docs/architecture.md",
-      "bytes": 4506,
-      "sha256": "6dd5a74de1dfb24f4c83d701682cc69c608446612e2e4a8399b98e079aa71575"
+      "bytes": 9384,
+      "sha256": "572aef78ca8dbeedfe60d18432dff70c7e015aea017973b9d9cc9de495131bf4"
     },
     {
       "path": "docs/deployment.md",
-      "bytes": 7444,
-      "sha256": "a9401a630440250e335b5dfb438f8123c8735f938f7b282aae5414734cdee98c"
+      "bytes": 15896,
+      "sha256": "581fc744b9c3063a17c298f460b0f70891b8777959e39170e55a819dade1e015"
     },
     {
       "path": "docs/evidence/concurrency_analysis.json",
       "bytes": 26307,
       "sha256": "d6fbb21fdb09ef7331fd016fa805971dfca0ddbd623e1166048fc58a4f5dcdec"
+    },
+    {
+      "path": "docs/evidence/motion_acceptance_20261103.json",
+      "bytes": 3036,
+      "sha256": "909a7c66094cda9234739854feba2a703d21cc46aef40b15a4d986191cdc73b8"
     },
     {
       "path": "docs/evidence/performance_analysis.json",
@@ -341,6 +361,26 @@
       "path": "docs/known_issues.md",
       "bytes": 4772,
       "sha256": "2c63aee1af5b49b7e050d83a61b5e3a74c72a14fa9789e52334c642337b184a9"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/flags/Mesher.flags",
+      "bytes": 1544,
+      "sha256": "3794fcec49de1167d3f6e46afb82f572c08b57f950092ed53b57b74fd3e96ff0"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/flags/RegularVioBackend.flags",
+      "bytes": 458,
+      "sha256": "099c16daffe3b12f3f6d309b932d1dfc650a3910281b56e75d4c5eec046665ba"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/flags/VioBackend.flags",
+      "bytes": 109,
+      "sha256": "5d1a38f580b4f10f0225a4927e7962c02ec988f0e7e975ce22ffc2a21da75405"
+    },
+    {
+      "path": "experiment/configs/amov/multimodal/flags/Visualizer3D.flags",
+      "bytes": 210,
+      "sha256": "d9573989882599409aedc7e810573cd10b691b40f427cfac1fa54032471bbea4"
     },
     {
       "path": "experiment/configs/amov/multimodal/params/BackendParams.yaml",
@@ -386,6 +426,26 @@
       "path": "experiment/configs/amov/multimodal/vio.launch",
       "bytes": 1872,
       "sha256": "0dc20a1a04b1a50f1f56217c45c15e0c84c9d9ced017be0f9081657c48214fc3"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/flags/Mesher.flags",
+      "bytes": 1493,
+      "sha256": "38290b6ea940149d74e3d14ad62c756d565f3ae4168bdd00c2557f169a617671"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/flags/RegularVioBackend.flags",
+      "bytes": 458,
+      "sha256": "5d5691612b21556591389dc132854436849576e11391673bec48a041d5ed18ae"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/flags/VioBackend.flags",
+      "bytes": 109,
+      "sha256": "5d1a38f580b4f10f0225a4927e7962c02ec988f0e7e975ce22ffc2a21da75405"
+    },
+    {
+      "path": "experiment/configs/uros/multimodal/flags/Visualizer3D.flags",
+      "bytes": 210,
+      "sha256": "d9573989882599409aedc7e810573cd10b691b40f427cfac1fa54032471bbea4"
     },
     {
       "path": "experiment/configs/uros/multimodal/params/BackendParams.yaml",
@@ -454,8 +514,8 @@
     },
     {
       "path": "experiment/harness/complex_world_view.py",
-      "bytes": 8701,
-      "sha256": "36580f9c0034dc0123d706600aae4711493796b5427ea9b56ddaa6702af930f4"
+      "bytes": 7915,
+      "sha256": "091fc832ffc762db501fc273e6e7294d3352a703764ccf877f04fdea4d4033f9"
     },
     {
       "path": "experiment/harness/env_amov.bash",
@@ -474,8 +534,8 @@
     },
     {
       "path": "experiment/harness/multimodal/closed_loop_missions.py",
-      "bytes": 29993,
-      "sha256": "78f705f338adf95ec2dec4760fdea5e800d666518ff52c0deba8bc61daf87b6e"
+      "bytes": 31232,
+      "sha256": "95542bb12cf2160d91f3ce9c76f766ddf4c9df1182c7c84c035fc20c00437219"
     },
     {
       "path": "experiment/harness/multimodal/continuous_body.py",
@@ -483,9 +543,24 @@
       "sha256": "2cb46357c3cdca6667b7ac6f42eccfc271b223e863c66905231c6acb9ce4e21c"
     },
     {
+      "path": "experiment/harness/multimodal/export_final_global_map.py",
+      "bytes": 22285,
+      "sha256": "b9843e5767d8ecdc0299f62eba4478f8ef7d02490a27ac6dfbb5b3bf89ddaa1e"
+    },
+    {
+      "path": "experiment/harness/multimodal/hub_backend.launch",
+      "bytes": 3063,
+      "sha256": "e2fdd13345982810f78370f0a4bf1b4a2b6ad1b1089e743939d8067fc568a7a6"
+    },
+    {
       "path": "experiment/harness/multimodal/live_trajectory_view.py",
-      "bytes": 18539,
-      "sha256": "3e0360d91fa8577673e7f13f77926c225d58e12600d5b59336573159da5d7bbc"
+      "bytes": 20597,
+      "sha256": "fa14e9af795ed7e05cb84b26241992347013230c908721daeb964da13a169bb5"
+    },
+    {
+      "path": "experiment/harness/multimodal/local_frontend.launch",
+      "bytes": 4140,
+      "sha256": "6b7b14b0e18e157f273642f56e83f26cfa8050f51f216786372156c1ad468f27"
     },
     {
       "path": "experiment/harness/multimodal/native_dense.launch",
@@ -494,8 +569,8 @@
     },
     {
       "path": "experiment/harness/multimodal/native_dense_bridge.py",
-      "bytes": 72153,
-      "sha256": "6d69d8ef2d5ea6183c54354952648f340fb6990c6cdef4ad61e8b5d3137595d8"
+      "bytes": 72703,
+      "sha256": "1cc01d87445519320c580bbc780ad8b510d85f76608d25af8b6bdd8eeb17b8e6"
     },
     {
       "path": "experiment/harness/multimodal/native_dense_global_view.py",
@@ -509,8 +584,8 @@
     },
     {
       "path": "experiment/harness/multimodal/native_dense_runtime/CMakeLists.txt",
-      "bytes": 226,
-      "sha256": "8e53f024d90066acbb0f532565405e747f935ce280c8a65a938671dfc592c28e"
+      "bytes": 266,
+      "sha256": "05a36a9be824260382e159958319bd62aa88623470db42f961efcec36ece6cf5"
     },
     {
       "path": "experiment/harness/multimodal/native_dense_runtime/package.xml",
@@ -523,9 +598,19 @@
       "sha256": "aef8cd344d57e6296700564d635bb2ac45ea2c0c9141e5f85067bb99fcac6051"
     },
     {
+      "path": "experiment/harness/multimodal/native_dense_runtime/scripts/native_local_sensor_bridge.py",
+      "bytes": 347,
+      "sha256": "3d0ff92c558e4303a1a5606065991c99ae79fc677a5c0f14f024c272089b9f96"
+    },
+    {
       "path": "experiment/harness/multimodal/native_imu_pose_interpolation.py",
       "bytes": 9795,
       "sha256": "f64d752fa1327ea7d6803fae8d46b77f9e225cca50abd73c1fb2df7a9d832c2c"
+    },
+    {
+      "path": "experiment/harness/multimodal/native_local_sensor_bridge.py",
+      "bytes": 16212,
+      "sha256": "ededdabfb9528667044c14cda5dc7588cc73709e5a56e27f78131f3446cea75f"
     },
     {
       "path": "experiment/harness/multimodal/native_vio_graph_adapter.py",
@@ -568,9 +653,34 @@
       "sha256": "22457bcefb77ab1ff4461380f2091ffe2114c79f91239c3497b10aa12673da08"
     },
     {
+      "path": "experiment/harness/multimodal/sensor_ingress.py",
+      "bytes": 8095,
+      "sha256": "0e5bc549486d22448fdd98922a283adcc31d2f2ac94a24d1fca675c4e26b1b97"
+    },
+    {
+      "path": "experiment/harness/multimodal/sensor_uplink.py",
+      "bytes": 16810,
+      "sha256": "c2b349da796e0ac6cbebc380b6b42f59c492d31fdd86853b4ffccececb642478"
+    },
+    {
+      "path": "experiment/harness/multimodal/sensor_wire.py",
+      "bytes": 14918,
+      "sha256": "f20aa0ede4fdf842d4b16e589ed6377c28c7b5d9dd50ced98c13873df326c965"
+    },
+    {
       "path": "experiment/harness/multimodal/sim_sensors.py",
-      "bytes": 20348,
-      "sha256": "2ce4c6109a3a4951e9f40114f3babba64b0cffd85be2cdc35f15039f69cdd838"
+      "bytes": 22174,
+      "sha256": "f59ad4c750114bcfdaf760fbe126669676e9d76747da6e96733785e62141380f"
+    },
+    {
+      "path": "experiment/harness/multimodal/telemetry_contract.py",
+      "bytes": 1017,
+      "sha256": "8d9745e89e58ba547ed36edeb38c170e5ea857175f3b69ec2a931a64a1687d36"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_export_final_global_map.py",
+      "bytes": 9350,
+      "sha256": "db88531f6f2886a9179082f62df11901de9fdb28ad92ffa99eeada493f9d242f"
     },
     {
       "path": "experiment/harness/multimodal/test_interval_imu_replay.py",
@@ -579,8 +689,8 @@
     },
     {
       "path": "experiment/harness/multimodal/test_live_trajectory_view.py",
-      "bytes": 3993,
-      "sha256": "cc81d2f1d6a39967051816ad0755485f6e18f3adc0902ed8ca16a0110f4a9c28"
+      "bytes": 5582,
+      "sha256": "40a9029ebd92e7a228dd0381341cba6784db41ae5ea429134f59e539d58a7199"
     },
     {
       "path": "experiment/harness/multimodal/test_native_dense_bridge.py",
@@ -594,8 +704,8 @@
     },
     {
       "path": "experiment/harness/multimodal/test_native_dense_local_stream.py",
-      "bytes": 5792,
-      "sha256": "8afae6c538c8bc994e26ba7589ab0a8e1c26f02a55af9068d19c2101d55b1f4f"
+      "bytes": 10469,
+      "sha256": "57d8a71e474174c246a73fa531801d81b3e3e058de9a32d88f96f0fb277eba64"
     },
     {
       "path": "experiment/harness/multimodal/test_native_imu_pose_interpolation.py",
@@ -608,6 +718,26 @@
       "sha256": "424c384d3e09c7645f1602f6638bbb335e5ead4caf617e158aa922a512c5ec0a"
     },
     {
+      "path": "experiment/harness/multimodal/test_planning_world.py",
+      "bytes": 1940,
+      "sha256": "e1009521b2fad80b382989734d3082c66d480a58bb29e3b12caf90f7b12599ce"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_sensor_transport.py",
+      "bytes": 16171,
+      "sha256": "2f9a491cadc7e25aec87d3f520835928407b48ebf01a83efefd441af0c787a59"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_sparse_sensor_outputs.py",
+      "bytes": 2027,
+      "sha256": "60516808b58de409e7b78985fec59f339bacb859695073914d038a898fe0e46d"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_uplink_send_buffer.py",
+      "bytes": 10661,
+      "sha256": "bb5c621d3f1adcea5bd1b2169c29e6bf3bce06e5d989632c0f816a6ce95ff620"
+    },
+    {
       "path": "experiment/harness/navigation_smoke_route.json",
       "bytes": 26156,
       "sha256": "98a2e823950456f971c0b2422381858f92f09d71c1f8e1f52a16593c75a03192"
@@ -618,14 +748,19 @@
       "sha256": "f5a3f0eebb71d5430588eea78ef1964a57d1be469c777f8d0dbde764c650d061"
     },
     {
+      "path": "experiment/harness/planning_world.py",
+      "bytes": 1824,
+      "sha256": "2214e134a1bab27bc490394eaefeee84864f4e1a3d5637f48f7c0b8ca60a963e"
+    },
+    {
       "path": "experiment/harness/range_sensor.py",
-      "bytes": 1808,
-      "sha256": "05223e59669427926efa3893885178b8011bf2ee8c8530c9ed0931dfa4e79841"
+      "bytes": 2764,
+      "sha256": "05b24fdba384a715e67c7b00ac9c796ef3fc36a6733fa047858d73db925ac08f"
     },
     {
       "path": "experiment/harness/scenario_supervisor.py",
-      "bytes": 5625,
-      "sha256": "32f93a24b5bd46e82e7f7db6821c5ef15736593fc4c0050b9c233a1c37a17d52"
+      "bytes": 5841,
+      "sha256": "fcdf6dab5d26096bde41dd3f9fa57ada5f1895b7d7c00ced19740e6d68d1e458"
     },
     {
       "path": "experiment/harness/scene_geometry.py",
@@ -798,19 +933,184 @@
       "sha256": "c19cc803fb1ec79ba1a441b13dfb4113dd56b7f6dc9e70cd9b6ebf292607a7e5"
     },
     {
-      "path": "Makefile",
-      "bytes": 97,
-      "sha256": "75e4e864f8298656d9ed83fded6dd96b42dc966af18dcb1e153061976e767da8"
+      "path": "experiment/three_host_20261102/control_messages/EGO_REPOSITORY_LICENSE",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
     },
     {
-      "path": "README.md",
-      "bytes": 4885,
-      "sha256": "2c5566c3dce247200319e5e92f327f36e0c96951ad3ef1cbfb5a6131c12031ae"
+      "path": "experiment/three_host_20261102/control_messages/source_provenance.json",
+      "bytes": 4782,
+      "sha256": "b88780120503161206d0d4753413ceabccfd8025edd8003e65010c4194553e38"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/CMakeLists.txt",
+      "bytes": 629,
+      "sha256": "833425f31caf9d34cdec28e7806efc2ad8dc72e2c2dddbb68b644cc3ba199535"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/AuxCommand.msg",
+      "bytes": 135,
+      "sha256": "1c506a91ee92fcbebae7f299ed7fc1c49c4fdb969c3f7652a6608ae5fe9f5093"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/Corrections.msg",
+      "bytes": 51,
+      "sha256": "465b4e298d5a693dc0a03b2bf99d7fcb0a671875c68d6cb39e09704fe2329948"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/Gains.msg",
+      "bytes": 52,
+      "sha256": "91961896927a5e51f8545066ca082851bd67b7678b7f0de294be3f542c94e9f2"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/LQRTrajectory.msg",
+      "bytes": 572,
+      "sha256": "6b2bc9ef4704cceeaf2019c1cd698cb1a52f896b46ef81457160a42b720f4f5e"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/Odometry.msg",
+      "bytes": 163,
+      "sha256": "9c0aded5c3cc619c7a47d9ddde865907f81b7c45841b75be9e7a5fc446980772"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/OutputData.msg",
+      "bytes": 304,
+      "sha256": "f4c2125a8258d048b25cb4528cbef0de3267dd91eb501df2eaecbeb6cba8bd68"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/PPROutputData.msg",
+      "bytes": 283,
+      "sha256": "53400dc4e6f3e8a866221af5cf35172b267df567e85cdcd664d64cbb0c8b06b0"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/PolynomialTrajectory.msg",
+      "bytes": 596,
+      "sha256": "ae9241a3413ca1229daf3e5a6f43f794e4d1bb6f433dacf86eaace77a3a878ba"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/PositionCommand.msg",
+      "bytes": 544,
+      "sha256": "208c2fa01938ed5ecd94b7c2135d0e8f070dc2e16901fb0d97b3749f69bb0658"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/SO3Command.msg",
+      "bytes": 138,
+      "sha256": "db5de254945dc6f4045819a0df809cd596a65e1fff2d6413e937c29f9b39fde1"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/Serial.msg",
+      "bytes": 426,
+      "sha256": "b98a312615a71d66e5e7022adce1fdade90873e77060882c8bd22d8603f846eb"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/StatusData.msg",
+      "bytes": 57,
+      "sha256": "6aea60de547e5d46749e592b980e8bb4c066172140e1a0eabf113977cdda8130"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/msg/TRPYCommand.msg",
+      "bytes": 98,
+      "sha256": "c22e8f1db7c33de5324568143dc131d6a2b7cc9a2aad94f471c27761914a720f"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/quadrotor_msgs/package.xml",
+      "bytes": 638,
+      "sha256": "791bcf088606c651687d594bff644bd182a725eca8df00fb522e6328f5bcbcea"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/traj_utils/CMakeLists.txt",
+      "bytes": 414,
+      "sha256": "c7ac2064c39ae82220b15628da30a31ee32f6447df6c0801dc47225a2aad3361"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/traj_utils/msg/Bspline.msg",
+      "bytes": 140,
+      "sha256": "9aa978c3c74867e0decdb333ce936c3ea2704a8f94ce9054e08a9d1de36b92d5"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/traj_utils/msg/DataDisp.msg",
+      "bytes": 64,
+      "sha256": "3867c49329e36ca5c781232992a0f38d2c7aa660f86b541150bf4a6e768ce7d2"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/traj_utils/msg/MultiBsplines.msg",
+      "bytes": 37,
+      "sha256": "8a2833175547ea3cd74aefedc054039a45d11c7d91bdba3b6f98c0f56fe18b76"
+    },
+    {
+      "path": "experiment/three_host_20261102/control_messages/src/traj_utils/package.xml",
+      "bytes": 553,
+      "sha256": "7b0fd1e122f0ca389c4d3386d10863ea10eb79f81cfb0712d101dbf90384c5b7"
+    },
+    {
+      "path": "experiment/three_host_20261102/env_hub.bash",
+      "bytes": 2147,
+      "sha256": "c8cffe0b8c3e93a888e5ad3f324f7743bb66384190673fc4547b9ebc976b251d"
+    },
+    {
+      "path": "experiment/three_host_20261102/manager_hub.py",
+      "bytes": 32010,
+      "sha256": "1e72de140b24738c0a7786861dfb4f01344a540a1d1d8c2599cd924c42f49ab2"
+    },
+    {
+      "path": "experiment/three_host_20261102/manager_local.py",
+      "bytes": 11845,
+      "sha256": "72b93cd34588bee3d8b2d3cf6b280c8e35384943bf3f44beec391e99073fe517"
+    },
+    {
+      "path": "experiment/three_host_20261102/native_tsdf_epoch_witness.py",
+      "bytes": 10845,
+      "sha256": "cd0486d66851b206b16ff1c9b51cd978d58e1db38440cf53c392b9cf5e67ad6b"
+    },
+    {
+      "path": "experiment/three_host_20261102/sample_three_host_resources.py",
+      "bytes": 16634,
+      "sha256": "20df737c9f61b62510d3a899b69093b06401211e4b6f3b829478e957bcf655e3"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_central_validators.py",
+      "bytes": 13409,
+      "sha256": "a6fb16b87df35d43a977b67401416137629414b8ef1a0fe229926383a5e85214"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_manager_hub.py",
+      "bytes": 14373,
+      "sha256": "8ad9ea1ab4ebbfe0bbc96af0e453be022d0d689ad8c8135ee08946623a3cb9f6"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_manager_local.py",
+      "bytes": 8778,
+      "sha256": "06a33c65571baecdc7823dd0c56b1e54c46e1a81e3f7b8c4c3eb5aee5e8a3922"
+    },
+    {
+      "path": "experiment/three_host_20261102/validation/probe_three_host_status.py",
+      "bytes": 17166,
+      "sha256": "7c908e09a651caaa54d23de324a2c0333852b509ea610c8d4d481e80a066347d"
+    },
+    {
+      "path": "experiment/three_host_20261102/validation/readonly_ros_graph.py",
+      "bytes": 11657,
+      "sha256": "8fe2b7e148047321cc10db650e54c1281cc240c877536c684788fc166f3acc17"
+    },
+    {
+      "path": "experiment/three_host_20261102/validation/validate_bootstrap_subscriptions.py",
+      "bytes": 10514,
+      "sha256": "e6d0f538cca200eac56186d362a6bb4706c8031626b82449878e38891365fe86"
+    },
+    {
+      "path": "experiment/three_host_20261102/validation/validate_three_host_topology.py",
+      "bytes": 16128,
+      "sha256": "490cccc33a3656b655e2414ab4f3794bfe0ff54146c22eae8252850f8e68d6ee"
     },
     {
       "path": "requirements-test.txt",
       "bytes": 86,
       "sha256": "6f5fd4b3feaeebd41fc0237bec805262fcef1f4d81dc98895606bc6468a765d5"
+    },
+    {
+      "path": "tools/analyze_three_host_run.py",
+      "bytes": 25656,
+      "sha256": "ccf7bebbb85cc480902799ce4e84b6917e44fcc34ffd7b1a46bc37bedcdc3d36"
     },
     {
       "path": "tools/fetch_sources.py",

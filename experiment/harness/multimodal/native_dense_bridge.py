@@ -355,6 +355,7 @@ def path_error(actual, expected):
 
 class NativeDenseBridge:
     def __init__(self, args):
+        args.external_sensor_stream = getattr(args, 'external_sensor_stream', False)
         self.a = args; self.base = '/'+args.robot_name; self.lock = threading.RLock()
         self.native_input_lock = threading.Lock(); self.native_inputs = deque()
         self.native_input_max_queue = 0; self.native_input_max_delay = 0.; self.native_control_max_delay = 0.
@@ -394,6 +395,7 @@ class NativeDenseBridge:
             'raw_local_vertices': ('raw_local_vertices', PointCloud2, 1, True),
             'vertices': ('display_vertices', PointCloud2, 1, True),
             'status': ('status', String, 1, True)}
+        if args.external_sensor_stream: del topics['points']
         self.pub = {k: rospy.Publisher(self.base+'/native_dense/'+v[0], v[1], queue_size=v[2], latch=v[3])
                     for k, v in topics.items()}
         self.subs = []
@@ -405,11 +407,12 @@ class NativeDenseBridge:
         self.subscribe(self.base+'/kimera_vio_ros/odometry', Odometry, self.on_odom, native, None, priority=True)
         self.subscribe(self.base+'/kimera_vio_ros/pose_graph_incremental', PoseGraph, self.on_graph, native, None, priority=True)
         sensor = args.replay_caller if args.recorded_native_bag else '/'+args.robot_name+'_multimodal_sensors'
-        if self.gyros is not None:
-            self.subscribe(self.base+'/kimera/imu', Imu, self.on_imu, sensor, None, priority='imu')
-        self.subscribe(self.base+'/kimera/rgb/camera_info', CameraInfo, self.on_camera, sensor, 2)
-        self.subscribe(self.base+'/kimera/rgb/image_raw', Image, lambda m: self.on_image('rgb', m), sensor, 20)
-        self.subscribe(self.base+'/kimera/depth/image_raw', Image, lambda m: self.on_image('depth', m), sensor, 20)
+        if not args.external_sensor_stream:
+            if self.gyros is not None:
+                self.subscribe(self.base+'/kimera/imu', Imu, self.on_imu, sensor, None, priority='imu')
+            self.subscribe(self.base+'/kimera/rgb/camera_info', CameraInfo, self.on_camera, sensor, 2)
+            self.subscribe(self.base+'/kimera/rgb/image_raw', Image, lambda m: self.on_image('rgb', m), sensor, 20)
+            self.subscribe(self.base+'/kimera/depth/image_raw', Image, lambda m: self.on_image('depth', m), sensor, 20)
         frontend = self.base+'/native_mesh_frontend'
         self.subscribe(frontend+'/mesh_graph_incremental', PoseGraph, self.on_mesh_graph, frontend, 1000)
         self.subscribe(frontend+'/full_mesh', KimeraPgmoMesh, self.on_full_mesh, frontend, 1, replaceable=True)
@@ -697,6 +700,7 @@ class NativeDenseBridge:
         # A PGMO transaction freezes its own graph/full-mesh inputs, not the
         # independent VIO -> TSDF stream. Pausing this producer used to discard
         # camera coverage while waiting for native deformation receipts.
+        if getattr(self.a, 'external_sensor_stream', False): return
         if not self.gauge_checked or self.camera is None or not self.pub['points'].get_num_connections(): return
         for stamp in sorted(list(self.pending_images)):
             if stamp <= self.last_rgbd_ns or (stamp-self.last_rgbd_ns)*1e-9 < 1./self.a.cloud_rate:
@@ -1003,6 +1007,7 @@ class NativeDenseBridge:
                     raw_local_vertices_frame=self.local_frame,
                     raw_local_vertices_source='native_mesh_frontend/full_mesh; exact XYZ, no PGMO deformation',
                     local_tsdf_continues_during_pgmo_transaction=True,
+                    sensor_stream_in_independent_process=self.a.external_sensor_stream,
                     native_deformation_eligible=self.eligible is not None if self.a.mode == 'joint' else None,
                     native_deformation_proof=self.eligible,
                     accepted_joint_mesh_receipt=self.accepted_joint_mesh_receipt,
@@ -1045,6 +1050,8 @@ def main():
     parser.add_argument('--mesh-phase-timeout', type=float, default=30.,
                         help='Finite timeout PER native readiness/baseline/echo/deformation phase, not a total fixed freeze timeout')
     parser.add_argument('--require-cross', action='store_true')
+    parser.add_argument('--external-sensor-stream', action='store_true',
+                        help='Backend-only role: do not subscribe raw RGB-D/IMU or publish TSDF point clouds')
     parser.add_argument('--recorded-native-bag', type=Path,
                         help='Explicit offline native-input fixture; live source authentication remains default')
     parser.add_argument('--recorded-native-bag-sha256')

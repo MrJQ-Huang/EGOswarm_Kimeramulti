@@ -3,6 +3,7 @@ import math
 import unittest
 import numpy as np
 from live_trajectory_view import TrajectoryState,SIM_T_BODY_CAMERA,initial_transform,dashed_segments
+from telemetry_contract import actual_odometry_topic,actual_odometry_caller
 
 
 class ViewTests(unittest.TestCase):
@@ -16,6 +17,18 @@ class ViewTests(unittest.TestCase):
         self.assertFalse(state.ingest_odometry(0,'actual',101_000_000_000,pose,'/drone_0_continuous_body','map'))
         self.assertTrue(state.ingest_odometry(0,'actual',101_000_000_000,pose,'/drone_0_continuous_body','world'))
         self.assertEqual(len(state.paths['actual',0]),1)
+
+    def test_central_actual_telemetry_is_authenticated_without_becoming_a_vio_estimate(self):
+        state=TrajectoryState('new_epoch',100.,[[10.,0.,1.],[12.5,0.,1.]],central_telemetry=True)
+        pose=initial_transform([11.,2.,1.],0)
+        self.assertEqual(actual_odometry_topic(0,True),'/sim_0/ground_truth/odometry')
+        self.assertEqual(actual_odometry_topic(0),'/drone_0_visual_slam/odom')
+        self.assertFalse(state.ingest_odometry(0,'actual',101_000_000_000,pose,'/drone_0_continuous_body','world'))
+        self.assertFalse(state.ingest_odometry(0,'actual',101_000_000_000,pose,
+                                              '/sim_0/kimera_vio_ros/kimera_vio_ros_node','world'))
+        self.assertTrue(state.ingest_odometry(0,'actual',101_000_000_000,pose,actual_odometry_caller(0,True),'world'))
+        self.equal(state.paths['actual',0][0][1],pose)
+        self.assertFalse(state.paths['vio',0]);self.assertFalse(state.raw_gauges)
 
     def test_raw_alignment_is_once_per_robot(self):
         state=self.make();first=initial_transform([3.,4.,5.],math.pi/2)
@@ -49,6 +62,15 @@ class ViewTests(unittest.TestCase):
     def test_dashes_have_gaps_and_correct_metric_length(self):
         points=dashed_segments([np.array([0.,0.,0.]),np.array([1.,0.,0.])],on=.2,off=.1)
         self.assertEqual(len(points)%2,0);length=sum(np.linalg.norm(points[i+1]-points[i]) for i in range(0,len(points),2));self.assertAlmostEqual(length,.7)
+
+    def test_fast_vehicle_snapshot_does_not_traverse_or_expose_path_history(self):
+        state=self.make();pose=initial_transform([10.,0.,1.],0)
+        state.ingest_odometry(0,'actual',101_000_000_000,pose,'/drone_0_continuous_body','world')
+        class UntouchablePaths(dict):
+            def items(self):raise AssertionError('Fast vehicle publication copied complete paths')
+        state.paths=UntouchablePaths(state.paths)
+        snapshot=state.body_snapshot();snapshot[0][1][0,3]=999.
+        self.assertEqual(state.latest_body[0][1][0,3],10.)
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

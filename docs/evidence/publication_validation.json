@@ -1,20 +1,57 @@
 {
-  "source_snapshot_matches_deployed_bridge": true,
+  "validated_at": "2026-11-03T19:09:47.665032+08:00",
+  "environment": "Ubuntu 20.04 / ROS Noetic / Python 3.8 native-stack image, isolated network, source mounted read-only",
   "python_contract_tests": {
-    "passed": 66,
+    "multimodal": 102,
+    "central_orchestration": 35,
+    "passed": 137,
     "failed": 0,
-    "native_full_stack_certification": false
+    "skipped": 0,
+    "command": "make test"
   },
-  "python_syntax": "passed",
-  "JSON_XML_parsing": "passed",
+  "source_manifest": {
+    "files": 223,
+    "sha256_and_bytes_match": true,
+    "excludes_self_and_this_publication_record": true
+  },
+  "syntax_and_metadata_parsing": {
+    "python": 57,
+    "json": 17,
+    "xml": 15
+  },
   "credential_pattern_scan": "no_findings",
-  "raw_data_cache_binaries_included": false,
-  "upstream_source_pins": 38,
-  "dependency_fetch_smoke": {
-    "repository": "dense_gflags_catkin",
-    "status": "network_blocked",
-    "reason": "Direct Git HTTPS could not connect to github.com:443 on the current Windows host; the GitHub connector is used for publication."
+  "raw_data_cache_or_build_artifacts_included": false,
+  "upstream_fetch": "origin main fetched successfully from Linux workspace",
+  "simulation_motion_acceptance": {
+    "summary": "docs/evidence/motion_acceptance_20261103.json",
+    "completed_laps": 2,
+    "completed_stages": 20,
+    "mission_and_mapping_passed": true,
+    "repeat_run_completed_laps": 2,
+    "repeat_run_completed_stages": 20,
+    "repeat_run_duration_s": 505.6204128265381
   },
+  "experiment_processes_closed_for_publication": true,
   "fresh_machine_full_native_build": "not_performed",
-  "known_runtime_mapping_defects_preserved_and_documented": true
+  "formal_shared_atomic_optimizer_round_id_available": false,
+  "historical_previous_publication_validation": {
+    "source_snapshot_matches_deployed_bridge": true,
+    "python_contract_tests": {
+      "passed": 66,
+      "failed": 0,
+      "native_full_stack_certification": false
+    },
+    "python_syntax": "passed",
+    "JSON_XML_parsing": "passed",
+    "credential_pattern_scan": "no_findings",
+    "raw_data_cache_binaries_included": false,
+    "upstream_source_pins": 38,
+    "dependency_fetch_smoke": {
+      "repository": "dense_gflags_catkin",
+      "status": "network_blocked",
+      "reason": "Direct Git HTTPS could not connect to github.com:443 on the current Windows host; the GitHub connector is used for publication."
+    },
+    "fresh_machine_full_native_build": "not_performed",
+    "known_runtime_mapping_defects_preserved_and_documented": true
+  }
 }

@@ -1,0 +1,32 @@
+{
+  "purpose": "Dedicated NVIDIA OpenGL hub; native Kimera/Voxblox/GTSAM algorithms retain their CPU implementations",
+  "toolkit_package": {
+    "package": "nvidia-container-toolkit-base",
+    "version": "1.20.1-1",
+    "url": "https://nvidia.github.io/libnvidia-container/stable/deb/amd64/nvidia-container-toolkit-base_1.20.1-1_amd64.deb",
+    "sha256": "e01964a064fbdb62425ab22ec5832349f92c5b0b50c8f23fdf14dad004db4fb2"
+  },
+  "toolkit_extraction": "/home/mrjq311/swarm_kimera_runtime/bootstrap/nvidia_cdi_toolkit/extracted",
+  "cdi_spec": "/etc/cdi/swarm-kimera-nvidia.json",
+  "cdi_spec_sha256": "c5f6365308822677e4fba6c3cb831148cbfefe6a7112a0cc2cd634cf5b8b5c63",
+  "cdi_device": "swarm.nvidia.com/gpu=all",
+  "container": "kimera-central-hub-gpu-20261103",
+  "image": "kimera-three-host:uros-snapshot-20261102",
+  "driver_version": "595.99.02",
+  "opengl_verified": {
+    "vendor": "NVIDIA Corporation",
+    "renderer": "NVIDIA GeForce RTX 5060 Ti/PCIe/SSE2",
+    "version": "4.6.0 NVIDIA 595.99.02",
+    "experiment_started": false
+  },
+  "experiment_started": false,
+  "sources": [
+    "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/cdi-support.html",
+    "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/docker-specialized.html"
+  ],
+  "notes": [
+    "CDI was installed as a task-scoped spec using Docker bind mounts; host Docker daemon and display driver were not restarted.",
+    "The extracted nvidia-cdi-hook path is referenced by the spec and must be retained.",
+    "Regenerate the CDI spec after a host driver update; do not reuse the recorded library paths with another driver."
+  ]
+}

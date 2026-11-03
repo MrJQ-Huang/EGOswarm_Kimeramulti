@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>traj_utils</name>
+  <version>0.0.0</version>
+  <maintainer email="bzhouai@todo.todo">bzhouai</maintainer>
+  <license>TODO</license>
+  <description>Message-only overlay of deployed traj_utils; .msg definitions are unchanged and algorithm libraries are not built.</description>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <export />
+</package>

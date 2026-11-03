@@ -20,10 +20,14 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool, String
 from quadrotor_msgs.msg import PositionCommand
 from traj_utils.msg import Bspline
+from telemetry_contract import (actual_odometry_topic, actual_odometry_caller,
+                                actual_odometry_description)
 
 p=argparse.ArgumentParser();p.add_argument('--route',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True);p.add_argument('--frontend',choices=('lidar','vio'),default='lidar')
 p.add_argument('--laps',type=int);p.add_argument('--navigation-only',action='store_true')
+p.add_argument('--central-telemetry',action='store_true',
+               help='Consume the source-authenticated hub ingress copy of actual body state')
 # Harness-only simulation guard: 2 * (0.2m body sphere + 0.2m assumed tracking
 # envelope) + 0.2m extra = 1.0m. The former 1.8m default had no stated envelope
 # basis and aborted a non-colliding native EGO traversal. No EGO parameter changes.
@@ -90,6 +94,11 @@ def inspect_planner_chain():
         checks['robot%d_local_chain'%i]=pubmap.get(local)==[planner] and server in submap.get(local,[])
         checks['robot%d_command_chain'%i]=pubmap.get(cmd)==[server] and body in submap.get(cmd,[])
         checks['robot%d_actual_body_unique'%i]=pubmap.get(odom)==[body] and planner in submap.get(odom,[])
+        if a.central_telemetry:
+            telemetry=actual_odometry_topic(i,True)
+            checks['robot%d_single_hub_telemetry_source'%i]=pubmap.get(telemetry)==[actual_odometry_caller(i,True)]
+            checks['robot%d_mission_uses_local_telemetry'%i]=(rospy.get_name() in submap.get(telemetry,[]) and
+                                                            rospy.get_name() not in submap.get(odom,[]))
         checks['robot%d_broadcast_registered'%i]=planner in pubmap.get('/broadcast_bspline',[]) and planner in submap.get('/broadcast_bspline',[])
         uri=master('lookupNode',planner);subscriptions=dict(rpc(uri,'getSubscriptions'))
         checks['robot%d_goal_actual_planner_subscription'%i]=subscriptions.get(goal)=='geometry_msgs/PoseStamped'
@@ -251,6 +260,9 @@ def watchdog():
         if abort_event.is_set():stop_controls();return
 
 def odom(m,i):
+    caller=(getattr(m,'_connection_header',None) or {}).get('callerid')
+    if caller!=actual_odometry_caller(i,a.central_telemetry):
+        fail('Unexpected actual-body telemetry publisher for robot '+str(i));return
     q=m.pose.pose.position;r=m.pose.pose.orientation;xyz=[q.x,q.y,q.z]
     yaw=math.atan2(2*(r.w*r.z+r.x*r.y),1-2*(r.y*r.y+r.z*r.z))
     velocity=[m.twist.twist.linear.x,m.twist.twist.linear.y,m.twist.twist.linear.z]
@@ -323,7 +335,8 @@ def body_status(m,i):
 subs=[]
 for i in (0,1):
     suffix='lidar_odometry' if a.frontend=='lidar' else 'kimera_vio_ros/odometry'
-    subs += [rospy.Subscriber('/drone_%d_visual_slam/odom'%i,Odometry,odom,callback_args=i,queue_size=20,tcp_nodelay=True),
+    subs += [rospy.Subscriber(actual_odometry_topic(i,a.central_telemetry),Odometry,odom,callback_args=i,
+                             queue_size=1 if a.central_telemetry else 20,tcp_nodelay=True),
              rospy.Subscriber('/sim_%d/'%i+suffix,Odometry,estimator,callback_args=i,queue_size=1),
              rospy.Subscriber('/sim_%d/sensors/ready'%i,Bool,sensor,callback_args=i,queue_size=1)]
     subs += [rospy.Subscriber('/drone_%d_planning/bspline'%i,Bspline,spline,callback_args=i,queue_size=50,tcp_nodelay=True),
@@ -341,7 +354,10 @@ def report(final=False,error=None,goals=None):
             actual_body_positions=poses,actual_body_yaws_rad=yaws,actual_path_length_m=length,
             closure_error_from_recorded_start_m=[math.dist(first[i],poses[i]) if first[i] and poses[i] else None for i in (0,1)],
             minimum_sampled_center_separation_m=minimum_separation if math.isfinite(minimum_separation) else None,
-            trajectory_csv=str(trace_path),trajectory_source='simulated actual body; evaluation only, never input to SLAM',
+            trajectory_csv=str(trace_path),trajectory_source=actual_odometry_description(a.central_telemetry),
+            actual_body_telemetry=dict(central=a.central_telemetry,
+                topics=[actual_odometry_topic(i,a.central_telemetry) for i in (0,1)],
+                expected_callers=[actual_odometry_caller(i,a.central_telemetry) for i in (0,1)]),
             completed_stages=stage_history,completed_laps=lap_history,error=error,
             navigation_only=a.navigation_only,minimum_separation_guard_m=a.minimum_separation,
             minimum_separation_guard_basis=GUARD_BASIS,

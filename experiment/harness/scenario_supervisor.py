@@ -13,7 +13,9 @@ import rosgraph
 import rospy
 from std_msgs.msg import String
 
-p=argparse.ArgumentParser();p.add_argument('--drone-id',type=int,required=True);p.add_argument('--root',required=True);p.add_argument('--scene',type=Path);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--drone-id',type=int,required=True);p.add_argument('--root',required=True);p.add_argument('--scene',type=Path)
+p.add_argument('--local-planning-map',action='store_true',help='Build EGO local planning occupancy from the edge scene')
+a=p.parse_args()
 root=Path(a.root);scene_path=a.scene or root/'harness/complex_scene.json';scene=json.loads(scene_path.read_text());children=[]
 pending=None;current=None;lock=threading.Lock()
 rospy.init_node('drone_%d_complex_sim_supervisor'%a.drone_id,disable_signals=True)
@@ -105,7 +107,9 @@ try:
     try:replace_fake_body(start)
     except Exception as error:
      publish('continuous_body_failed',error=str(error),continuous_body=True);stop_children();continue
-   start_child('sensor',['python3',str(root/'harness/range_sensor.py'),'--drone-id',str(a.drone_id)])
+   sensor_args=['python3',str(root/'harness/range_sensor.py'),'--drone-id',str(a.drone_id)]
+   if a.local_planning_map:sensor_args+=['--scene',str(scene_path)]
+   start_child('sensor',sensor_args)
    publish('launched',scenario=d['scenario'],starts=start,goals=goal,pids=[p.pid for p,_ in children],continuous_body=d.get('continuous_body') is True)
   if children and any(p.poll() is not None for p,_ in children):
    publish('child_exited',codes=[p.poll() for p,_ in children]);stop_children()

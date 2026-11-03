@@ -19,6 +19,8 @@ import threading
 import time
 
 import numpy as np
+from telemetry_contract import (actual_odometry_topic, actual_odometry_caller,
+                                actual_odometry_description)
 from native_vio_graph_adapter import SIM_T_BODY_CAMERA, pose_matrix, set_pose, validate_transform
 
 
@@ -63,7 +65,8 @@ def dashed_segments(positions,on=.18,off=.14):
 
 class TrajectoryState:
     def __init__(self,run_id,cutoff,starts,yaws=(0.,0.),max_points=30000,
-                 sample_period=.08,minimum_distance=.025,body_camera=SIM_T_BODY_CAMERA):
+                 sample_period=.08,minimum_distance=.025,body_camera=SIM_T_BODY_CAMERA,
+                 central_telemetry=False):
         starts=np.asarray(starts,float)
         if starts.shape!=(2,3) or not np.isfinite(starts).all():raise ValueError('Exactly two finite start positions required')
         if len(yaws)!=2 or not np.isfinite(yaws).all():raise ValueError('Two finite initial yaws required')
@@ -71,6 +74,7 @@ class TrajectoryState:
         self.run_id,self.cutoff=run_id,float(cutoff);self.cutoff_ns=int(cutoff*1e9)
         self.initial=[initial_transform(starts[i],float(yaws[i])) for i in (0,1)]
         self.body_camera=validate_transform(body_camera);self.camera_body=np.linalg.inv(self.body_camera)
+        self.central_telemetry=bool(central_telemetry)
         self.maximum=int(max_points);self.period_ns=int(sample_period*1e9);self.distance=float(minimum_distance)
         self.paths={(kind,i):[] for kind in ('actual','vio','optimized') for i in (0,1)}
         self.latest_body={};self.raw_gauges={};self.raw_anchors={};self.optimized_gauge=None;self.optimized_anchor=None
@@ -80,7 +84,8 @@ class TrajectoryState:
     def reject(self,reason):self.rejected[reason]+=1;return False
 
     def ingest_odometry(self,robot,kind,stamp,transform,caller,frame):
-        expected=('/drone_%d_continuous_body' if kind=='actual' else '/sim_%d/kimera_vio_ros/kimera_vio_ros_node')%robot
+        expected=(actual_odometry_caller(robot,self.central_telemetry) if kind=='actual' else
+                  '/sim_%d/kimera_vio_ros/kimera_vio_ros_node'%robot)
         with self.lock:
             if caller!=expected:return self.reject(kind+'_wrong_caller')
             if int(stamp)<self.cutoff_ns:return self.reject(kind+'_pre_epoch_or_zero_stamp')
@@ -140,12 +145,18 @@ class TrajectoryState:
             return {'paths':{key:[(stamp,matrix.copy()) for stamp,matrix in rows] for key,rows in self.paths.items()},
                     'bodies':{i:(stamp,matrix.copy()) for i,(stamp,matrix) in self.latest_body.items()}}
 
+    def body_snapshot(self):
+        """The fast display timer does not copy or rebuild complete paths."""
+        with self.lock:
+            return {i:(stamp,matrix.copy()) for i,(stamp,matrix) in self.latest_body.items()}
+
     def status(self):
         with self.lock:
             return {'run_id':self.run_id,'epoch_cutoff_wall':self.cutoff,'started_wall':self.started_wall,'wall_time':time.time(),
                 'role':'read_only_trajectory_display','frame':'world','estimator_inputs_published':False,'TF_published':False,
                 'implementation_label':'Read-only actual-body and native VIO/LCD/DPGO trajectory display; map production is a separate component',
-                'actual_source':'Actual simulated body odometry; not planned commands',
+                'actual_source':actual_odometry_description(self.central_telemetry),
+                'actual_body_topics':{i:actual_odometry_topic(i,self.central_telemetry) for i in (0,1)},
                 'raw_vio_alignment':'Once per robot: declared world initialization times inverse(first observed native VIO body pose)',
                 'optimized_alignment':'One shared frozen gauge from sim0 first optimized camera key0, converted to body; never align sim1 independently',
                 'alignment_only_affects_visualization':True,'initial_world_body_poses':[x.tolist() for x in self.initial],
@@ -185,11 +196,21 @@ def main():
     parser.add_argument('--scene',type=Path);parser.add_argument('--scenario');parser.add_argument('--starts',help='JSON two XYZ initial positions')
     parser.add_argument('--initial-yaws',help='JSON two initial yaw angles in radians')
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--max-points',type=int,default=30000)
-    parser.add_argument('--publish-rate',type=float,default=2.);parser.add_argument('--calibration-json')
+    parser.add_argument('--publish-rate',type=float,default=20.)
+    parser.add_argument('--path-publish-rate',type=float)
+    parser.add_argument('--status-rate',type=float)
+    parser.add_argument('--calibration-json')
+    parser.add_argument('--central-telemetry',action='store_true',
+                        help='Use the shared local ingress copy of actual body telemetry')
     args=parser.parse_args(rospy.myargv()[1:]);starts,yaws=load_initialization(args)
-    if not 0<args.publish_rate<=10:parser.error('Visualization publish rate must be in (0,10] Hz')
+    if not 0<args.publish_rate<=60:parser.error('Vehicle display rate must be in (0,60] Hz')
+    if args.path_publish_rate is None:args.path_publish_rate=min(2.,args.publish_rate)
+    if args.status_rate is None:args.status_rate=min(1.,args.publish_rate)
+    if not 0<args.path_publish_rate<=args.publish_rate:parser.error('Path rate must be positive and at most the vehicle display rate')
+    if not 0<args.status_rate<=args.publish_rate:parser.error('Status rate must be positive and at most the vehicle display rate')
     calibration=SIM_T_BODY_CAMERA if args.calibration_json is None else json.loads(args.calibration_json)
-    state=TrajectoryState(args.run_id,args.cutoff,starts,yaws,args.max_points,body_camera=calibration)
+    state=TrajectoryState(args.run_id,args.cutoff,starts,yaws,args.max_points,body_camera=calibration,
+                          central_telemetry=args.central_telemetry)
     rospy.init_node('live_swarm_trajectory_view')
     def publisher(suffix,kind):return rospy.Publisher(visualization_topic(suffix),kind,queue_size=1,latch=True)
     paths={(kind,i):publisher(kind+'_'+str(i),RosPath) for kind in ('actual','vio','optimized') for i in (0,1)}
@@ -219,7 +240,8 @@ def main():
         with environment_lock:environment[:]=transformed
 
     for i in (0,1):
-        subscriptions.append(rospy.Subscriber('/drone_%d_visual_slam/odom'%i,Odometry,lambda m,i=i:on_odometry(i,'actual',m),queue_size=100,tcp_nodelay=True))
+        subscriptions.append(rospy.Subscriber(actual_odometry_topic(i,args.central_telemetry),Odometry,
+            lambda m,i=i:on_odometry(i,'actual',m),queue_size=1 if args.central_telemetry else 100,tcp_nodelay=True))
         subscriptions.append(rospy.Subscriber('/sim_%d/kimera_vio_ros/odometry'%i,Odometry,lambda m,i=i:on_odometry(i,'vio',m),queue_size=100,tcp_nodelay=True))
         subscriptions.append(rospy.Subscriber('/sim_%d/kimera_distributed/optimized_nodes'%i,PoseGraph,lambda m,i=i:on_optimized(i,m),queue_size=2,buff_size=2**24,tcp_nodelay=True))
     subscriptions.append(rospy.Subscriber('/two_pc/complex_environment',MarkerArray,on_environment,queue_size=1))
@@ -230,10 +252,14 @@ def main():
 
     def point(value):return Point(x=float(value[0]),y=float(value[1]),z=float(value[2]))
 
+    cadence={'paths':-math.inf,'status':-math.inf}
+
     def publish(_):
         try:
-            snapshot=state.snapshot();now=rospy.Time.now();all_markers=[]
-            for kind in ('actual','vio','optimized'):
+            tick=time.monotonic();now=rospy.Time.now();all_markers=[]
+            update_paths=tick-cadence['paths']>=1./args.path_publish_rate
+            snapshot=state.snapshot() if update_paths else {'bodies':state.body_snapshot()}
+            for kind in (('actual','vio','optimized') if update_paths else ()):
                 array=MarkerArray()
                 for i in (0,1):
                     rows=snapshot['paths'][kind,i];path=RosPath();path.header.frame_id='world';path.header.stamp=rospy.Time(rows[-1][0]//1000000000,rows[-1][0]%1000000000) if rows else now
@@ -262,12 +288,19 @@ def main():
                         else:
                             marker.pose.position.z+=.55;marker.pose.orientation.x=marker.pose.orientation.y=marker.pose.orientation.z=0.;marker.pose.orientation.w=1.;marker.scale.z=.23;marker.text=('AMOV' if i==0 else 'UROS')+' actual body'
                     vehicles.markers.append(marker)
-            vehicle_pub.publish(vehicles);all_markers.extend(vehicles.markers)
-            with environment_lock:obstacles=copy.deepcopy(environment)
-            environment_pub.publish(MarkerArray(markers=obstacles));aggregate_pub.publish(MarkerArray(markers=obstacles+all_markers))
-            report=state.status();report['callback_errors']=dict(errors);report['published_paths']={kind+'_'+str(i):visualization_topic(kind+'_'+str(i)) for kind in ('actual','vio','optimized') for i in (0,1)};report['publisher_node']=rospy.get_name();report['environment_markers']=len(obstacles)
-            status_pub.publish(String(data=json.dumps(report,allow_nan=False)))
-            args.output.parent.mkdir(parents=True,exist_ok=True);temporary=args.output.with_suffix(args.output.suffix+'.tmp');temporary.write_text(json.dumps(report,indent=2,allow_nan=False));os.replace(temporary,args.output)
+            vehicle_pub.publish(vehicles)
+            if update_paths:
+                all_markers.extend(vehicles.markers)
+                with environment_lock:obstacles=copy.deepcopy(environment)
+                environment_pub.publish(MarkerArray(markers=obstacles));aggregate_pub.publish(MarkerArray(markers=obstacles+all_markers))
+                cadence['paths']=tick
+            if tick-cadence['status']>=1./args.status_rate:
+                report=state.status();report['callback_errors']=dict(errors);report['published_paths']={kind+'_'+str(i):visualization_topic(kind+'_'+str(i)) for kind in ('actual','vio','optimized') for i in (0,1)};report['publisher_node']=rospy.get_name()
+                with environment_lock:report['environment_markers']=len(environment)
+                report['configured_publish_rates_hz']={'vehicles':args.publish_rate,'paths':args.path_publish_rate,'status':args.status_rate}
+                status_pub.publish(String(data=json.dumps(report,allow_nan=False)))
+                args.output.parent.mkdir(parents=True,exist_ok=True);temporary=args.output.with_suffix(args.output.suffix+'.tmp');temporary.write_text(json.dumps(report,indent=2,allow_nan=False));os.replace(temporary,args.output)
+                cadence['status']=tick
         except Exception as error:errors['publish_callback']+=1;rospy.logerr_throttle(5.,'Trajectory display error: %s',error)
 
     timer=rospy.Timer(rospy.Duration(1./args.publish_rate),publish)

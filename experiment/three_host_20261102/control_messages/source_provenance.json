@@ -1,0 +1,109 @@
+{
+  "format_version": 1,
+  "purpose": "Hub-only message generation for the unchanged EGO goal/trajectory observation interface; no planner or control algorithms are built here.",
+  "source_host": "uros@192.168.5.21",
+  "source_container": "ego-native-full-uros-20261102",
+  "repository_lock_reference": "dependencies/locks/ego_ros1_deployment.json",
+  "locked_repository": "https://github.com/ZJU-FAST-Lab/ego-planner-swarm.git",
+  "locked_commit": "92fe9f7227b2da819133eb8e0e8c7fc000f6ae20",
+  "git_metadata_present_in_copied_workspace": false,
+  "source_evidence": "Exact deployed .msg file bytes plus running EGO-generated message MD5; repository lock is retained provenance, not a claim that the extracted workspace has independently verified Git metadata.",
+  "running_message_md5": {
+    "quadrotor_msgs/PositionCommand": "4712f0609ca29a79af79a35ca3e3967a",
+    "traj_utils/Bspline": "4f7510f7be6fba2868a5e74dd6e8163b"
+  },
+  "packages": {
+    "quadrotor_msgs": {
+      "source_directory": "/ego_ws/src/uav_simulator/Utils/quadrotor_msgs",
+      "original_package_xml_sha256": "81fe8300c124d698674d61f78f0c8901336825e554792df02860cba4249a772e",
+      "original_cmake_sha256": "3726bf9fc1f3d59ac6e218263dd4e8fc4e024ef4d8cf21d166cc936958c357b0",
+      "declared_license": "BSD",
+      "dependencies": [
+        "std_msgs",
+        "geometry_msgs",
+        "nav_msgs"
+      ],
+      "files": {
+        "msg/AuxCommand.msg": {
+          "bytes": 135,
+          "sha256": "1c506a91ee92fcbebae7f299ed7fc1c49c4fdb969c3f7652a6608ae5fe9f5093"
+        },
+        "msg/Corrections.msg": {
+          "bytes": 51,
+          "sha256": "465b4e298d5a693dc0a03b2bf99d7fcb0a671875c68d6cb39e09704fe2329948"
+        },
+        "msg/Gains.msg": {
+          "bytes": 52,
+          "sha256": "91961896927a5e51f8545066ca082851bd67b7678b7f0de294be3f542c94e9f2"
+        },
+        "msg/LQRTrajectory.msg": {
+          "bytes": 572,
+          "sha256": "6b2bc9ef4704cceeaf2019c1cd698cb1a52f896b46ef81457160a42b720f4f5e"
+        },
+        "msg/Odometry.msg": {
+          "bytes": 163,
+          "sha256": "9c0aded5c3cc619c7a47d9ddde865907f81b7c45841b75be9e7a5fc446980772"
+        },
+        "msg/OutputData.msg": {
+          "bytes": 304,
+          "sha256": "f4c2125a8258d048b25cb4528cbef0de3267dd91eb501df2eaecbeb6cba8bd68"
+        },
+        "msg/PPROutputData.msg": {
+          "bytes": 283,
+          "sha256": "53400dc4e6f3e8a866221af5cf35172b267df567e85cdcd664d64cbb0c8b06b0"
+        },
+        "msg/PolynomialTrajectory.msg": {
+          "bytes": 596,
+          "sha256": "ae9241a3413ca1229daf3e5a6f43f794e4d1bb6f433dacf86eaace77a3a878ba"
+        },
+        "msg/PositionCommand.msg": {
+          "bytes": 544,
+          "sha256": "208c2fa01938ed5ecd94b7c2135d0e8f070dc2e16901fb0d97b3749f69bb0658"
+        },
+        "msg/SO3Command.msg": {
+          "bytes": 138,
+          "sha256": "db5de254945dc6f4045819a0df809cd596a65e1fff2d6413e937c29f9b39fde1"
+        },
+        "msg/Serial.msg": {
+          "bytes": 426,
+          "sha256": "b98a312615a71d66e5e7022adce1fdade90873e77060882c8bd22d8603f846eb"
+        },
+        "msg/StatusData.msg": {
+          "bytes": 57,
+          "sha256": "6aea60de547e5d46749e592b980e8bb4c066172140e1a0eabf113977cdda8130"
+        },
+        "msg/TRPYCommand.msg": {
+          "bytes": 98,
+          "sha256": "c22e8f1db7c33de5324568143dc131d6a2b7cc9a2aad94f471c27761914a720f"
+        }
+      },
+      "build_changes": "Package metadata and CMake are reduced to message generation; .msg files copied byte-for-byte."
+    },
+    "traj_utils": {
+      "source_directory": "/ego_ws/src/planner/traj_utils",
+      "original_package_xml_sha256": "5fcbca0e7a8fbc575e4ac66f2c99143de689a3a313c13ef77e70d1a176bb56b0",
+      "original_cmake_sha256": "5898d634cf6f64363c07004f6c5fc96274e7828828994f75a0154073dde58d7a",
+      "declared_license": "TODO",
+      "dependencies": [
+        "std_msgs",
+        "geometry_msgs"
+      ],
+      "files": {
+        "msg/Bspline.msg": {
+          "bytes": 140,
+          "sha256": "9aa978c3c74867e0decdb333ce936c3ea2704a8f94ce9054e08a9d1de36b92d5"
+        },
+        "msg/DataDisp.msg": {
+          "bytes": 64,
+          "sha256": "3867c49329e36ca5c781232992a0f38d2c7aa660f86b541150bf4a6e768ce7d2"
+        },
+        "msg/MultiBsplines.msg": {
+          "bytes": 37,
+          "sha256": "8a2833175547ea3cd74aefedc054039a45d11c7d91bdba3b6f98c0f56fe18b76"
+        }
+      },
+      "build_changes": "Package metadata and CMake are reduced to message generation; .msg files copied byte-for-byte."
+    }
+  },
+  "license_notes": "Original package.xml license declarations are preserved. No package/ancestor LICENSE was present in the deployed source; the existing repository-level EGO license evidence is retained alongside this overlay."
+}

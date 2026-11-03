@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>quadrotor_msgs</name>
+  <version>0.0.0</version>
+  <maintainer email="todo@todo.todo">Kartik Mohta</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/quadrotor_msgs</url>
+  <description>Message-only overlay of deployed quadrotor_msgs; .msg definitions are unchanged and algorithm libraries are not built.</description>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <export />
+</package>
