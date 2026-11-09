@@ -1,105 +1,45 @@
-# 实验部署与启动说明
+# 环境部署与入口选择
 
-本仓库保存现有 AMOV 与 UROS 双机实验的源码和配置。默认路径、IP、容器名及部分 underlay 来自这两台设备，需要先调整；尚未验证从全新系统一键构建和复现实验。
+当前工作入口是 [distributed/manager.py](../experiment/three_host_20261102/distributed/manager.py)，采用两端本地原生 SLAM、三个独立 master 和本机结果 observer。分阶段操作见[分布式部署与启动](distributed_deployment.md)。本页保留共同依赖与集中 baseline 的说明，不应混用两种 profile 的节点、master、run 或停止参数。
 
-当前采用本文末尾的“三台主机集中计算入口”：设备只运行仿真、EGO 控制、日志和无损上行，本机运行全部Kimera/Voxblox与按profile录制。前面的 `manage_native_stack.py` 流程保留为历史环境说明，不要混用两套入口启动同一轮。
+第五轮 `distributed_continuity_20261104_153318` 已完成两圈 20/20 航段、continuity 修复核验与三主机正常关闭，RViz 已关闭。两端沿用 0.20 m TSDF 与原 FPS/CPU 参数；功能改造完成，AMOV accepted mesh 最大更新间隔仍为 22.8619 秒，强实时性能未通过。第四轮数据另保留为修复前证据。
 
-## 系统与依赖
+本仓库主要复用现有 AMOV/UROS 环境。路径、IP、容器与部分 underlay 有设备约定；尚未证明从全新系统一键构建与复现实验。
 
-当前实验采用 Ubuntu 20.04、ROS Noetic、GCC 9、OpenCV 4.2、PCL 1.10 和匹配配置的 GTSAM 4.2。AMOV 在 ARM64 本机运行，UROS 的原生 Kimera 与 EGO 环境在 x86-64 Docker 中运行，挂载实验根目录到 `/experiment`。
+## 系统、源码与 ABI
 
-EGO 需要 ROS1 的运行版本；不要误用 UROS 宿主机另一个 ROS2 工作区。当前运行 EGO 源提交为 `92fe9f7227b2da819133eb8e0e8c7fc000f6ae20`。上游依赖与本地补丁见 `dependencies/`，稠密 overlay 的历史构建记录见 `experiment/native_full_stack_20261102/build_recipe.json` 和 `source_lock.json`。
+部署使用 Ubuntu 20.04、ROS Noetic、GCC 9、OpenCV 4.2、PCL 1.10 及匹配 Eigen/预积分配置的 GTSAM 4.2。AMOV 为 ARM64 本机环境；UROS 为 x86-64，原生 Kimera 与 EGO 使用独立 ROS1 容器。不要误用 UROS 宿主机的 ROS2 工作区，也不能跨 CPU 架构复制二进制。
 
-`build_recipe.json` 中的归档文件名描述既有构建过程。源码归档、编译产物与预构建 Docker 镜像不随仓库上传，不能直接假设这些文件已存在。先按固定提交与补丁准备 underlay，再编译 dense overlay；两种架构独立编译。
+| 主机 | 实验根目录 | 运行环境 |
+| --- | --- | --- |
+| AMOV | `/home/amov/Drone/two_pc_ego_20261030` | 原生 Kimera underlay 与 `native_full_stack_20261102/amov_ws` overlay；本机 ROS1 EGO |
+| UROS | `/home/uros/Drone/egoswarm/experiments/two_pc_ego_20261030` | `kimera-native-full-uros-20261102` 与 `ego-native-full-uros-20261102`，实验目录挂载为 `/experiment` |
+| 本机 | `/home/mrjq311/swarm_kimera_runtime/experiment` | `kimera-central-hub-gpu-20261103`，目录挂载为 `/experiment` |
 
-## 获取固定版本源码
+仓库 `experiment/` 对应各机实验根目录中的内容。保留既有 underlay/overlay、构建产物、历史 `runs/` 和证据；同步源码时不要使用无边界删除。当前 distributed manager 直接从 `configs/amov|uros/multimodal/` 复制该机参数及 flags，并记录输入 hash；不能用 UROS 默认参数覆盖 AMOV。历史管理器读取 `<实验根>/multimodal/` 的约定另见下文。
 
-在仓库根目录预览清单，再获取当前主机对应的源码与补丁：
+原生依赖来源、固定提交与兼容补丁位于 `dependencies/`，构建记录位于 `experiment/native_full_stack_20261102/build_recipe.json` 与 `source_lock.json`。当前 PGMO 是现代 MESH API 兼容移植，不是 Kimera-Multi v1.0.0 官方依赖组合。构建记录中的源码归档、镜像与二进制不随仓库上传，不能假设目标设备已有这些文件。
 
 ```bash
 python3 tools/fetch_sources.py --host uros --list
 python3 tools/fetch_sources.py --host uros --destination /tmp/swarm_sources
 ```
 
-AMOV 使用 `--host amov`。脚本按固定 SHA 获取 38 个仓库并应用本主机补丁，拒绝覆盖已有源码目录；只准备源码，不编译、不启动服务。可以用 `--component <id>` 单独获取一个组件。构建前还需处理清单中的 `post_fetch_notes`、系统依赖和 underlay/overlay ABI。
+AMOV 选择 `--host amov`。脚本只按锁定源码和本机补丁准备源树，不编译、不启动；已有目标目录不会被直接覆盖。构建前核对清单的系统依赖、`post_fetch_notes` 和 underlay/overlay ABI。UROS 的稀疏特征防护与 AMOV 的 VIO 基线差异已分别记录，不能擅自把两机补丁合并成同一套。
 
-实际源码完整构建尚未在全新系统复测；`build_recipe.json` 保留已部署环境的构建说明。UROS VIO 保留两个稀疏特征防护分支，AMOV VIO 源保持其固定提交，双方补丁分别记录。
+## 启动前的共同检查
 
-## 配置现有环境入口
+1. 检查 `rospack` 实际路径、原生可执行文件及 `ldd`；必须有 `tsdf_server`、`voxblox_mesh_frontend_node`、`kimera_pgmo_node`，不能以 generic mesh frontend 代替 Voxblox 接口。
+2. 对全部交换类型核验 type/MD5，包括 PoseGraph、BoW/VLC、DPGO 自定义矩阵和 PublicPoses、KimeraPgmoMesh、Bspline；不能只比较外层字节载体类型。
+3. 核验相机/机体坐标约定、每机标定、关键帧 ID 与时间戳，没有使用 actual 填充 VIO 或重建输入。
+4. 核验三机时钟偏差与各机 ROS_IP；同一个 master 端口号不表示共用 master。检查对应 profile 的固定 TCP 端口，而不是只测试 master 可达。
+5. 先关闭上一轮所属角色、核对 OS 进程归属与 latched 数据源，再生成新 run/cutoff。不要在保留 SLAM 状态时 reset 仿真体。
 
-检查并适配下列文件中所有绝对路径与网络地址：
+`master` 启动返回前须通过本轮进程归属、master XML-RPC `getPid` 及 `/run_id` UUID 就绪检查，才能并发启动 roslaunch。第四轮第一次冷启动曾因只确认 Popen 返回而未等待 master bound，触发多个 roslaunch 自启 master 和 UUID 冲突；该次在传感器与运动前拦截。加入屏障后，新 run 的三机冷启动与双端预热均通过，不能通过忽略 UUID 错误继续使用旧 run。
 
-- `experiment/native_full_stack_20261102/manage_native_stack.py`
-- `experiment/native_full_stack_20261102/env_amov_full.bash`
-- `experiment/native_full_stack_20261102/env_uros_full.bash`
-- `experiment/harness/env_amov.bash` 与 `env_uros.bash`
-- `experiment/harness/multimodal/backend.launch` 及其参数文件
-- `experiment/configs/{amov,uros}/multimodal/` 中各机的 `vio.launch`、`robot_names.yaml` 与 `params/`
+OpenGV 防护库需在本架构独立构建、测试并建立 `runtime_gate.sha256` 后才使用 `--opengv-guard`。不能复制另一架构的 `.so` 或校验文件。未通过质量评估的 nearest-depth 候选不属于运行基线。
 
-现有部署路径为 AMOV `/home/amov/Drone/two_pc_ego_20261030`，UROS `/home/uros/Drone/egoswarm/experiments/two_pc_ego_20261030`；仓库的 `experiment/` 对应该实验根目录。管理脚本默认 UROS 地址 `192.168.5.21`、AMOV 地址 `192.168.5.6`，共享 master 端口为 `11431`。脚本还对白名单地址与端口做了校验，换网段时应同步修改。
-
-UROS 默认容器名为 `kimera-native-full-uros-20261102` 与 `ego-native-full-uros-20261102`。原生环境入口依赖各机既有 Kimera underlay；仓库保留入口不代表该环境已在新机器安装。
-
-将 `experiment/` 的内容同步到各机实验根目录后，再将 `experiment/configs/<host>/multimodal/` 的内容覆盖同步到该机 `<实验根目录>/multimodal/`。管理器实际读取后者；两机 VIO 参数不同，不能都直接使用仓库 `experiment/multimodal/` 中的默认 UROS 配置。同步源码与配置时保留主机原有的 `runs/`、工作区和环境文件，不使用无边界的删除同步。
-
-## 构建与接口检查
-
-在启动仿真前完成以下检查：
-
-1. `rospack` 实际解析到预期 underlay 和 overlay，`ldd` 无缺失库。
-2. 两机交换的 `PoseGraph` 等消息 MD5 相同，OpenCV、Eigen 与 GTSAM ABI 一致。
-3. 存在原生 `tsdf_server`、`voxblox_mesh_frontend_node` 与 `kimera_pgmo_node`；不能用 generic mesh frontend 代替 Voxblox frontend。
-4. 固定版本 PGMO 使用现代 `MESH` 配置，原始关键帧 ID 连续且未被重编号。
-5. 两机时钟同步、ROS_IP 可达，ROS 动态端口可双向连接；共享 master 可达不代表所有 topic 都可达。
-
-仓库根目录的纯 Python 契约与插值测试：
-
-```bash
-python3 -m unittest discover -s experiment/harness/multimodal -p 'test_*.py'
-```
-
-这组测试覆盖接口与数值约定，原生依赖还需单独构建、运行上游检查并通过实际 ROS 输入验收。
-
-当前运行启用了单独验证的 OpenGV 异常防护补丁。必须在本架构重新编译并建立校验文件后才传 `--opengv-guard`；不能从另一台主机复制 `.so`。未通过质量评估的 depth nearest 候选不属于当前运行基线。
-
-## 启动顺序
-
-以下是现有管理器的操作流程，需先完成路径与环境配置。两机使用相同的新 `run-id` 与同一个 UTC epoch `cutoff`，每机只运行一套实验。管理器保存进程归属，不能并发修改同一主机的管理状态文件。
-
-1. 停止上一轮所属节点，确认 recorder 已落盘；保留原始数据和诊断证据。新一轮使用空输出目录及新进程状态，不需要清空 Linux 内核页缓存。
-2. UROS 启动 `master`，配置 `/use_sim_time=false` 与当前运行标识；确认没有上一轮的 latched 数据源。
-3. 两机依次启动 `record`、`adapter`、`heartbeat`、`backend`、`dense`、`vio`、`supervisor`；UROS 另启 `world`、`trajectory` 和 `global-view`。
-4. `dense` 使用 `--mode joint --require-cross --cloud-rate 1 --cutoff ...`；VIO 与 backend 在防护库就绪时使用 `--opengv-guard`。
-5. 用 `/two_pc/scenario_control` 发出本轮 `reset`：场景 `broad_loop`，`continuous_body=true`，同一 `run_id`。等待两机连续运动仿真体、规划器和各原生 SLAM 节点注册。
-6. 两机启动 `sensors`，完成初始化与预热，检查原生 VIO key 0、IMU 和局部 TSDF 的真实积分，再由 UROS 启动 `mission --laps 2`。
-7. 任务期间检查消息年龄、实际积分、队列与版本回执。结束时先停止新增传感器、前端及协同后端输入，限时排空已接收工作；再保存原生状态并对冻结结果做两次哈希核对，最后正常结束 recorder，使录制文件完整落盘。
-
-例如，在已配置的 UROS 主机上检查指定轮次：
-
-```bash
-NATIVE_STAGE=/home/uros/Drone/egoswarm/experiments/two_pc_ego_20261030/native_full_stack_20261102
-python3 "$NATIVE_STAGE/manage_native_stack.py" status --host uros --run-id YOUR_RUN_ID
-```
-
-管理器的 `stop` 只针对指定轮次所属进程，可用 `--roles` 限定；共享 master 默认保留，只有显式 `--stop-master` 才停止。不要用全局 `pkill` 代替归属检查。
-
-## RViz 与数据
-
-分别打开两机局部点云、全局点云和轨迹视图。局部 fixed frame 为 `sim_0/vio_odom` 与 `sim_1/vio_odom`；全局为 `kimera_world`。本机局部显示使用 `/sim_N/native_dense/raw_local_vertices`，全局只使用 `/visualization/native_mesh/global_cloud`，颜色青色与橙色区分来源。
-
-数据保存到原部署根目录的 `native_full_stack_20261102/runs/<run-id>/<host>/`。至少保留 RGB-D、IMU、LiDAR、标定、原始关键帧图、协同约束与权重、PGMO 实际输入、原生 mesh、状态回执和任务时间记录。录制原始传感器需要预留磁盘空间，日志与 raw mesh 频率不能替代实际建图验收。
-
-当前持续建图和同轮全局发布仍有阻塞与版本问题，见[已知问题](known_issues.md)。
-
-## 三台主机集中计算入口
-
-`experiment/three_host_20261102/` 提供分工管理入口。AMOV（robot 0）和 UROS（robot 1）各自只运行 EGO、连续仿真体、传感器、心跳和无损上行。设备保留日志和进程管理元数据，不启动 rosbag、VIO CSV、TSDF 或地图导出。本机 `192.168.5.14` 运行接收分发、两套 VIO/adapter/TSDF/mesh frontend、LCD/DPGO/PGMO、唯一任务目标调度、全部显示、录制和后处理。
-
-本机默认使用 `kimera-central-hub-gpu-20261103` ROS1 容器，挂载 `/home/mrjq311/swarm_kimera_runtime/experiment` 到 `/experiment`。该容器复用固定的原生 underlay，以 NVIDIA CDI 接入显卡、X11 和驱动；已准备环境的实际 OpenGL 检查见 `dependencies/locks/hub_gpu_runtime.json`。CDI 安装参考 [NVIDIA CDI 文档](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/cdi-support.html)。保留清单引用的 `nvidia-cdi-hook`，主机驱动升级后需重新生成 CDI，不复用旧驱动路径。`HUB_RENDER_MODE=nvidia` 为默认，显式 `software` 可用于排查。显卡负责 OpenGL，现有原生 SLAM 算法仍为 CPU 实现。
-
-同步实验源码时保留既有 underlay/overlay 和构建产物；两机 `<root>/multimodal/` 仍按 `configs/<host>/multimodal/` 覆盖，不能用 UROS 默认配置覆盖 AMOV。当前集中 VIO 读取本机 `configs/amov|uros`，运行副本通过容器内 `rospack` 解析原生 VIO 启动路径，不使用 AMOV 的绝对路径。每份启动文件显式传入 `/experiment/configs/<host>/multimodal/flags`，保留各设备旧实验实际使用的四份 flags；部署时必须包含该目录，不能以其他数据集默认值代替。启动前在选定容器内检查四文件并计算 SHA256，写入该 VIO 的 `native_inputs.json`；同轮重启会核对这些依赖及独立复制的七份 YAML，发生变化时要求新 run ID。此前未生成 `native_inputs.json` 的运行目录可初建该文件。
-
-本机观察 EGO 真实轨迹需要匹配的 `quadrotor_msgs/PositionCommand` 和 `traj_utils/Bspline`。仓库提供只生成消息的工作区，构建时不生成本机 EGO 规划器或控制库：
+ROS1 EGO 消息在需要的 native/observer 环境内加载。仓库提供仅生成消息的工作区，来源见 `control_messages/source_provenance.json`；它不构建 hub 上的 EGO 控制程序：
 
 ```bash
 docker exec kimera-central-hub-gpu-20261103 \
@@ -108,45 +48,59 @@ docker exec kimera-central-hub-gpu-20261103 \
   -DCMAKE_BUILD_TYPE=Release -DCATKIN_ENABLE_TESTING=OFF
 ```
 
-`env_hub.bash` 自动加载该工作区。消息来源、原始字节哈希及运行 MD5 见 `control_messages/source_provenance.json`。`PositionCommand` 应为 `4712f0609ca29a79af79a35ca3e3967a`，`Bspline` 应为 `4f7510f7be6fba2868a5e74dd6e8163b`。
+核验 `PositionCommand` MD5 为 `4712f0609ca29a79af79a35ca3e3967a`、`Bspline` 为 `4f7510f7be6fba2868a5e74dd6e8163b`。当前环境入口按存在性加载消息 workspace；构建结果仍须按各环境实际解析路径检查。
 
-`manager_hub.py` 管理本机角色，`manager_local.py --host amov|uros` 管理对应设备。所有管理器使用同一新 `--run-id`、同一 `--cutoff` 及 `http://192.168.5.14:11431`。使用 `--dry-run` 可查看实际命令，且不创建运行目录或启动进程。
+本机容器以 NVIDIA CDI 接入 OpenGL、X11 和驱动；实际配置见 `dependencies/locks/hub_gpu_runtime.json`。保留其引用的 hook，驱动升级后重新生成 CDI，参考 [NVIDIA 文档](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/cdi-support.html)。GPU 用于显示，现有原生 SLAM 没有因此变为 CUDA 实现。
 
-新一轮实际启动顺序如下；静态检查通过不等于已运行实验：
+## 当前分布式入口
 
-1. 本机启动 `master`，设置 `/use_sim_time=false`、`/rosout_disable_topics_generation=true` 和当前运行标识。
-2. 两机启动 `uplink/heartbeat/supervisor`，不启动 sensors；本机启动 `ingress0/1`、`record`、`tsdf-witness`、`adapter0/1`、`local-frontend0/1`、`backend0/1`、`dense0/1`、`global-view/trajectory/world`。默认 `record --record-profile map` 保存结果和少量遥测；需原始输入重放时显式选 `replay`，全部中间诊断选 `debug`。录制预算覆盖启动与完整任务，例如 `--duration 1800`。
-3. 一次 reset 创建两台连续仿真体，然后本机启动 `vio0/1`。不可在保留 SLAM 状态时重新 reset 仿真体。
-4. `validation/validate_bootstrap_subscriptions.py` 要求设备私有传感器发布者尚未启动、实际body遥测已直接接入uplink、本机ingress已预发布标准话题、所有真实 TCPROS 连接和来源正确，且原生 key 0 的消费者已连接；通过后才启动两机 `sensors`。
-5. 验证静止预热、七路小状态、原生 key 0/gauge、真实 TSDF 积分、EGO 唯一控制链及拓扑，再打开本机四个 RViz，由本机启动唯一 `mission --laps 2`。目标序列可分别配置，任务只发布目标 `PoseStamped`，实际路径、避障与控制由设备上的 EGO Planner 和 traj_server 完成。
-6. 传感器启动后另行保存 `/sim_0/sensors/calibration` 与 `/sim_1/sensors/calibration` 参数到本机；这些是 ROS 参数，不会被 rosbag 自动当作话题录制。CameraInfo和原始输入在replay/debug模式才录包；map模式在线消费它们并只保留结果。
-7. 收尾时先停目标调度与设备 sensors/uplink，排空已接收工作，再按角色保存本机原生状态并正常关闭本机recorder，运行最终地图导出。设备不需要传回任何原始录制包。
+所有角色使用 `distributed/manager.py --host amov|uros|hub`，各自主机执行。它有纯 `--dry-run`，实际启动后按 run、role、本地 master 和 distributed profile 标记核验进程归属。`observer` 使用 `--channels map`，`observer-telemetry` 使用 `--channels telemetry`，是两个独立 ROS 进程。
 
-实际body状态直接从edge连续仿真体以默认30 Hz单份上行，hub任务/显示/录包通过`--central-telemetry`统一消费本地入口，禁止直接再订阅跨LAN `/drone_N_visual_slam/odom`。RGB-D使用原始ROS字节无损压缩，IMU独立100 Hz；每台设备每种上行通道只有本机 ingress 一个远端订阅者。禁止 VIO、录包或调试器直接订阅 `/edge/sim_N/...` 原始话题。标准 `/sim_N/...` 话题由本机分发。图像源龄上限默认 2 秒，配对缓存默认 8 帧；丢弃与序号间隙可从 uplink/ingress 状态读取，不修改传感器时间戳掩盖延迟。
+- AMOV/UROS：`master supervisor reset adapter local-frontend backend dense peer results vio sensors mission witness resource`。
+- 本机：`master observer observer-telemetry quality rviz rviz-local0 rviz-local1 rviz-actual resource gpu`。
+- 状态/关闭：`status`、`stop`，`--roles` 仅用于 `stop`。
 
-本机可分别设置 `--rviz-fps 30`、`--trajectory-rate 20`、`--cloud-rate 5`、`--mesh-period 1`。高频机体显示不会反复重建整条历史路径；路径和状态输出另有限频。实际刷新、吞吐和地图更新能力仍需在后续运行中测量。
+每个命令均要求 `--run-id` 与 `--cutoff`；共同 gauge 默认是 `<run>.robot0-initial`，也可显式指定。`dense` 使用 online/no-persist，设备不存在 raw recorder 角色。**distributed `stop` 不指定 `--roles` 会关闭该 run 全部所属角色，包括 master；没有旧管理器的 `--stop-master` 选项。** 分阶段启动、独立 observer 停止测试及安全收尾详见[专门操作说明](distributed_deployment.md)。
 
-`hub_backend.launch` 的 `--external-sensor-stream` 使 PGMO 后端不再订阅原始 RGB-D/IMU，也不发布第二份 TSDF 输入；独立回投进程和 TSDF 同在本机。原有观测轮次协议及全局版本校验保留，局部图可用不代表全局同轮融合已通过。两份本机 VIO 的 `visualize/use_rviz` 参数用于 ROS 输出路径，保持开启；它们不负责弹出远端查看器。
+第五轮新增 latched `/sim_N/native_dense/verified_body_path`，原 `approved_body_path` 的 topic/type/caller 不变。新 observer/导出器先按 receipt hash 选择 verified path，也兼容只有旧 `body_path` 的档案；兼容读取不允许放松 run/boot/gauge/source/hash 核验。部署应同步 native、result server、observer 与 exporter，不能只看到新 topic 名就认定最新 pending path 已被使用。
 
+第五轮 174 个托管运行源码/配置文件在本地、AMOV、UROS、本机运行目录逐项 SHA256 一致；该范围不包含不同架构的二进制、underlay 或历史运行资料。最终 Noetic 294 项测试无 skip 通过。GitHub 当前仍只有 baseline snapshot，分布式 feature 正在本地准备提交，不代表已经推送发布。
 
-### 输入优先级与最终地图保存
+## 保留的集中 baseline
 
-中心入口默认相机5 Hz、LiDAR1 Hz/每4点取1点、实际body遥测30 Hz。`manager_local.py`支持 `--camera-rate`、`--lidar-rate`、`--lidar-stride`、`--telemetry-rate` 显式覆盖，两端物理模型不随上传稀疏化改变。EGO本地5米/10 Hz range cloud从各自scene直接生成，与稀疏上传LiDAR独立。新协议v2需三端同时部署、使用新run/cutoff冷启动，不能在旧v1运行中只重启一端。
+`manager_hub.py` / `manager_local.py` 是 2026-11-03 集中计算 baseline：两端只控制、仿真和上行，本机在共享 `http://192.168.5.14:11431` 上运行两份 SLAM、任务、显示及录制。它不证明两机分担 SLAM 计算，与 distributed 的三个 master 严格分开。
 
-默认map录包不具备RGB-D离线重跑能力；原始输入需显式选择replay。停止重复录制中间点云/网格/完整显示Path仅减少本机磁盘和序列化，真正的LAN优化是单份遥测与稀疏辅助LiDAR。
+集中 baseline 的初始化顺序为：
 
-保存最终地图（在本机运行，ROS-free导出；先正常闭合recorder，并按需要使用其结束时间作为cutoff）：
+1. 本机 master；两端 uplink/heartbeat/supervisor，传感器先不启动。
+2. 本机 ingress、adapter、local-frontend、backend、dense、witness、显示与按 profile 选择的 recorder。
+3. reset 创建连续仿真体，本机 VIO 启动；冷启动订阅/真实连接/原生 key 0 消费者检查通过后，再启两端 sensors。
+4. 静止预热与真实积分、gauge、EGO 唯一控制链检查通过后，由本机唯一 mission 发目标。
+5. 停目标与传感器/上行、排空工作，保存本机原生结果并正常关闭 recorder，再导出地图。
+
+该入口 VIO 在本机读取 `configs/amov|uros/multimodal/`，记录 flags/YAML/launch 输入 hash。设备 `<root>/multimodal/` 的历史副本只用于相应旧入口；保留旧原生 `manage_native_stack.py` 时需按主机配置维护该副本，不能把它当作 distributed 的实际读取路径。
+
+集中录制 profile：`map` 保存结果和紧凑遥测，`replay` 增加 RGB-D/IMU，`debug` 保存全部中间诊断。map 模式不能重放完整原始输入；默认停止重复录包不代表停止在线传输。两端 private sensor 只有 uplink 消费，本机 ingress 分发标准话题，VIO/录包/显示不得直接重复跨 LAN 订阅设备 raw 流。此要求仅适用于集中 baseline，当前 distributed 的 raw 消费者是边端本地原生节点。
+
+集中 baseline 的最终导出保留原生 pair、面、颜色、receipt 与来源；青/橙点云只是机器人来源色的派生显示：
 
 ```bash
 python3 experiment/harness/multimodal/export_final_global_map.py \
-  --run-directory /path/to/runs/RUN/mrjq311 \
-  --output /path/to/final_map \
-  --cutoff-wall RECORD_END_EPOCH
+  --run-directory /path/to/central/runs/RUN/mrjq311 \
+  --output /path/to/final_map --cutoff-wall RECORD_END_EPOCH
 ```
 
-导出保留native pair原始坐标、三角面、颜色和证据。青/橙来源色的PLY/PCD是可视化派生输出；原生三角mesh另存。没有有效matched pair时应明确失败，不能拿场景先验或独立对齐的局部云冒充联合地图。
+该导出器针对旧 native-pair 事务目录，不直接用于 distributed observer 结果树。没有有效 pair 时不能用场景先验或分别拟合的局部地图补出联合结果。2026-11-03 集中版本一次完整运动结果见[验收摘要](evidence/motion_acceptance_20261103.json)。
 
-本轮没有修改0.6秒遥测保护或EGO原生250毫秒peer轨迹时差门限。新数据通道的持续飞行验收必须结合源龄、实际回调间隔、状态与原生积分完成记录；静止预热、socket标记或单元测试通过不能代替运动验收。
+`native_full_stack_20261102/manage_native_stack.py` 另保留为更早的两端原生部署入口，有其共享 master、录包、停止与固定 mesh 诊断语义；不属于当前分布式启动流程。2026-11-02 的历史积压/空全局显示见[已知问题](known_issues.md)，不要把旧状态当作当前 source 的结论。
 
+## 验证
 
-2026年11月3日已完成一次本机集中版本的完整两圈运动验收，20段原生EGO证明齐全，末圈联合地图、全程真实TSDF积分和运动期间资源均已独立核验。见[验收摘要](evidence/motion_acceptance_20261103.json)。这不扩大为真机或任意网络条件保证，原生观测匹配协议的共享原子轮次限制保留。
+```bash
+python3 -m unittest discover -s experiment/three_host_20261102/tests -p 'test_*.py'
+python3 -m unittest discover -s experiment/harness/multimodal -p 'test_*.py'
+```
+
+软件契约测试、原生构建、ROS 冷启动、完整运动、观察端退出/新缓存重建与几何质量分别留证。第五轮完整运动窗口为 496.58 秒，实际路径 AMOV/UROS 为 159.8820/159.1399 m；三主机 closure 均为 true、`remaining=[]`。一次团队 SE(3) 的 body path ATE 为 0.1991626/0.2081018 m，配对支持率为 99.9051%/99.9268%。连续性档案审计全部检查通过；运动后以全新 RAM 缓存重启 map observer，复核 shared map 与两端 verified path 关联成功，遥测进程保持运行，未连续测恢复时延。这不等于飞行中全部结果接收退出或 peer 网络分区测试。
+
+AMOV accepted mesh 最大更新间隔仍有 22.8619 秒（首次共享接纳后的 P95 13.5174 秒），整机平均 CPU 90.75%；UROS 相应最大值为 4.9907 秒，TSDF 运动窗完成数为 775/805。功能通过不能写为严格性能全部达标。[分布式核验摘要](evidence/distributed_acceptance_20261104.json)和[当前限制](known_issues.md)给出范围；完整本机数据位于 `/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/`，核心统计见[final_report.json](/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_report.json)。

@@ -1,0 +1,509 @@
+{
+  "schema_version": 2,
+  "updated_at": "2026-11-04T16:04:16.155156+08:00",
+  "status": "distributed_geometry_migration_and_motion_validated",
+  "strict_realtime_certified": false,
+  "baseline": {
+    "commit": "e9d3540e148b2e15d53bb959452810d548d4af44",
+    "github_snapshot_branch": "snapshot/centralized-baseline-20261104",
+    "repository": "MrJQ-Huang/EGOswarm_Kimeramulti"
+  },
+  "implementation_branch": "feature/distributed-kimera",
+  "feature_publication": "local branch, baseline snapshot published separately",
+  "final_run": "distributed_continuity_20261104_153318",
+  "results_directory": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub",
+  "configuration": {
+    "camera_hz": 5,
+    "IMU_hz": 100,
+    "TSDF_target_cloud_hz": 2,
+    "native_TSDF_voxel_m": 0.2,
+    "native_mesh_period_s": 2,
+    "result_map_rate_limit_hz": 0.5,
+    "actual_result_rate_limit_hz": 30,
+    "laps": 2
+  },
+  "roles": {
+    "amov": "Robot 0: EGO, local simulator/sensors, VIO, LCD, DPGO, TSDF and PGMO",
+    "uros": "Robot 1: EGO, local simulator/sensors, VIO, LCD, DPGO, TSDF and PGMO",
+    "hub": "Separate map/telemetry observers, RViz, archive and offline scoring; no SLAM estimator"
+  },
+  "edge_storage": {
+    "raw_sensor_recording": false,
+    "map_graph_files": false,
+    "algorithm_history": "RAM only",
+    "logs_allowed": true
+  },
+  "semantic_mode": "geometry_only",
+  "motion_window_epoch_s": [
+    1793777684.850971,
+    1793778181.4345658
+  ],
+  "motion_window_duration_s": 496.58359479904175,
+  "motion": {
+    "amov": {
+      "completed_stages": 20,
+      "motion_duration_s": 496.5000008799834,
+      "actual_path_length_m": 159.88201672915727,
+      "minimum_separation_m": 2.048761102042283
+    },
+    "uros": {
+      "completed_stages": 20,
+      "motion_duration_s": 496.39989457593765,
+      "actual_path_length_m": 159.13989092216624,
+      "minimum_separation_m": 2.063277824131118
+    }
+  },
+  "all_managed_processes_closed": true,
+  "source_verification": {
+    "run_id": "distributed_continuity_20261104_153318",
+    "hosts": {
+      "amov": {
+        "files": 174,
+        "sha256_match": true,
+        "mismatches": []
+      },
+      "uros": {
+        "files": 174,
+        "sha256_match": true,
+        "mismatches": []
+      },
+      "hub": {
+        "files": 174,
+        "sha256_match": true,
+        "mismatches": []
+      }
+    },
+    "local_repository_matches": true,
+    "local_mismatches": [],
+    "last_delta": "distributed_delta_20261104_160743",
+    "scope": "managed common runtime source/configs; platform underlays and historical experiment/multimodal preserved"
+  },
+  "tests": {
+    "returncode": 0,
+    "suites": [
+      143,
+      151
+    ],
+    "passed": 294,
+    "log": "/home/mrjq311/swarm_kimera_runtime/bootstrap/distributed_final_noetic_tests.log",
+    "validated_at": "2026-11-04T15:47:31.417565+08:00",
+    "command": "make test",
+    "skipped": 0
+  },
+  "trajectory_quality": {
+    "scope": "Completed native DPGO expanded body path submitted to PGMO; metadata/finite native observation, not exact soft-prior pose equality",
+    "alignment": "one team-wide SE3; no scale or independent robot fit for the joint result",
+    "ate_rmse_m": {
+      "0": 0.19916255846049735,
+      "1": 0.20810177594075602
+    },
+    "matched_time_support_fraction": {
+      "0": 0.9990512226466273,
+      "1": 0.9992679304961853
+    },
+    "VIO_independent_gauge_baseline_ate_rmse_m": {
+      "0": 0.39958959458447585,
+      "1": 0.32367469895477685
+    }
+  },
+  "map": {
+    "native_vertex_slots": 109117,
+    "face_referenced_vertices": 67033,
+    "triangles": 146846,
+    "active_vertex_accuracy_mean_m": 0.122169,
+    "active_vertex_accuracy_rmse_m": 0.166256,
+    "coverage_at_m": {
+      "0.15": 0.7004885333873335,
+      "0.30": 0.956120589277578,
+      "0.50": 0.9991456993874348
+    },
+    "metric_scope": "All face-referenced vertices; 150 uniformly sampled GT views per robot over the full motion window; nearest-vertex approximation, not exact point-to-triangle; common trajectory scoring SE3 only"
+  },
+  "telemetry": {
+    "window": "60 seconds starting approximately T0+300s",
+    "source_age_includes_clock_offset": true,
+    "actual": {
+      "sim_0/actual": {
+        "arrival_hz": 29.148492759403275,
+        "source_age_p95_ms": 92.32132304999996,
+        "maximum_callback_gap_ms": 162.911529,
+        "negative_source_age_samples": 0
+      },
+      "sim_1/actual": {
+        "arrival_hz": 29.85243516127724,
+        "source_age_p95_ms": 20.294828000000003,
+        "maximum_callback_gap_ms": 71.784831,
+        "negative_source_age_samples": 0
+      }
+    },
+    "pairing_eligible_tick_fraction": 0.9993333333333333,
+    "eligible_fraction_source_timestamp_difference_below_100ms": 0.9693128752501667,
+    "pairing_scope": "latest received actual stamps on eligible 50Hz sampler ticks; not certified acquisition synchronization"
+  },
+  "transport": {
+    "window": "same approximately T0+300s 60-second window",
+    "channels": {
+      "amov": {
+        "peer": {
+          "observed_rx_bytes": 8520315,
+          "observed_tx_bytes": 4710388,
+          "observed_retransmitted_bytes": 6134,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 177,
+            "mean": 20.608406779661017,
+            "p50": 19.691,
+            "p95": 33.003,
+            "maximum": 51.669
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 167,
+            "mean": 20.684191616766462,
+            "p50": 19.794,
+            "p95": 33.003,
+            "maximum": 43.834
+          },
+          "observed_connections": 3,
+          "observed_rx_mbit_per_s": 1.136038096459398,
+          "observed_tx_mbit_per_s": 0.6280495752921329
+        },
+        "map": {
+          "observed_rx_bytes": 13090,
+          "observed_tx_bytes": 28887859,
+          "observed_retransmitted_bytes": 0,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 59,
+            "mean": 39.85415254237289,
+            "p50": 36.847,
+            "p95": 62.07,
+            "maximum": 98.467
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 58,
+            "mean": 39.73310344827587,
+            "p50": 36.847,
+            "p95": 62.07,
+            "maximum": 98.467
+          },
+          "observed_connections": 1,
+          "observed_rx_mbit_per_s": 0.0017453273362139214,
+          "observed_tx_mbit_per_s": 3.851701298502166
+        },
+        "telemetry": {
+          "observed_rx_bytes": 0,
+          "observed_tx_bytes": 3166283,
+          "observed_retransmitted_bytes": 19580,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 59,
+            "mean": 10.119220338983054,
+            "p50": 8.099,
+            "p95": 24.444,
+            "maximum": 43.219
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 53,
+            "mean": 9.759283018867924,
+            "p50": 8.022,
+            "p95": 18.735,
+            "maximum": 43.219
+          },
+          "observed_connections": 1,
+          "observed_rx_mbit_per_s": 0.0,
+          "observed_tx_mbit_per_s": 0.4221696160496122
+        }
+      },
+      "uros": {
+        "peer": {
+          "observed_rx_bytes": 4612482,
+          "observed_tx_bytes": 8474032,
+          "observed_retransmitted_bytes": 25735,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 183,
+            "mean": 19.169114754098352,
+            "p50": 16.862,
+            "p95": 40.331,
+            "maximum": 59.656
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 182,
+            "mean": 19.227626373626364,
+            "p50": 16.862,
+            "p95": 40.331,
+            "maximum": 59.656
+          },
+          "observed_connections": 3,
+          "observed_rx_mbit_per_s": 0.6149962198050464,
+          "observed_tx_mbit_per_s": 1.1298683976451283
+        },
+        "telemetry": {
+          "observed_rx_bytes": 0,
+          "observed_tx_bytes": 3256445,
+          "observed_retransmitted_bytes": 23966,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 61,
+            "mean": 5.597426229508196,
+            "p50": 4.654,
+            "p95": 12.83,
+            "maximum": 19.23
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 60,
+            "mean": 5.583849999999999,
+            "p50": 4.654,
+            "p95": 12.83,
+            "maximum": 19.23
+          },
+          "observed_connections": 1,
+          "observed_rx_mbit_per_s": 0.0,
+          "observed_tx_mbit_per_s": 0.43419169223924214
+        },
+        "map": {
+          "observed_rx_bytes": 25473,
+          "observed_tx_bytes": 60308911,
+          "observed_retransmitted_bytes": 37912,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 61,
+            "mean": 20.819999999999997,
+            "p50": 20.753,
+            "p95": 31.154,
+            "maximum": 37.882
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 60,
+            "mean": 20.94573333333333,
+            "p50": 20.938,
+            "p95": 31.154,
+            "maximum": 37.882
+          },
+          "observed_connections": 1,
+          "observed_rx_mbit_per_s": 0.0033963923777033593,
+          "observed_tx_mbit_per_s": 8.041170087072205
+        }
+      },
+      "hub": {
+        "map": {
+          "observed_rx_bytes": 88812387,
+          "observed_tx_bytes": 38572,
+          "observed_retransmitted_bytes": 0,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 120,
+            "mean": 15.76355,
+            "p50": 15.827,
+            "p95": 19.888,
+            "maximum": 23.155
+          },
+          "recent_payload_sender_rtt_ms": {
+            "samples": 120,
+            "mean": 15.76355,
+            "p50": 15.827,
+            "p95": 19.888,
+            "maximum": 23.155
+          },
+          "observed_connections": 2,
+          "observed_rx_mbit_per_s": 11.841453267895403,
+          "observed_tx_mbit_per_s": 0.005142847195957715
+        },
+        "telemetry": {
+          "observed_rx_bytes": 6382416,
+          "observed_tx_bytes": 0,
+          "observed_retransmitted_bytes": 0,
+          "counter_resets": 0,
+          "smoothed_rtt_ms": {
+            "samples": 120,
+            "mean": 3.4589999999999943,
+            "p50": 3.986,
+            "p95": 3.986,
+            "maximum": 3.986
+          },
+          "recent_payload_sender_rtt_ms": null,
+          "observed_connections": 2,
+          "observed_rx_mbit_per_s": 0.8509745470557829,
+          "observed_tx_mbit_per_s": 0.0
+        }
+      }
+    },
+    "scope": "Linux TCP payload deltas, no link overhead; recent sender RTT is kernel smoothed round trip, not one-way latency"
+  },
+  "resources_motion_window": {
+    "amov": {
+      "logical_cpus": 4,
+      "host_cpu_mean_percent": 90.75044359466456,
+      "host_cpu_p95_percent": 99.06038647342996,
+      "selected_rss_sum_p95_GiB": 4.247735595703125,
+      "minimum_available_RAM_GiB": 9.250137329101562,
+      "rss_scope": "sum RSS, not exclusive physical memory; shared pages may repeat"
+    },
+    "uros": {
+      "logical_cpus": 8,
+      "host_cpu_mean_percent": 38.817068730189256,
+      "host_cpu_p95_percent": 54.677040233374115,
+      "selected_rss_sum_p95_GiB": 3.3795738220214844,
+      "minimum_available_RAM_GiB": 8.762825012207031,
+      "rss_scope": "sum RSS, not exclusive physical memory; shared pages may repeat"
+    },
+    "hub": {
+      "logical_cpus": 32,
+      "host_cpu_mean_percent": 2.309141955867407,
+      "host_cpu_p95_percent": 4.007765107650757,
+      "selected_rss_sum_p95_GiB": 0.8115219116210938,
+      "minimum_available_RAM_GiB": 114.16925048828125,
+      "rss_scope": "sum RSS, not exclusive physical memory; shared pages may repeat"
+    }
+  },
+  "gpu": {
+    "samples": 497,
+    "utilization_percent": {
+      "samples": 497,
+      "mean": 4.915492957746479,
+      "median": 5.0,
+      "p95": 5.0,
+      "minimum": 4.0,
+      "maximum": 6.0
+    },
+    "memory_MiB": {
+      "samples": 497,
+      "mean": 534.6056338028169,
+      "median": 538.0,
+      "p95": 551.0,
+      "minimum": 490.0,
+      "maximum": 559.0
+    },
+    "power_W": {
+      "samples": 497,
+      "mean": 16.71175050301811,
+      "median": 16.67,
+      "p95": 17.28,
+      "minimum": 15.9,
+      "maximum": 17.66
+    },
+    "scope": "one NVIDIA GPU, all device workloads; RViz uses NVIDIA GLX, SLAM is CPU"
+  },
+  "native_motion_metrics": {
+    "amov": {
+      "tsdf_integrations_during_motion": 775,
+      "integration_completion_gaps_s": {
+        "samples": 774,
+        "mean": 0.6405513659312128,
+        "median": 0.6171329021453857,
+        "p95": 1.3741481781005855,
+        "minimum": 0.009806156158447266,
+        "maximum": 2.2626419067382812
+      },
+      "mesh_accepted_publications_during_motion": 82,
+      "distinct_canonical_mesh_hashes": 82,
+      "first_shared_acceptance_after_start_s": 69.02569198608398,
+      "accepted_intervals_after_first_shared_s": {
+        "samples": 81,
+        "mean": 5.194407672057917,
+        "median": 3.7526657581329346,
+        "p95": 13.517366409301758,
+        "minimum": 0.41945433616638184,
+        "maximum": 22.861908197402954
+      },
+      "maximum_acceptance_gap_to_motion_end_s": 22.861908197402954,
+      "full_run_queue_peaks": {
+        "native_original_priority_queue_max_length": 196,
+        "native_original_max_queue_delay_s": 12.059682819002774,
+        "native_control_max_queue_delay_s": 12.025263313989853
+      },
+      "final_original_queue_length": 0,
+      "final_fatal": null,
+      "native_mesh_header_semantics": "native vertex_stamps.back(), not publication time or camera-to-display latency",
+      "no_edge_map_persistence": true
+    },
+    "uros": {
+      "tsdf_integrations_during_motion": 805,
+      "integration_completion_gaps_s": {
+        "samples": 804,
+        "mean": 0.6166789241098053,
+        "median": 0.6157134771347046,
+        "p95": 1.2432604432106016,
+        "minimum": 0.004742622375488281,
+        "maximum": 1.2898988723754883
+      },
+      "mesh_accepted_publications_during_motion": 219,
+      "distinct_canonical_mesh_hashes": 218,
+      "first_shared_acceptance_after_start_s": 65.39208698272705,
+      "accepted_intervals_after_first_shared_s": {
+        "samples": 218,
+        "mean": 1.9752460029147088,
+        "median": 1.9995671510696411,
+        "p95": 2.9459278345108033,
+        "minimum": 0.16579318046569824,
+        "maximum": 4.990713596343994
+      },
+      "maximum_acceptance_gap_to_motion_end_s": 4.990713596343994,
+      "full_run_queue_peaks": {
+        "native_original_priority_queue_max_length": 62,
+        "native_original_max_queue_delay_s": 2.8040061510400847,
+        "native_control_max_queue_delay_s": 2.7698659689631313
+      },
+      "final_original_queue_length": 0,
+      "final_fatal": null,
+      "native_mesh_header_semantics": "native vertex_stamps.back(), not publication time or camera-to-display latency",
+      "no_edge_map_persistence": true
+    }
+  },
+  "continuity": {
+    "runtime_audit": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/continuity_runtime_audit.json",
+    "runtime_audit_sha256": "0b1843bd1b270abd03b70b159cbcf8946a0d16adef94b2e6955c156e2b4fe370",
+    "runtime_audit_all_checks_passed": true,
+    "fresh_observer_recovered_verified_pair": true,
+    "fresh_observer_recovery_latency_measured": false,
+    "policy": "Retain last verified shared gauge only within unchanged run, peers, native PGMO process and graph prefix. Reject unshared new priors before PGMO. Transmit the exact verified path separately while a newer path is pending; no current-generation or atomic claim."
+  },
+  "limits": [
+    "AMOV is CPU limited: accepted native map interval median 3.753s, P95 13.517s, maximum 22.862s in this motion window; not hard realtime",
+    "Self-built compatible TCP transport, not original author RTM",
+    "Geometry-only, no semantic segmentation",
+    "Observational asynchronous map/path evidence; no exact shared atomic optimizer or mesh generation ID",
+    "EGO simulation navigation uses simulator state, not Kimera state feedback",
+    "Finite GNC termination is not a mathematical global optimum or convergence certificate",
+    "No fresh-machine full native rebuild, real-aircraft or hardware timestamp synchronization certification"
+  ],
+  "historical_runs": {
+    "first_failed": "distributed_native_20261104_132619: 9/20; independent receipt/control queue overflow, subsequently fixed by coupled metadata+payload",
+    "second": "distributed_atomic_20261104_140544: 20/20; combined observer exit 24.1505s during stages18->20; TSDF +47/+49; latency failed",
+    "third": "distributed_fast_20261104_142541: 20/20; telemetry process isolation verified; remaining mesh delay",
+    "preflight_failed": "distributed_final_20261104_145734: no sensors or flight; master startup UUID race; fixed by owned master PID+UUID readiness barrier",
+    "fourth": "distributed_final_20261104_150046: 20/20; AMOV motion accepted interval maximum31.183s exposed gauge/echo gating; post-motion map observer exit23.6117s with TSDF +42/+43"
+  },
+  "artifacts": {
+    "trajectory_quality.json": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/trajectory_quality.json",
+      "bytes": 31496,
+      "sha256": "8016e62bb3292b589f6ffa4e95666510fedf778d392f9cf7c447a3d3d7f7d415"
+    },
+    "mesh_quality.json": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/mesh_quality.json",
+      "bytes": 23425,
+      "sha256": "a08165b89a0ea7bde0c0b51383d8390135a677c4e83cbc84344b171e78478745"
+    },
+    "telemetry_metrics_60s_heavy.json": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/telemetry_metrics_60s_heavy.json",
+      "bytes": 6233,
+      "sha256": "4bb363cf4b2f27a085d85f27f0a9fc331ced6e4cf70ff1cc1f7fd6cbdaa48149"
+    },
+    "closure_receipts.json": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/closure_receipts.json",
+      "bytes": 5741,
+      "sha256": "27ba9c98b97900a3a8a6dcdb8d173e3cdd66dc678b7f5bfb9dda7dde3b7fec13"
+    },
+    "final_native_map/export_manifest.json": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_native_map/export_manifest.json",
+      "bytes": 24649,
+      "sha256": "271a43522fe522aa6cbadf07c45de16405adb22ed701d53df440717442116042"
+    },
+    "final_native_map/global_native_mesh.ply": {
+      "path": "/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_native_map/global_native_mesh.ply",
+      "bytes": 6928970,
+      "sha256": "06d584b8aaea60ebb5e42b2f8ad7818c0f8a160da42349738f062b66c0709b3e"
+    }
+  }
+}

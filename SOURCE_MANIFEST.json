@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "deployed_bridge_sha256": "1cc01d87445519320c580bbc780ad8b510d85f76608d25af8b6bdd8eeb17b8e6",
+  "deployed_bridge_sha256": "fe73f85895038d077eabf2d77f9fa8d9595b497520cfdd294621cd24ae7dc3c3",
   "files": [
     {
       "path": ".gitattributes",
@@ -19,8 +19,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7558,
-      "sha256": "a1bcd314945893fcc39ad069e27a13e71bd2cbf0fc03fd8e65407fdd43fd9393"
+      "bytes": 10676,
+      "sha256": "dd4063c8807c8186072f184e1c7bdc4af2e6449e4d2ab85f0b78b1655c2bbdc8"
     },
     {
       "path": "dependencies/README.md",
@@ -334,18 +334,28 @@
     },
     {
       "path": "docs/architecture.md",
-      "bytes": 9384,
-      "sha256": "572aef78ca8dbeedfe60d18432dff70c7e015aea017973b9d9cc9de495131bf4"
+      "bytes": 13595,
+      "sha256": "7d9b12ebd094c8d75338dc80fcc2b8dc0631e08affd4860910c9c35d519a4574"
     },
     {
       "path": "docs/deployment.md",
-      "bytes": 15896,
-      "sha256": "581fc744b9c3063a17c298f460b0f70891b8777959e39170e55a819dade1e015"
+      "bytes": 11865,
+      "sha256": "e93dc2ce36808dbc1ca3b4c36091be943b3a0856b5e031d42bbb9b859eba50a2"
+    },
+    {
+      "path": "docs/distributed_deployment.md",
+      "bytes": 17741,
+      "sha256": "6d35fe8b606ba3d133076b9dec2941907fb1955fec625a69d9db79b8351b672b"
     },
     {
       "path": "docs/evidence/concurrency_analysis.json",
       "bytes": 26307,
       "sha256": "d6fbb21fdb09ef7331fd016fa805971dfca0ddbd623e1166048fc58a4f5dcdec"
+    },
+    {
+      "path": "docs/evidence/distributed_acceptance_20261104.json",
+      "bytes": 19367,
+      "sha256": "40295f39e5799556b13608f1ef910c57f01afcbe7febb6d3f3fcabd52a27bacf"
     },
     {
       "path": "docs/evidence/motion_acceptance_20261103.json",
@@ -359,8 +369,8 @@
     },
     {
       "path": "docs/known_issues.md",
-      "bytes": 4772,
-      "sha256": "2c63aee1af5b49b7e050d83a61b5e3a74c72a14fa9789e52334c642337b184a9"
+      "bytes": 22468,
+      "sha256": "f4d6caae2becc2fc64a8835c083a133186339a539de4702ddabfe413389d5ce6"
     },
     {
       "path": "experiment/configs/amov/multimodal/flags/Mesher.flags",
@@ -529,8 +539,8 @@
     },
     {
       "path": "experiment/harness/multimodal/backend.launch",
-      "bytes": 2657,
-      "sha256": "12fafd8ccf3a10ef0bb5ef9ed7867e6cd3c291a60e91982190411c0895f226b2"
+      "bytes": 3175,
+      "sha256": "6d43bbc03a64d97528e27f76a0cf41abe6053252b4fb40569b9f668105cf9836"
     },
     {
       "path": "experiment/harness/multimodal/closed_loop_missions.py",
@@ -549,8 +559,8 @@
     },
     {
       "path": "experiment/harness/multimodal/hub_backend.launch",
-      "bytes": 3063,
-      "sha256": "e2fdd13345982810f78370f0a4bf1b4a2b6ad1b1089e743939d8067fc568a7a6"
+      "bytes": 4135,
+      "sha256": "29b2d06f4221e6d3ec959e1de09e1f6adf813c871defbe9562c6b825742dae39"
     },
     {
       "path": "experiment/harness/multimodal/live_trajectory_view.py",
@@ -559,8 +569,8 @@
     },
     {
       "path": "experiment/harness/multimodal/local_frontend.launch",
-      "bytes": 4140,
-      "sha256": "6b7b14b0e18e157f273642f56e83f26cfa8050f51f216786372156c1ad468f27"
+      "bytes": 4591,
+      "sha256": "9dd22e47c64bd057e38542e1c1d4ecc44fa3cd6008c39e161f62428583f837e9"
     },
     {
       "path": "experiment/harness/multimodal/native_dense.launch",
@@ -569,8 +579,8 @@
     },
     {
       "path": "experiment/harness/multimodal/native_dense_bridge.py",
-      "bytes": 72703,
-      "sha256": "1cc01d87445519320c580bbc780ad8b510d85f76608d25af8b6bdd8eeb17b8e6"
+      "bytes": 127056,
+      "sha256": "fe73f85895038d077eabf2d77f9fa8d9595b497520cfdd294621cd24ae7dc3c3"
     },
     {
       "path": "experiment/harness/multimodal/native_dense_global_view.py",
@@ -609,8 +619,8 @@
     },
     {
       "path": "experiment/harness/multimodal/native_local_sensor_bridge.py",
-      "bytes": 16212,
-      "sha256": "ededdabfb9528667044c14cda5dc7588cc73709e5a56e27f78131f3446cea75f"
+      "bytes": 16512,
+      "sha256": "a1575620311bb95e5ee05d43be7cd1bc4e6bbca5ee03916d06bbae8cf19ebd2f"
     },
     {
       "path": "experiment/harness/multimodal/native_vio_graph_adapter.py",
@@ -706,6 +716,11 @@
       "path": "experiment/harness/multimodal/test_native_dense_local_stream.py",
       "bytes": 10469,
       "sha256": "57d8a71e474174c246a73fa531801d81b3e3e058de9a32d88f96f0fb277eba64"
+    },
+    {
+      "path": "experiment/harness/multimodal/test_native_dense_online.py",
+      "bytes": 48368,
+      "sha256": "7bd2d140e380e1029aed5cfa3bebb19c57b0139ab73ab076e6011c182df84044"
     },
     {
       "path": "experiment/harness/multimodal/test_native_imu_pose_interpolation.py",
@@ -1043,6 +1058,116 @@
       "sha256": "7b0fd1e122f0ca389c4d3386d10863ea10eb79f81cfb0712d101dbf90384c5b7"
     },
     {
+      "path": "experiment/three_host_20261102/distributed/__init__.py",
+      "bytes": 81,
+      "sha256": "5f69a2e9af8a13d815dcdf1dcbb6220a20530e03f11a62818651eb7cc74fb785"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/audit.py",
+      "bytes": 5457,
+      "sha256": "06444006fb7102c6b471ba1c2591bb3bf6e2580bcb8b26321a102f6c697057ab"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/env_edge.bash",
+      "bytes": 1620,
+      "sha256": "693e63e4b55bb9d6e38b7ba21a73d6729859e14bb6a65b66061e370b2695a620"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/export.py",
+      "bytes": 23796,
+      "sha256": "9edb1451f9c8462ce4d34082612052483a20b316190ec6b1bec9db24583e463b"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/local_mission.py",
+      "bytes": 12493,
+      "sha256": "aac3822f7c9ef82d16a3d478768cf972375fc9d7dbf9d5c8ee7fe29cd1fcc966"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/manager.py",
+      "bytes": 19642,
+      "sha256": "451ab4acb52e291cc5163a4b3acae47611006920fcc456e75b62f838a935ac62"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/mesh_quality.py",
+      "bytes": 22968,
+      "sha256": "6040b74f20d344abb0393122d1e1b944a8138417ecc9192c91dc49ae223d58e2"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/observer.py",
+      "bytes": 37499,
+      "sha256": "909c344afea12ccb0d68ab2f64a6da670d954cc3e1aecb1a7afc48e393e81629"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/observer_actual.rviz",
+      "bytes": 844,
+      "sha256": "589a2a60ac88b2b9547f3f290404333c772e3337a53e4b8490e0dd4648b05d5c"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/observer_shared.rviz",
+      "bytes": 1519,
+      "sha256": "1d39d37a10ac9ab9fe7d5dccdc5125e31e487faf1263a1c725b5ead18badf11e"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/observer_sim_0.rviz",
+      "bytes": 1042,
+      "sha256": "daa334e0fa25c498830ced728095f821982bcd87d624dc86ca6eba555ccbeb3c"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/observer_sim_1.rviz",
+      "bytes": 1042,
+      "sha256": "3bb7d9c188862eb7531f5921cc4030756cfbd142abd7847cc9b80fb4dafb2607"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/peer_bridge.py",
+      "bytes": 24060,
+      "sha256": "3f38ae9f4f0a6cfa997f723af624022e332a7c273e8a3a24319d24143ebc4f09"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/peer_topics.py",
+      "bytes": 4724,
+      "sha256": "1ec4a0edfe329788e9d6a3c69a9b0ef5338eac21d036a9bed0ffb204730ef4e6"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/peer_wire.py",
+      "bytes": 15040,
+      "sha256": "90890d28deef7913c26382f18672064b213ab5a0437f757f2f79f728adac4339"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/quality.py",
+      "bytes": 16585,
+      "sha256": "ab080978658e705fe3f8395d068ec9cf6d95cfd7d07f2bf6bb2e4675b394beb9"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/quality_collector.py",
+      "bytes": 2465,
+      "sha256": "08a433b3ff59a6e108ebbd6987a502c411ed9ae6b1d422302ec1f1eb6729353f"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/result_stream.py",
+      "bytes": 16096,
+      "sha256": "17f7e1a85dd630571adea9c00c7cd55bab110b4f1710fbd2b688e2f0baf3c726"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/result_wire.py",
+      "bytes": 17952,
+      "sha256": "f74b134a30d45b63e4fcad27ac81e89fde0e51fc639075ace17621f5257d3d7a"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/runtime_control.py",
+      "bytes": 1867,
+      "sha256": "cf51314e7e422fd5084f6066be5aa2c57a57347d80bff3ad5bdce14d4c0bb1df"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/telemetry_metrics.py",
+      "bytes": 12977,
+      "sha256": "fab71be4eaf03725993a90442d5f18df132d6d8604c10334e43aa7d2161f076e"
+    },
+    {
+      "path": "experiment/three_host_20261102/distributed/transport_metrics.py",
+      "bytes": 5740,
+      "sha256": "69922bdffce0a720de7330813b94b5ec3dda01ba7dcf29e6df0f29309eb4be79"
+    },
+    {
       "path": "experiment/three_host_20261102/env_hub.bash",
       "bytes": 2147,
       "sha256": "c8cffe0b8c3e93a888e5ad3f324f7743bb66384190673fc4547b9ebc976b251d"
@@ -1059,18 +1184,48 @@
     },
     {
       "path": "experiment/three_host_20261102/native_tsdf_epoch_witness.py",
-      "bytes": 10845,
-      "sha256": "cd0486d66851b206b16ff1c9b51cd978d58e1db38440cf53c392b9cf5e67ad6b"
+      "bytes": 10908,
+      "sha256": "78563374903446484918b8f1dc90275dd78c07b32c5318f6df8a9b843d86a40d"
     },
     {
       "path": "experiment/three_host_20261102/sample_three_host_resources.py",
-      "bytes": 16634,
-      "sha256": "20df737c9f61b62510d3a899b69093b06401211e4b6f3b829478e957bcf655e3"
+      "bytes": 16905,
+      "sha256": "915c1335704973a279ead89792715783c384c16bf41c69199253b11bfdb1232c"
     },
     {
       "path": "experiment/three_host_20261102/tests/test_central_validators.py",
       "bytes": 13409,
       "sha256": "a6fb16b87df35d43a977b67401416137629414b8ef1a0fe229926383a5e85214"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_audit.py",
+      "bytes": 1202,
+      "sha256": "934d4e78fbcb844ba3290215296cd467853d8803377fcef53abe54bf5aa55b21"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_export.py",
+      "bytes": 13511,
+      "sha256": "8d7139a49848344cfbafe08460fea517563b97ca08283599a8fec2af0b2c297f"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_manager.py",
+      "bytes": 4004,
+      "sha256": "697a0ff41f919b4cd2bdfd659e84c6b5035c5b7319da1a0c3a69273b3d91a0ef"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_mesh_quality.py",
+      "bytes": 12128,
+      "sha256": "d882b5fa937cadd60f161ca231779fd595cabac34cccd006d61247ead24767df"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_quality.py",
+      "bytes": 9102,
+      "sha256": "77c94ee374c3853e794a5d4221bb47c28de10aa4da130aedcdd3cdebfde038be"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_distributed_transport_metrics.py",
+      "bytes": 1917,
+      "sha256": "425881334379e247debf34c81f66d4ad7416ca1c1b1b303552ec07d169df931e"
     },
     {
       "path": "experiment/three_host_20261102/tests/test_manager_hub.py",
@@ -1081,6 +1236,36 @@
       "path": "experiment/three_host_20261102/tests/test_manager_local.py",
       "bytes": 8778,
       "sha256": "06a33c65571baecdc7823dd0c56b1e54c46e1a81e3f7b8c4c3eb5aee5e8a3922"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_peer_bridge.py",
+      "bytes": 6643,
+      "sha256": "9d14068a2fd371a94a9c9661838c10426eb2ddc40e896ff7f41dbe1e7d58ed9c"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_peer_wire.py",
+      "bytes": 9814,
+      "sha256": "b93d3d11e809dc8eb6660197bc2e26646c64dd03eb92216d4e9969b98c9494a1"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_result_observer.py",
+      "bytes": 25272,
+      "sha256": "bb00783c8604dcf1231ee17d1272c856cb7907b4ba6239f947cb2425715cb1be"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_result_stream.py",
+      "bytes": 8258,
+      "sha256": "8cf664cd24767b194d33a1948504d1ef76a0cca00267c247a03869449494bc93"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_result_wire.py",
+      "bytes": 7567,
+      "sha256": "35a6b6d58b4534d1ad8722b20370d5ef3685213a145341a856e2ea879d4e0736"
+    },
+    {
+      "path": "experiment/three_host_20261102/tests/test_telemetry_metrics.py",
+      "bytes": 4629,
+      "sha256": "c21887344f0e598773b3d4b48c783b1b1f1c2ff79f3ec4e9b93ccdc42b399d64"
     },
     {
       "path": "experiment/three_host_20261102/validation/probe_three_host_status.py",

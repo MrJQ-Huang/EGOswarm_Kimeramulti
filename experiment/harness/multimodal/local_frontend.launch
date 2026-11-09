@@ -6,6 +6,9 @@
   <arg name="harness_directory" />
   <arg name="output_directory" />
   <arg name="mode" default="local" />
+  <arg name="no_persist" default="false" />
+  <arg name="persistent_outputs" default="$(eval not (arg('no_persist') in [True, 'true', 'True', '1']))" />
+  <arg name="persistence_flags" default="$(eval '' if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '--no-persist')" />
   <arg name="global_frame" default="kimera_world" />
   <arg name="output_frame" default="$(eval arg('robot_name') + '/vio_odom' if arg('mode') == 'local' else arg('global_frame'))" />
   <arg name="cloud_rate" default="2.0" />
@@ -39,7 +42,7 @@
       <param name="enable_icp" value="false" />
       <param name="publish_pointclouds" value="false" />
       <param name="update_mesh_every_n_sec" value="$(arg mesh_period)" />
-      <param name="mesh_filename" value="$(arg output_directory)/native_raw_tsdf_mesh.ply" />
+      <param name="mesh_filename" type="str" value="$(eval arg('output_directory') + '/native_raw_tsdf_mesh.ply' if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '')" />
       <remap from="pointcloud" to="/$(arg robot_name)/native_dense/rgbd_points" />
     </node>
     <node pkg="kimera_pgmo_ros" type="voxblox_mesh_frontend_node" name="native_mesh_frontend" output="screen" required="true">
@@ -51,12 +54,12 @@
       <param name="track_mesh_graph_mapping" value="true" />
       <param name="graph_compression_method" value="BLOCK" />
       <param name="full_compression_method" value="VOXEL_CLEARING" />
-      <param name="log_output" value="true" />
-      <param name="log_path" value="$(arg output_directory)" />
+      <param name="log_output" value="$(arg persistent_outputs)" />
+      <param name="log_path" type="str" value="$(eval arg('output_directory') if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '')" />
       <param name="queue_size" value="2" />
       <remap from="~mesh_in" to="/$(arg robot_name)/native_tsdf/mesh" />
     </node>
-    <node pkg="native_dense_runtime" type="native_local_sensor_bridge.py" name="native_local_sensor_bridge" output="screen" required="true" args="--robot-id $(arg robot_id) --robot-name $(arg robot_name) --run-id $(arg run_id) --cutoff $(arg cutoff) --output-directory $(arg output_directory)/local_sensor --cloud-rate $(arg cloud_rate) --max-odom-gap $(arg max_odom_gap) --max-gyro-gap $(arg max_gyro_gap) --max-rgbd-age $(arg max_rgbd_age) --max-pending-rgbd $(arg max_pending_rgbd)">
+    <node pkg="native_dense_runtime" type="native_local_sensor_bridge.py" name="native_local_sensor_bridge" output="screen" required="true" args="--robot-id $(arg robot_id) --robot-name $(arg robot_name) --run-id $(arg run_id) --cutoff $(arg cutoff) --output-directory $(arg output_directory)/local_sensor $(arg persistence_flags) --cloud-rate $(arg cloud_rate) --max-odom-gap $(arg max_odom_gap) --max-gyro-gap $(arg max_gyro_gap) --max-rgbd-age $(arg max_rgbd_age) --max-pending-rgbd $(arg max_pending_rgbd)">
       <env name="NATIVE_DENSE_HARNESS" value="$(arg harness_directory)" />
     </node>
   </group>

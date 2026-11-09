@@ -22,8 +22,11 @@ PYTHON_SCRIPTS = {"native_vio_graph_adapter.py", "native_dense_bridge.py", "nati
                   "native_local_sensor_bridge.py", "native_round_coordinator.py",
                   "sensor_uplink.py", "sensor_ingress.py", "closed_loop_missions.py", "complex_world_view.py",
                   "continuous_body.py", "sim_sensors.py", "peer_heartbeat.py", "live_trajectory_view.py",
-                  "scenario_supervisor.py", "continuous_mission.py", "broad_loop_mission.py"}
-PYTHON_ROOTS = ("/experiment/harness/", "/home/amov/Drone/two_pc_ego_20261030/harness/")
+                  "scenario_supervisor.py", "continuous_mission.py", "broad_loop_mission.py",
+                  "peer_bridge.py", "result_stream.py", "observer.py", "local_mission.py", "quality_collector.py"}
+PYTHON_ROOTS = ("/experiment/harness/", "/home/amov/Drone/two_pc_ego_20261030/harness/",
+                "/experiment/three_host_20261102/distributed/",
+                "/home/amov/Drone/two_pc_ego_20261030/three_host_20261102/distributed/")
 PAGE_BYTES = os.sysconf("SC_PAGE_SIZE") if os.name == "posix" else 4096
 TICKS = os.sysconf("SC_CLK_TCK") if os.name == "posix" else 100
 

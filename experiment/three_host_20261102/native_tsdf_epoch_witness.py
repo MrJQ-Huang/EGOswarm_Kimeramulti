@@ -215,9 +215,10 @@ def main():
         if not math.isfinite(value) or value <= 0:
             parser.error('Cutoff, duration and wait timeout must be finite and positive')
     uri = urlparse(args.master_uri)
-    if (uri.scheme != 'http' or (uri.hostname, uri.port) not in (('192.168.5.14',11431),('127.0.0.1',11561))
+    if (uri.scheme != 'http' or (uri.hostname, uri.port) not in (('192.168.5.14',11431),
+            ('192.168.5.6',11431),('192.168.5.21',11431),('127.0.0.1',11561))
             or uri.username or uri.password or uri.query or uri.fragment or uri.path not in ('','/')):
-        parser.error('Use the dedicated hub master or isolated loopback fixture master')
+        parser.error('Use a dedicated experiment master or isolated loopback fixture master')
     args.master_uri = args.master_uri.rstrip('/')
     raise SystemExit(run(args))
 

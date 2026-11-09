@@ -2,6 +2,8 @@
   <arg name="robot_id"/>
   <arg name="robot_name"/>
   <arg name="runtime_dir"/>
+  <arg name="no_persist" default="false"/>
+  <arg name="persistent_outputs" default="$(eval not (arg('no_persist') in [True, 'true', 'True', '1']))"/>
   <arg name="odom_suffix" default="vio_odom"/>
   <arg name="local_pose_graph_topic" default="/$(arg robot_name)/kimera_vio_ros/pose_graph_incremental"/>
   <group ns="$(arg robot_name)">
@@ -15,7 +17,10 @@
       <param name="latest_kf_frame_id" value="$(arg robot_name)/camera_optical"/>
       <param name="vocabulary_path" value="$(find kimera_vio)/vocabulary/ORBvoc.yml"/>
       <param name="alpha" value="0.5"/>
-      <param name="log_output_path" value="$(arg runtime_dir)/lcd/"/>
+      <!-- Native LCD enables BoW/VLC persistence by parameter presence, not a
+           boolean value. Remove stale private parameters in no-persist mode. -->
+      <rosparam unless="$(arg persistent_outputs)" command="delete" param="log_output_path"/>
+      <param if="$(arg persistent_outputs)" name="log_output_path" value="$(arg runtime_dir)/lcd/"/>
       <param name="bow_skip_num" value="1"/>
       <param name="bow_batch_size" value="1"/>
       <param name="vlc_batch_size" value="5"/>
@@ -37,7 +42,7 @@
       <arg name="agent_id" value="$(arg robot_id)"/>
       <arg name="num_robots" value="2"/>
       <arg name="robot_names_file" value="$(arg runtime_dir)/robot_names.yaml"/>
-      <arg name="log_directory" value="$(arg runtime_dir)/dpgo/"/>
+      <arg name="log_directory" value="$(eval arg('runtime_dir') + '/dpgo/' if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '')"/>
       <arg name="robust_cost_type" value="GNC_TLS"/>
       <arg name="robust_opt_num_weight_updates" value="25"/>
       <arg name="max_iteration_number" value="1500"/>

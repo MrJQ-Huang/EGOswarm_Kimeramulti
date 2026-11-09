@@ -1,0 +1,39 @@
+Panels:
+- Class: rviz/Displays
+  Name: Displays
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Class: rviz/Grid
+    Enabled: true
+    Name: Reference Grid
+    Value: true
+    Plane Cell Count: 60
+  - Class: rviz/Odometry
+    Enabled: true
+    Name: AMOV actual simulated body
+    Topic: /observer/sim_0/actual
+    Keep: 1
+    Value: true
+  - Class: rviz/Odometry
+    Enabled: true
+    Name: UROS actual simulated body
+    Topic: /observer/sim_1/actual
+    Keep: 1
+    Value: true
+  Global Options:
+    Fixed Frame: world
+    Frame Rate: 30
+    Background Color: 10; 18; 32
+  Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 70
+      Focal Point: {X: 16, Y: 0, Z: 1}
+      Pitch: 1.05
+      Yaw: -1.57
+Window Geometry: {Height: 850, Width: 1100}

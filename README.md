@@ -1,85 +1,89 @@
-# EGO Swarm 与 Kimera Multi 双机协同建图实验
+# EGO-Swarm 与 Kimera-Multi 双机协同建图实验
 
-本项目在 AMOV、UROS 上各运行一架虚拟无人机，由设备本地 EGO-Swarm 执行轨迹规划、避障和控制；原始传感器经无损上行送到本机，集中运行两套视觉惯性定位、跨机器人回环、轨迹优化和原生稠密建图。设备不录制原始数据，本机负责显示和后处理，默认保存地图结果与少量遥测；原始输入重放和完整调试录制按需开启。
+当前工作入口是 [distributed/manager.py](experiment/three_host_20261102/distributed/manager.py)：AMOV、UROS 各自运行 EGO-Swarm、连续仿真体、传感器及完整原生 Kimera 计算链；两机直接交换协同消息。本机使用第三个独立 ROS master，只接收结果、显示、存档和离线评价。设备不录制原始传感器或导出地图文件，SLAM 所需历史状态保留在内存。
 
-2026年11月3日，本机集中版本完成了一次两圈、20航段的双机运动验收，用时498.922秒，无安全中止；两路真实TSDF持续积分，并导出了覆盖末圈的202,567顶点、258,118三角面联合地图。控制证明、传输与资源指标见[验收摘要](docs/evidence/motion_acceptance_20261103.json)。当前协同绑定仍使用原有native观测匹配，没有新增共享原子轮次协议；历史问题和运行边界见[已知问题](docs/known_issues.md)。
+**功能改造与共享地图连续性修复已完成，AMOV 强实时性能仍未达标。** 第五轮 `distributed_continuity_20261104_153318` 完成两圈 20/20 航段，运动 496.58 秒；AMOV/UROS 实际路径为 159.8820/159.1399 m，最小机间分离为 2.04876/2.06328 m。两端原生链路持续工作，本机完成原色联合地图、显示与评价；三主机本轮角色均已正常关闭，RViz 已关闭。见[分布式核验摘要](docs/evidence/distributed_acceptance_20261104.json)与[完整运行报告](/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_report.json)。
 
-## 当前实现范围
+第五轮沿用两端 `--voxel-size .20` 与原 FPS/CPU 参数。运动期间 AMOV/UROS 实际 TSDF 完成 775/805 次；首次共享接纳后的 accepted mesh 更新间隔中位数为 3.7527/1.9996 秒、P95 为 13.5174/2.9459 秒、最大值为 22.8619/4.9907 秒。AMOV 整机平均 CPU 为 90.75%，仍有计算排队，不能把持续积分、功能通过或平均近 30 Hz actual 接收写成地图零延迟、强实时或全部性能达标。0.20 m 是原生 TSDF 分辨率配置（默认 0.15 m），不是 observer 抽样、ICP 或丢弃原生面。
 
-| 部分 | 当前实现 |
+连续性修复在同一有效 PGMO/gauge 会话内区分 last-verified 与 pending path，新增 latched `verified_body_path`；新 path 待核验不会无谓撤销已建立的共享 gauge。第五轮连续性档案审计全部检查通过；运动后以全新 RAM 缓存重启 map observer，复核 shared map 与两端精确 hash 关联的 verified path 成功，未连续测恢复时延。它没有证明最新 pending path 已被使用，也不是共享原子 optimizer/mesh generation。第四轮最大 31.183 秒 accepted 更新间隔等修复前证据仍保留在[已知问题](docs/known_issues.md)。
+
+第五轮一次共同 SE(3) 的 body path ATE 为 AMOV/UROS 0.1991626/0.2081018 m，配对支持率为 99.9051%/99.9268%；独立局部 VIO 基线为 0.39959/0.32367 m。联合原生导出保留 109,117 个顶点槽，其中 67,033 个被面引用，以及 146,846 个三角面和原色，见[完整 PLY](/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_native_map/global_native_mesh.ply)和[导出来源清单](/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_native_map/export_manifest.json)。面引用顶点到仿真解析表面的平均误差/RMSE 为 0.122169/0.166256 m；有限可见真值采样在 0.15/0.30/0.50 m 阈值的覆盖为 70.05%/95.61%/99.91%。这些是有采样与距离定义限制的仿真评价，不是原论文完整评价复现；评价只复用轨迹的一次团队 SE(3)，不修改地图、不反馈给 SLAM。
+
+第二轮旧 combined observer 在飞行期间实际断开 24.1505 秒，两端阶段从 18 推进到 20，支持飞行独立于观察端的结论；第四轮 map-only 实际断开 23.6117 秒，发生在运动完成后，两端仍为 20/20，TSDF 完成数增加 42/43，只证明该时段局部积分与 peer 继续，不能当作第四轮飞行中断连测试。两次显式等待目标均为 22 秒，实际时长另含检查开销。
+
+首次运行 `distributed_native_20261104_132619` 因 UROS 独立来源回执匹配队列溢出，在完成 9/20 航段后受控停止。第二轮已采用 metadata 与原始 payload 绑定的本机伴随流，以及有界历史 body path 缓存和评价真值覆盖等待；首次失败仍作为历史证据保留，见[已知问题](docs/known_issues.md)。
+
+## 当前分工
+
+| 部分 | 当前分布式 profile |
 | --- | --- |
-| 双机运动 | 每台主机从相同本地场景运行EGO、连续仿真体及传感器；EGO互发未来轨迹，实际状态单份30 Hz回传本机 |
-| 规划输入 | 仿真里程计与障碍观测；尚未将 Kimera 位姿和地图反馈为规划输入 |
-| Kimera 前端 | 两套原生 VIO 在本机消费无损分发的 RGB-D 与 IMU，设备只生成和发送观测 |
-| 协同轨迹 | 本机两份 Kimera-Multi LCD 与 DPGO 链路，交换描述信息、约束和优化消息 |
-| 局部稠密几何 | 本机运行两套原生 Voxblox TSDF、原生 mesh frontend，默认目标输入 5 Hz、网格周期 1 秒 |
-| 轨迹修正网格 | 固定版本 Kimera-PGMO 的现代 MESH 接口兼容移植 |
-| LiDAR | 默认仅上传1 Hz、每4个实测点取1点；当前Kimera RGB-D链不依赖此流，EGO本地障碍观测保持原密度 |
-| 展示 | 本机 NVIDIA OpenGL、默认 30 FPS 绘制上限和 20 Hz 机体位置显示；地图版本校验保留 |
+| AMOV / UROS | 分别是 robot 0 / 1，各有独立 master、仿真与本地 EGO Planner、traj_server |
+| 本地定位与建图 | 每机原生 VIO、图坐标适配、RGB-D 回投、Voxblox TSDF、mesh frontend、LCD、DPGO、PGMO |
+| 机器人间通信 | 自有直接 TCP peer bridge；控制、特征、EGO 轨迹分通道，包含请求、响应、ACK 及恢复契约 |
+| 任务 | 各机本地任务状态机只发布目标 PoseStamped，互通阶段状态；轨迹、避障、重规划由 EGO 完成 |
+| 本机 | 独立 map / telemetry 两个 observer 进程、原色三角网格显示、结果存档与离线评价；不重新估计、配准或优化地图 |
+| 结果链路 | 完整原生 ROS 字节快照；可选有基线的无损字节块 delta，失基线补全量；actual/VIO 遥测独立通道 |
+| 语义与 GPU | 当前为 geometry-only，无语义标签推理；本机 GPU 用于 OpenGL，原生 SLAM 仍使用 CPU |
 
-此实现使用 Kimera 系列的原生计算组件和项目自有的接口桥接、事务校验及显示节点，并非 Kimera-Multi v1 官方依赖组合的原封部署。当前配置输出几何地图，未接入语义标签推理。
+规划仍使用仿真机体里程计与本地障碍观测，Kimera 位姿/地图尚未接回 EGO 导航闭环。actual 仅供仿真控制、任务保护、显示和离线评价，不是 VIO、LCD、DPGO 或 TSDF 的估计输入。
 
-两机分别执行 EGO 规划与控制，SLAM 集中在本机。任务脚本只发目标 PoseStamped，B-spline 与 PositionCommand 由各设备的 EGO Planner 和 traj_server 产生。目前没有验证共享 master 失联后的恢复能力，集中部署也不作为多机分担 SLAM 计算的证明。
+本项目使用固定版本 Kimera 原生组件、现代 PGMO MESH API 兼容移植和自有传输/接口代码，并非 Kimera-Multi v1 官方依赖组合的原封部署。peer bridge 参考上游消息清单，**不是原作者的 Remote Topic Manager**；源码版本、ABI、消息 MD5 和来源契约仍需核验。
 
-## 数据优先级与保存
+## 使用入口
 
-机体遥测直接取自设备本地连续仿真体，独立于图像渲染；本机任务、轨迹和场景显示统一消费入口分发的 `/sim_N/ground_truth/odometry`，该实际机体状态不接入Kimera估计。遥测与IMU使用独立优先标记通道，可见光与必要深度继续精确配对，LiDAR作为可稀疏的辅助流。默认相机5 Hz、遥测30 Hz、IMU100 Hz、LiDAR1 Hz/点步长4；无线接入点可能不执行优先标记，实际时效仍须验收。
+1. 阅读[架构与数据流](docs/architecture.md)，确认规划、估计、共享 gauge 和显示的边界。
+2. 按[通用环境部署](docs/deployment.md)准备两种架构的依赖，再按[分布式部署与分阶段启动](docs/distributed_deployment.md)操作。
+3. 使用同一新 run ID、cutoff 与 gauge 配置，先 `--dry-run` 审查命令，再分阶段初始化、静止预热、运动与验收。
+4. 用[已知问题与验收条件](docs/known_issues.md)判断结果；窗口刷新、共享标签或单次网格输出均不能代替持续积分与质量证据。
 
-`manager_hub.py record --record-profile map`默认只保存地图输出、少量轨迹与诊断，不反复录制TSDF输入云、各层完整网格和显示Marker/完整Path。`replay`增加RGB-D/IMU原始重放输入，`debug`保留全部中间诊断。在线VIO/TSDF所需输入不因停止录制而停止传输。
+```bash
+python3 experiment/three_host_20261102/distributed/manager.py results \
+  --host amov --run-id REVIEW_ONLY --cutoff 1793760000 \
+  --gauge-id REVIEW_ONLY.robot0-initial --delta --dry-run
+python3 -m unittest discover -s experiment/three_host_20261102/tests -p 'test_*.py'
+python3 -m unittest discover -s experiment/harness/multimodal -p 'test_*.py'
+```
 
-最终地图使用 `experiment/harness/multimodal/export_final_global_map.py` 从通过校验的native pair导出PLY/PCD和原生三角网格，并保留两份native mesh、回执、标定与来源。显示云的青/橙颜色仅表示机器人来源，不能代替原生网格的相机颜色。已有实验录包不自动删除。
+上述 cutoff 仅用于无副作用预览；实际实验必须重新生成共同 epoch。最终 Noetic 环境 294 项测试通过，无 skip；174 个托管运行源码/配置文件在本地与三主机逐项 SHA256 一致。GitHub 当前只有 baseline snapshot，分布式 feature 尚在本地准备提交，不能将其当作已经公开发布。软件契约测试与原生运行、双机运动及性能核验分别留证。
+
+## 结果与保存
+
+本机默认保留收到的完整原生 mesh ROS 字节、metadata、轨迹和紧凑 actual/VIO 数据；三角面与原始相机颜色均保留，不再逐 snapshot 生成 PLY。最终离线 PLY 导出或显式 `--snapshot-ply` 包含双精度 XYZ、完整面，以及保留原始 RGBA 数值的 `native_*` 字段；普通 8 位颜色是显示派生字段，完整 ROS 文件保留其余原生元数据。
+
+同名 `kimera_world` 或相同 `gauge-id` 不等于已经建立共享坐标。两端真实跨机约束、完成的原生优化观测和网格 receipt 就绪前，各自局部地图在独立 `sim_N/vio_odom` 中显示。结果断连时保留 last-known 并标 stale。应用 snapshot ID、原子传输封装与共享原子优化轮次是不同概念。
+
+本机质量评价对两机联合 body path **只拟合一次共同 SE(3)**，不逐机器人对齐联合结果、不估计尺度、不把评价变换反馈给估计或地图显示。VIO 的独立局部 gauge 仅作为明确标注的单机基线。未匹配样本、时间覆盖与缺失机器人必须报告。
 
 ## 仓库结构
 
 ```text
 experiment/
-  configs/{amov,uros}/multimodal/   # 两机各自的 VIO 参数与 launch 配置
-  harness/                         # 双机仿真、场景、任务与传感器
-    multimodal/                    # VIO 接口、协同后端、稠密桥接与 RViz 配置
-  multimodal/                      # 原部署的 VIO 参数和 launch 输入
-  native_full_stack_20261102/       # 进程管理、构建记录及环境入口
-  three_host_20261102/              # 本机集中计算、设备控制/上行、拓扑与冷启动校验
-dependencies/                      # 上游版本锁定与本地补丁
-docs/
-  architecture.md
-  deployment.md
-  known_issues.md
-  evidence/                        # 公开的本轮实验和资源统计摘要
+  configs/{amov,uros}/multimodal/   # 每机 VIO 标定、参数与 flags
+  harness/                         # EGO 仿真、传感器和原生 Kimera 接口
+  native_full_stack_20261102/       # 构建记录、环境与历史管理器
+  three_host_20261102/
+    distributed/                   # 当前独立 master / 本地 SLAM / peer / observer
+    manager_hub.py                  # 保留的集中 baseline
+    manager_local.py                # 集中 baseline 的设备端入口
+dependencies/                       # 固定源码、补丁与许可证
+docs/                               # 架构、部署、状态与公开统计摘要
 ```
 
-不上传 rosbag、点云实验数据、编译产物、容器镜像或访问凭据。上游依赖保留来源、固定提交和补丁，需在目标架构上独立编译；AMOV 与 UROS 的二进制不能互换。
+不上传 raw rosbag、实验点云/地图、编译产物、容器镜像或访问凭据。上游源码保留版本与补丁，在 ARM64/x86-64 上分别编译，不能互换二进制。
 
-## 使用前阅读
+## 保留的集中 baseline 与历史结果
 
-1. 阅读[架构与数据流](docs/architecture.md)，确认估计、规划和展示的边界。
-2. 按[部署说明](docs/deployment.md)检查工作区、路径、网络与 ABI，再启动节点。
-3. 用[已知问题](docs/known_issues.md)中的验收条件判断结果；窗口持续刷新不代表地图持续积分。
+[manager_hub.py](experiment/three_host_20261102/manager_hub.py) / [manager_local.py](experiment/three_host_20261102/manager_local.py) 保留为集中计算 baseline；该模式由设备上行原始传感器、本机运行全部 SLAM。它与当前分布式 profile 互斥，不混用角色或沿用旧 run。
 
-当前入口是本机 [manager_hub.py](experiment/three_host_20261102/manager_hub.py) 和设备 [manager_local.py](experiment/three_host_20261102/manager_local.py)，均支持不启动进程的 `--dry-run`。原 `manage_native_stack.py` 保留为历史部署入口，不属于当前集中工作流。路径、IP、容器和依赖仍需按[部署说明](docs/deployment.md)准备。
+2026 年 11 月 3 日集中版本完成一次两圈 20 航段运动，用时 498.922 秒；实际路径 AMOV/UROS 为 160.288/159.045 米，飞行期间真实 TSDF 积分 2408/2414 次，最终联合结果含 202,567 顶点和 258,118 三角面。[集中版本验收摘要](docs/evidence/motion_acceptance_20261103.json)只证明该次集中仿真运行，不是当前边端分布式计算、严格原子优化、SLAM 精度或任意网络条件的验收。
 
-纯 Python 契约与 IMU 测试可在仓库根目录运行 `python3 -m unittest discover -s experiment/harness/multimodal -p 'test_*.py'`。该组测试通过不代表 ROS 原生节点或长时间双机融合通过。
-
-## 历史实验状态
-
-2026年11月3日集中版本的AMOV/UROS实际路径为160.288/159.045米，末圈闭合误差2.28/0.30厘米。飞行窗口机体遥测约29.71/29.29Hz，源龄P95约29.36/12.21毫秒；真实TSDF积分2408/2414次，最长完成间隔1.259/0.579秒。最终native pair和两份原网格已验真，末圈地图覆盖已确认。该结果证明这一次仿真运行，不代表真机、所有网络条件或严格原子优化协议均已验收。
-
-2026 年 11 月 2 日，双机完成两圈约 500.45 秒的闭环任务，实际运动路径约为 AMOV 160.21 米、UROS 158.46 米。飞行期间原生 TSDF 实际积分次数分别为 47 和 84，AMOV 飞行末尾约 390 秒没有新积分；重复发布旧网格不能算作建图更新。
-
-该轮没有观察到通过同轮校验的全局地图。两机最后接受的优化请求序号为 40 和 25，权重摘要也不同，全局展示按校验规则保持空白。以上结果不能作为成功复现实时双机全局融合的依据。[实验摘要](docs/evidence/concurrency_analysis.json)
-
-## 后续工作
-
-- 在本次运动验收基础上增加重复轮次、长时运行和受限网络条件验证。
-- 量化原生VIO轨迹与联合地图的几何精度，保留输入年龄和真实积分监测。
-- 为两机优化结果与网格实现共同轮次提交，避免各机长期只接受不同版本。
-- 验证真实传感器噪声、网络失联恢复及共享master故障处理。
+2026 年 11 月 2 日历史双机版本虽然飞完约 500.45 秒，但 AMOV 末尾约 390 秒无新 TSDF 积分，全局同轮校验未通过。相关串行积压与空全局显示是该历史版本的证据，不能直接当作当前 source 的运行状态。[历史实验摘要](docs/evidence/concurrency_analysis.json)
 
 ## 上游工作
 
 - [EGO-Swarm](https://github.com/ZJU-FAST-Lab/ego-planner-swarm)
-- [Kimera-Multi](https://github.com/MIT-SPARK/Kimera-Multi)
-- [Kimera-VIO](https://github.com/MIT-SPARK/Kimera-VIO)
-- [Kimera-PGMO](https://github.com/MIT-SPARK/Kimera-PGMO)
-- [Voxblox](https://github.com/ethz-asl/voxblox)
+- [Kimera-Multi](https://github.com/MIT-SPARK/Kimera-Multi) 与[原论文](https://arxiv.org/abs/2106.14386)
+- [Kimera-VIO](https://github.com/MIT-SPARK/Kimera-VIO)、[Kimera-PGMO](https://github.com/MIT-SPARK/Kimera-PGMO)、[Voxblox](https://github.com/ethz-asl/voxblox)
 
-第三方项目沿用各自许可证。引用和再分发时应同时核对上游许可证及本仓库保存的版本与补丁信息。
+第三方项目沿用各自许可证。再分发与引用应核对 `dependencies/` 中保存的来源、版本、许可证及补丁。

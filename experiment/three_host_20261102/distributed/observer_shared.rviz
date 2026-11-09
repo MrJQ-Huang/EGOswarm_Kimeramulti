@@ -1,0 +1,61 @@
+Panels:
+- Class: rviz/Displays
+  Name: Displays
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Class: rviz/Grid
+    Enabled: true
+    Name: Reference Grid
+    Value: true
+    Plane Cell Count: 60
+  - Class: rviz/Marker
+    Enabled: true
+    Name: AMOV native shared gauge mesh
+    Marker Topic: /observer/sim_0/shared_mesh
+    Queue Size: 1
+    Value: true
+  - Class: rviz/Marker
+    Enabled: true
+    Name: UROS native shared gauge mesh
+    Marker Topic: /observer/sim_1/shared_mesh
+    Queue Size: 1
+    Value: true
+  - Class: rviz/Marker
+    Enabled: true
+    Name: AMOV freshness and gauge status
+    Marker Topic: /observer/sim_0/shared_freshness
+    Value: true
+  - Class: rviz/Marker
+    Enabled: true
+    Name: UROS freshness and gauge status
+    Marker Topic: /observer/sim_1/shared_freshness
+    Value: true
+  - Class: rviz/Path
+    Enabled: true
+    Name: AMOV submitted native body path
+    Topic: /observer/sim_0/shared_body_path
+    Color: 52; 216; 237
+    Value: true
+  - Class: rviz/Path
+    Enabled: true
+    Name: UROS submitted native body path
+    Topic: /observer/sim_1/shared_body_path
+    Color: 255; 160; 75
+    Value: true
+  Global Options:
+    Fixed Frame: kimera_world
+    Frame Rate: 30
+    Background Color: 10; 18; 32
+  Tools:
+  - Class: rviz/Interact
+  - Class: rviz/MoveCamera
+  - Class: rviz/Select
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 70
+      Focal Point: {X: 16, Y: 0, Z: 1}
+      Pitch: 1.05
+      Yaw: -1.57
+Window Geometry: {Height: 850, Width: 1100}

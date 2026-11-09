@@ -6,6 +6,14 @@
   <arg name="harness_directory" />
   <arg name="output_directory" />
   <arg name="mode" default="joint" />
+  <arg name="execution_mode" default="diagnostic" />
+  <arg name="no_persist" default="false" />
+  <arg name="persistent_outputs" default="$(eval not (arg('no_persist') in [True, 'true', 'True', '1']))" />
+  <arg name="gauge_id" default="$(arg run_id)" />
+  <arg name="shared_gauge_id" default="$(arg gauge_id)" />
+  <arg name="remote_bridge_caller" default="" />
+  <arg name="persistence_flags" default="$(eval '' if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '--no-persist')" />
+  <arg name="peer_flags" default="$(eval '--remote-bridge-caller ' + arg('remote_bridge_caller') if arg('remote_bridge_caller') else '')" />
   <arg name="global_frame" default="kimera_world" />
   <arg name="output_frame" default="$(eval arg('robot_name') + '/vio_odom' if arg('mode') == 'local' else arg('global_frame'))" />
   <arg name="cloud_rate" default="2.0" />
@@ -22,14 +30,17 @@
   <arg name="require_cross_flag" default="$(eval '--require-cross' if arg('require_cross') in [True, 'true', 'True', '1'] else '')" />
   <arg name="recorded_input_flags" default="$(eval '--recorded-native-bag ' + arg('recorded_native_bag') + ' --recorded-native-bag-sha256 ' + arg('recorded_native_bag_sha256') + ' --replay-caller ' + arg('replay_caller') if arg('recorded_native_bag') else '')" />
   <group ns="$(arg robot_name)">
-    <node pkg="native_dense_runtime" type="native_dense_bridge.py" name="native_dense_bridge" output="screen" required="true" args="--robot-id $(arg robot_id) --robot-name $(arg robot_name) --run-id $(arg run_id) --cutoff $(arg cutoff) --mode $(arg mode) --global-frame $(arg global_frame) --output-directory $(arg output_directory)/bridge --cloud-rate $(arg cloud_rate) --max-odom-gap $(arg max_odom_gap) --sensor-rotation-interpolation $(arg sensor_rotation_interpolation) --gyro-sample-convention $(arg gyro_sample_convention) --max-gyro-gap $(arg max_gyro_gap) --mesh-phase-timeout $(arg mesh_phase_timeout) $(arg require_cross_flag) $(arg recorded_input_flags) --external-sensor-stream">
+    <node pkg="native_dense_runtime" type="native_dense_bridge.py" name="native_dense_bridge" output="screen" required="true" args="--robot-id $(arg robot_id) --robot-name $(arg robot_name) --run-id $(arg run_id) --cutoff $(arg cutoff) --mode $(arg mode) --execution-mode $(arg execution_mode) --shared-gauge-id $(arg shared_gauge_id) $(arg persistence_flags) $(arg peer_flags) --global-frame $(arg global_frame) --output-directory $(arg output_directory)/bridge --cloud-rate $(arg cloud_rate) --max-odom-gap $(arg max_odom_gap) --sensor-rotation-interpolation $(arg sensor_rotation_interpolation) --gyro-sample-convention $(arg gyro_sample_convention) --max-gyro-gap $(arg max_gyro_gap) --mesh-phase-timeout $(arg mesh_phase_timeout) $(arg require_cross_flag) $(arg recorded_input_flags) --external-sensor-stream">
       <env name="NATIVE_DENSE_HARNESS" value="$(arg harness_directory)" />
     </node>
     <node pkg="kimera_pgmo_ros" type="kimera_pgmo_node" name="native_pgmo" output="screen" required="true">
       <rosparam file="$(arg harness_directory)/native_dense_pgmo.yaml" />
       <param name="robot_id" value="$(arg robot_id)" />
       <param name="frame_id" value="$(arg output_frame)" />
-      <param name="output_prefix" value="$(arg output_directory)" />
+      <!-- RPGO enables result.g2o logs from a nonempty output_prefix even when
+           PGMO log_output is false. Both controls must be disabled. -->
+      <param name="log_output" value="$(arg persistent_outputs)" />
+      <param name="output_prefix" type="str" value="$(eval arg('output_directory') if arg('persistent_outputs') in [True, 'true', 'True', '1'] else '')" />
       <remap from="~mesh_graph_incremental" to="/$(arg robot_name)/native_dense/mesh_graph_incremental" />
       <remap from="~full_mesh" to="/$(arg robot_name)/native_dense/full_mesh" />
       <remap from="~pose_graph_incremental" to="/$(arg robot_name)/native_dense/pose_graph_incremental" />

@@ -150,7 +150,7 @@ class LocalSensorBridge:
         self.a = args; self.state = LocalSensorState(args)
         self.lock = threading.Lock(); self.fatal = None
         self.timings = Counter(); self.samples = Counter(); self.last_report = 0.
-        args.output_directory.mkdir(parents=True, exist_ok=True)
+        if not getattr(args, 'no_persist', False): args.output_directory.mkdir(parents=True, exist_ok=True)
         self.tf = tf2_ros.TransformBroadcaster()
         self.points = rospy.Publisher('/'+args.robot_name+'/native_dense/rgbd_points', PointCloud2, queue_size=1)
         self.status = rospy.Publisher('/'+args.robot_name+'/native_dense/local_sensor_status', String, queue_size=1, latch=True)
@@ -173,8 +173,9 @@ class LocalSensorBridge:
         if str(error) == 'publish() to a closed topic' and rospy.is_shutdown(): return
         if self.fatal is not None: return
         self.fatal = str(error)
-        (self.a.output_directory/'fatal.json').write_text(json.dumps(dict(error=self.fatal,
-            wall=time.time(), run_id=self.a.run_id), indent=2), encoding='utf-8')
+        if not getattr(self.a, 'no_persist', False):
+            (self.a.output_directory/'fatal.json').write_text(json.dumps(dict(error=self.fatal,
+                wall=time.time(), run_id=self.a.run_id), indent=2), encoding='utf-8')
         rospy.logfatal('Independent local sensor bridge: %s', error)
         rospy.signal_shutdown(str(error))
 
@@ -242,7 +243,8 @@ class LocalSensorBridge:
                         sensor_pose_interpolation='actual gyro curve constrained by unchanged native VIO endpoints; linear translation')
                 serialized = json.dumps(report, allow_nan=False)
                 self.status.publish(String(data=serialized))
-                (self.a.output_directory/'status.json').write_text(serialized, encoding='utf-8')
+                if not getattr(self.a, 'no_persist', False):
+                    (self.a.output_directory/'status.json').write_text(serialized, encoding='utf-8')
         except Exception as error: self.fail(error)
 
 
@@ -253,6 +255,7 @@ def main():
     parser.add_argument('--run-id', required=True)
     parser.add_argument('--cutoff', required=True, type=float)
     parser.add_argument('--output-directory', required=True, type=Path)
+    parser.add_argument('--no-persist', action='store_true', help='Publish status and ROS logs only; no local status/fatal files')
     parser.add_argument('--cloud-rate', type=float, default=2.)
     parser.add_argument('--pixel-stride', type=int, default=3)
     parser.add_argument('--max-depth', type=float, default=8.)

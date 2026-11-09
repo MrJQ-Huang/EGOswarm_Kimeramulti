@@ -1,102 +1,117 @@
 # 双机仿真架构与数据流
 
-当前部署采用两台仿真控制端和一台集中建图端。AMOV 是 robot 0，UROS 是 robot 1；两机各自运行 EGO-Swarm、连续运动仿真体、障碍观测、传感器和无损上行。本机运行两份 VIO、局部 TSDF/mesh frontend、LCD/DPGO/PGMO，以及显示、按profile录制和后处理。两机只保留日志及进程管理信息，不启动原始录包或地图保存节点。
+当前分布式 profile 由 AMOV、UROS 各运行完整本地原生 Kimera 链，并使用直接 peer 通信。本机是独立结果 observer。当前入口为 `experiment/three_host_20261102/distributed/manager.py`；集中 baseline 保留，见文末。
 
-这保留两个逻辑机器人的 Kimera-Multi 消息与算法接口，但所有 SLAM 计算集中在本机；不再把此部署描述为两台设备分担分布式优化计算。
+第五轮 `distributed_continuity_20261104_153318` 已完成两圈运动、共享地图连续性修复核验、原生结果导出与三主机关闭。功能改造完成，AMOV 强实时性能未通过；完整运动 accepted mesh 最大更新间隔仍为 22.8619 秒。下述架构与证据边界继续适用。
 
-## 规划与 SLAM 的边界
+## 三个独立 ROS 图
+
+| 主机 | 身份 | 本机 master | 主要工作 |
+| --- | --- | --- | --- |
+| AMOV | robot 0 | `http://192.168.5.6:11431` | 本地 EGO、仿真、VIO/TSDF/LCD/DPGO/PGMO、peer、结果 server |
+| UROS | robot 1 | `http://192.168.5.21:11431` | 同上；EGO 与原生 Kimera 在各自 ROS1 容器中共享该机 master |
+| 本机 | observer | `http://192.168.5.14:11431` | 接收、显示、存档与离线评价 |
 
 ```mermaid
 flowchart LR
-  subgraph EDGE[AMOV / UROS 各自运行]
-    OD[本机仿真里程计与障碍观测] --> EGO[EGO Planner]
-    EGO -->|B spline| EXEC[traj_server]
-    EXEC -->|PositionCommand| SIM[连续运动仿真体]
-    SIM --> OD
-    SIM --> T[单份优先机体遥测]
-    T --> U
-    SIM --> S[RGB D / IMU / 稀疏LiDAR仿真]
-    S --> U[有界无损上行]
+  subgraph A[AMOV 独立 master]
+    AGoal[本地任务目标] --> AE[EGO Planner / traj_server]
+    AE --> AB[连续仿真体]
+    AB --> AS[本地 RGB-D / IMU]
+    AS --> AV[VIO / RGB-D 回投 / TSDF / mesh frontend]
+    AV --> AL[LCD / DPGO]
+    AV --> AP[原生 PGMO]
+    AL --> AP
+    AP --> AR[结果 server]
+    AB --> AR
+    AL <--> AX[peer bridge]
+    AE <--> AX
   end
-  GOAL[本机任务：仅发目标 PoseStamped] --> EGO
-  subgraph HUB[本机集中计算与存储]
-    I[每台设备一个接收入口]
-    I --> VIO[两套原生 Kimera VIO]
-    I --> BR[独立 RGB D / VIO 位姿桥接]
-    VIO --> BR
-    BR --> TSDF[两套原生 TSDF 与 mesh frontend]
-    VIO --> LCD[LCD / DPGO 协同后端]
-    TSDF --> PGMO[原生 PGMO 网格变形]
-    LCD --> PGMO
-    PGMO --> VIEW[版本校验 / NVIDIA RViz / 后处理]
-    I --> BAG[结果记录 / 可选输入重放记录]
+  subgraph B[UROS 独立 master]
+    BGoal[本地任务目标] --> BE[EGO Planner / traj_server]
+    BE --> BB[连续仿真体]
+    BB --> BS[本地 RGB-D / IMU]
+    BS --> BV[VIO / RGB-D 回投 / TSDF / mesh frontend]
+    BV --> BL[LCD / DPGO]
+    BV --> BP[原生 PGMO]
+    BL --> BP
+    BP --> BR[结果 server]
+    BB --> BR
+    BL <--> BX[peer bridge]
+    BE <--> BX
   end
-  U --> I
+  AX <-->|直接 peer TCP| BX
+  AR --> H[本机结果 observer / 原色面显示 / 存档]
+  BR --> H
+  H --> Q[离线轨迹评价]
 ```
 
-任务脚本只在 `/two_pc/drone_N/goal` 发布目标 `PoseStamped`。EGO Planner 独占本机局部 B-spline 输出，`traj_server` 独占 `PositionCommand` 输出，连续仿真体以积分跟踪指令，不复制目标位置。路径选择、避障、重规划和队友轨迹避碰都由各设备上的 EGO-Swarm 完成。调整两条任务目标序列不会授权脚本生成飞行轨迹或替代 EGO 控制。
+图中是数据依赖，不是由本机调度 SLAM。原始图像、IMU、局部里程计与地图计算留在各设备；本机退出不会等同于 AMOV/UROS 的 peer 失联。第二轮旧 combined observer 飞行中退出时阶段由 18 推进到 20；第四轮 map-only 退出在运动完成后，阶段保持 20，两端 TSDF 完成数仍增加 42/43。后者只验证该时段地图接收退出不阻断局部积分，不能替代飞行中故障注入。
 
-规划当前使用仿真里程计和障碍观测，Kimera 输出尚未接回规划闭环。仿真真值只供运动控制、场景渲染和离线评估；不得将其接入 VIO、回环或稠密地图估计来代替估计结果。设备从各自本地相同scene生成原有5米/10 Hz规划障碍云，不依赖本机先推送场景云。场景先验只用于仿真与EGO规划，不代替Kimera建图。独立LiDAR当前不被RGB-D VIO或TSDF输入桥消费，可稀疏上传；深度图和IMU仍是估计链必需输入。
+## 规划、actual 与估计边界
 
-## 单次上行与本机分发
+每机任务状态机只在 `/two_pc/drone_N/goal` 发布 `PoseStamped`，并通过 peer 交换阶段状态。EGO Planner 产生本地 B-spline，`traj_server` 唯一产生 `PositionCommand`，连续仿真体通过积分跟踪指令。目标脚本不合成控制轨迹，不复制目标位置。两机未来 B-spline 通过 peer 的 EGO 通道交换，不能只桥接 Kimera 消息而丢失 EGO-Swarm 互避输入。
 
-设备传感器名为 `/sim_N_edge_sensors`，八路传感器输出重映射到 `/edge/sim_N/...`，只供该设备的 `/sim_N_sensor_uplink` 订阅。RGB、浮点深度、有效掩码和两份CameraInfo按原始相同时间戳配对并无损压缩。renderer不再重复发布机体真值；uplink独立直接订阅 `/drone_N_visual_slam/odom`，以源时间戳相位抽样为默认30 Hz实际机体遥测。
+规划使用仿真机体里程计及本机生成的场景障碍观测，尚未验证 Kimera 输出驱动导航。已知场景只用于仿真和规划，不充当重建地图。actual 机体状态允许用于仿真控制、任务保护、显示和离线评价；VIO、回环、分布式优化及 TSDF 均不得用 actual 替代估计。
 
-五条通道仍为truth（实际遥测）、imu、rgbd、lidar和ready，协议版本2按通道绑定真实发布者。truth queue=1、请求4 KiB socket发送缓冲；RGB-D/LiDAR请求64 KiB、queue=1。IMU保持独立有序队列。实际遥测与IMU设置DSCP EF，RGB-D保持默认服务类，LiDAR标记CS1背景类；这只是可验证的socket标记，不保证无线AP按优先级调度。
+原始传感器在本机 ROS 图中直接喂给原生 VIO/局部回投。RGB-D 使用原时间戳与标定；旋转插值使用 IMU 角速度和原生 VIO 端点，平移使用原生 VIO 端点，覆盖不足时显式省略，不用 actual 补齐。
 
-本机 `/sim_N_multimodal_sensors` 是五条上行通道唯一远端订阅者，校验robot/run/cutoff、调用者、完整性、长度、序号和年龄后原样分发。任务、轨迹和场景显示统一从本机 `/sim_N/ground_truth/odometry` 获取实际机体状态；EGO自己的本地100 Hz里程计、规划与控制topic保持原样，不再为每个本机消费者各开一条跨LAN里程计连接。
+## 原生本地链路与版本
 
-RGB-D/IMU和所选LiDAR测点保留原始ROS字节，包括Header.seq/stamp/frame、深度浮点位及协方差。遥测源抽样、LiDAR抽帧/抽点显式计数和记录配置；不能将这种有意省略当作IP丢包。LiDAR物理16×180射线模型保持，默认上传1 Hz、每4个实测hit选1点，本地EGO障碍云不稀疏。
+每机运行 VIO、`native_vio_graph_adapter`、独立 local sensor bridge、Voxblox TSDF、mesh frontend、LCD、DPGO 和现代 PGMO MESH 接口。adapter 保留原始关键帧 ID/时间戳，处理相机/机体坐标约定。局部 TSDF 在 `sim_N/vio_odom` 中连续积分；backend 事务、网络发送与局部回投位于独立进程。
 
-图像缓存和解压大小有上限，过期/不完整/重复/错误来源显式省略并计数，不修改时间戳、不补造图像、不向SLAM发布实际机体真值。默认图像源龄上限2秒，IMU仍共享物理无线介质，性能需实测。设备只保留日志和进程元数据。
+当前 `execution_mode=online` 将完成的协同相机轨迹转换回机体约定，提交给原生 PGMO，继续接收新局部图和 mesh。native Path/pose_graph 用于检查原生 keys、时间戳、有限位姿与路径使用情况；PGMO 是软优化，位姿残差单独报告，不把它称为逐 pose 精确数值 ACK 或地图精度保证。
 
-## 视觉与协同轨迹
+历史固定 mesh 诊断模式用于证明同输入下历史顶点变化，需要归档事务证据；它不是当前无持久化在线模式的默认执行方式。重复 mesh 定时发布不证明新 TSDF 积分，积分完成日志、源龄和队列需要独立监测。
 
-`native_vio_graph_adapter.py` 保留原生关键帧 ID、时间戳及体坐标里程计关系，将所需的相机位姿和图接口送入协同后端。LCD 利用视觉描述信息发现候选，经过几何验证后形成跨机器人约束，DPGO 优化轨迹。
+依赖采用固定提交及本地兼容补丁，不是官方 v1.0.0 依赖组合。ARM64/x86-64 必须分别编译，OpenCV/GTSAM/Eigen ABI 与所有跨机消息 MD5 需一致；OpenGV 防护库也按架构独立核验。
 
-并非每条新消息都代表一次完成优化。桥接层观察请求、权重更新、终止命令、最终权重与轨迹变化；这些观测用于限制旧结果与新结果混用。原生消息缺少共享原子轮次标识，目前该绑定仍有工程局限。
+## 直接 peer 协议
 
-## 局部稠密地图
+`peer_bridge.py` 是项目自有 TCP 替代通信层，参考上游 RTM 的消息清单，未使用或冒称原作者 RTM。control、feature、ego 三条独立全双工通道由 robot 0 直接连接 robot 1，hub 不中转。
 
-RGB-D 点使用原时间戳和标定回投；局部位姿来自原生 VIO。旋转插值采用实测 IMU 角速度曲线并约束到原生 VIO 两端姿态，平移按原生 VIO 端点插值。超过里程计或 IMU 间隔限制时显式省略样本，不使用仿真真值补齐。
+白名单包含 BoW、BoW/VLC 请求与响应、loop closure/ACK、pose corrector、DPGO lifting matrix、status、command、anchor、public poses/measurements、weights，以及 EGO B-spline、机体/任务状态。原始图像和 IMU不经 peer 广播。VIO 的 `vlc_frame_query` 与 LCD 的 `request_pose_graph` service 留在本地同一 master 内；只转发少量结果 topic 不能替代整个请求/响应协议。
 
-两套 Voxblox 均在集中本机运行，分别在 `sim_N/vio_odom` 中积分，mesh frontend 生成原生几何和网格图。局部显示话题 `/sim_N/native_dense/raw_local_vertices` 直接显示该逻辑机器人的原生 frontend 网格顶点，颜色仅区分来源。默认目标积分输入 5 Hz、网格生成周期 1 秒，实际进度仍以原生完成日志验证。
+握手核验 run/cutoff、双方 robot/boot、消息 schema/MD5，接收桥是明确的本地 proxy caller。原生来源、序号和 hash 保留在 metadata 中，不把 proxy caller 冒充成原生节点。原始 ROS 字节与来源 metadata 使用本机原子伴随消息关联，避免两个独立 ROS 话题在负载下错配或有限回执缓存逐出。
 
-TSDF 的网格定时器会重复发布现有地图。验证持续建图要查看实际积分完成记录、输入消息年龄和队列，不能只统计 mesh 话题频率。
+控制/特征流使用有界 RAM outbox、ACK/重发和去重；EGO 流只保留新鲜状态。传输 ACK 表示本地 proxy 发布返回，并非原生优化器已经处理。接收会话驱动 `connected_peer_ids`，不能用任意 Header 或 hub 心跳代替双向会话健康。当前恢复范围是同进程内 TCP 重连；peer boot 改变、可靠队列溢出或关键数据过期要求新 run，不能承诺无盘状态下进程重启续图。
 
-## 全局轨迹与网格修正
+## 结果传输与本机显示
 
-本项目固定使用现代 Kimera-PGMO MESH API。完成的协同相机轨迹转回体坐标后，由原生 PGMO 处理轨迹先验与网格变形；桥接层不以 ICP、自定义点云配准或真值拟合生成全局地图。
+每端结果 server 在 11740/TCP 提供 map 流、11741/TCP 提供独立 actual/VIO 遥测。本机主动订阅；边端回调只替换固定 stream 的有界 latest，压缩、socket 等待及本机磁盘速度不占用原生 SLAM 锁。
 
-为验证轨迹确实改变了历史网格，桥接层保留同一个原生 mesh 输入，获取稳定基线、提交轨迹、等待原生数值回执，再触发该固定 mesh，检查历史顶点的实际变化。事务期间暂停向 PGMO 转发新的图和网格，局部传感器输入按设计继续运行。
+本机使用两个独立进程：map 的 `/distributed_result_observer` 只处理 mesh/图/路径、Marker、PLY 与地图状态；telemetry 的 `/distributed_telemetry_observer` 只接收和发布 actual/VIO、归档紧凑遥测，不构造 mesh/Marker/PLY，也不覆盖 map status。第二轮旧 combined 模式的独立 socket/线程仍竞争同一 Python GIL；第三、四轮改用两个进程，分别由 manager role 归属与关闭，不自动派生无人管理的子进程。进程隔离改善遥测不表示消除了原生网格处理积压。
 
-传感器回投与后端事务位于独立进程。本次集中部署改造没有改变原有观测轮次协议，也不把部署或单元检查通过当作新一轮持续建图验收。
+map 流包含完整原生 local mesh、最新 native PGMO mesh、accepted mesh、status、DPGO path、实际提交的 body path、已核验的 `verified_body_path` 及 optimized graph。传输保留 XYZ、原始 RGBA、三角面、时间戳、graph indices 和其余 ROS 元数据，不修改顶点顺序。
 
-## 全局展示和版本规则
+首包/重连发送 compressed 全量；可选 delta 按完整 ROS 字节块差分，携带 base/result hash，能覆盖历史顶点、拓扑、截断和扩展。缺 base 或 hash 不符时请求全量，不能将新点追加等同于完整增量地图。run、boot、gauge 配置、source topic/caller、type/MD5、原始长度及解压大小均校验。
 
-`native_dense_global_view.py` 只消费两机 `accepted_joint_mesh` 及对应状态，检查运行轮次、mesh 哈希、优化 owner、请求窗口和最终权重内容。只有一致的两份原生结果才发布 `/visualization/native_mesh/global_cloud`。
+本机 `observer.py` 只反序列化、发布和存档，不估计、ICP 配准、焊接顶点或拟合地图。原生 mesh 使用 `TRIANGLE_LIST` 显示完整面与原色。默认仅渲染 local 与通过证据的 shared faces；相同 snapshot/action/boot/gauge 不重复序列化巨大 shared Marker，状态与 freshness 仍为 1 Hz。native/accepted 相同内容复用一次解码、完整几何校验与有界 geometry，未改变源顶点/面顺序。可用 observer 的 `--all-mesh-faces` 恢复其他镜像 faces。
 
-展示层按顺序拼接两份已通过校验的原生顶点，分别染为青色和橙色；不再配准、重投影或混入旧轮次地图。当前最新版本不一致时清空全局显示，等待匹配结果。空窗口可能表示版本校验未通过，不等于两机未收到任何局部地图。
+生产默认仅存完整 `.rosbin`/metadata，不逐 snapshot 生成 PLY；显式 `--snapshot-ply` 用于需要逐份导出的诊断。最终从原始 ROS 结果离线导出仍可保留双精度 XYZ、完整三角面与原始 RGBA 数值，`.rosbin` 是全部原生元数据的权威副本。
 
-## 数据保留边界
+局部视图固定在各自 `sim_N/vio_odom`；实际机体视图使用 `world`，不能未经估计关系强叠。共享视图仅在两端真实跨机优化证据及匹配 mesh receipt 就绪时发布。同名 frame、相同 `gauge-id` 都只是配置身份，不是初始化证明。observer 的 snapshot ID 是应用身份，不是共享原子优化轮次；本机不会因两个本地 serial 不同而宣称原子一致。
 
-| 数据 | 在线用途 | 默认长期保存 |
-|---|---|---|
-| RGB、深度、IMU及CameraInfo | 原生VIO与TSDF必需 | map模式消费后释放；replay/debug模式录制 |
-| 机体实际状态、VIO估计、入口状态 | 任务/显示/诊断 | map模式保存紧凑遥测，不重复整条Path |
-| 独立LiDAR | 当前Kimera链无依赖 | 稀疏辅助上传；仅debug录制 |
-| RGB-D回投云、TSDF更新、mesh frontend、PGMO过程输出 | 必要在线中间接口 | 不重复录包，在线消费者照常运行 |
-| DPGO命令、全部共享图、权重与显示Marker/Path | 协同计算或显示 | debug才录；最终有效pair保留必要证据 |
-| 最终已接受native pair/两份原生mesh/回执/标定 | 全局地图与来源证据 | 导出并保留 |
+`shared_body_path` 必须与所选 mesh receipt 的 `submitted_body_path_sha256` 匹配，只忽略 ROS 修改的顶层 Header.seq。native dense 在 `/sim_N/native_dense/verified_body_path` 以 latch 发布最后已核验的原生 `nav_msgs/Path`，caller 仍为 `/sim_N/native_dense_bridge`；新 `approved_body_path` 待核验时不能覆盖它。observer 优先匹配独立 verified stream，并保留当前 run/boot/gauge 下最多 32 个 path 版本、128 MiB 的内容 hash 缓存。新进程重连可收到 latched verified path；缺 hash、换 boot 或错误 gauge 均不发布为共享路径。旧档案没有 verified stream 时，导出器仍从原 `body_path` 档案按同一 receipt hash 选择，不能仅凭目录最新版本放松关联。
 
-全局显示云只拼接XYZ并按机器人染色，不能单独替代带三角面和原始颜色的最终网格。`export_final_global_map.py`按可选截止时间选择有效pair，校验native hashes、顶点/三角形和回执，导出全局PLY/PCD、合并原生三角网格及两份原始证据，不重优化地图或改变native拓扑。稀疏显示是派生视图，不能改native PGMO内部顶点顺序。
+observer 仍运行而结果链路断连时，last-known mesh 保留并明确标 stale，不伪造新时间戳。观察进程本身退出时不再生成状态，冻结的窗口标签不能当作实时健康证据。map status 的 telemetry 字段注明由独立进程处理、`status_available_here=false`，不表示遥测连接断开。
 
-## 通信与运行边界
+第四轮后的 continuity 修复区分最新提交与最后已核验路径。同一有效 native PGMO/gauge 会话已建立共享证据后，新的共享 path 待核验不再让已有 gauge 自动变回 local；receipt 明确记录 `newer_path_pending`、`latest_submitted_body_path_sha256`、`last_verified_body_path_sha256` 与 `native_path_echo_covers_latest_submission`。它不保证最新 path 已被使用，也没有证明当前 mesh 对应精确 optimizer generation。run/cutoff、key 0、frame、双方 peer boot、PGMO 进程身份与图 key 前缀继续核验；新 path 仍须有双方 active、真实跨机约束与完成证明。身份改变、图前缀回退或本地-only 新解不能沿用旧共享证明。第五轮不可变档案连续性审计全部检查通过；运动后以全新 RAM 缓存重启 map observer，复核 shared map 与两端 verified path 关联成功，未连续测恢复时延。
 
-默认 RViz 绘制上限 30 FPS、机体位置显示 20 Hz；完整路径以 2 Hz 重建，状态与文件以 1 Hz 更新，避免高频反复序列化整条历史路径。显示帧率、传感器频率、TSDF 积分与网格周期可分别配置。
+## 保存与质量评价
 
-专用容器使用本机 NVIDIA 显卡执行 OpenGL 显示，显式软件模式仍可作为排查选项。原生 VIO、Voxblox、DPGO 和 PGMO 保留现有 CPU 实现，GPU 接入不等于这些算法已经改写为 CUDA。GPU/驱动与实际渲染器校验见 `dependencies/locks/hub_gpu_runtime.json`。
+| 位置 | 允许保留 | 当前禁止 |
+| --- | --- | --- |
+| AMOV / UROS 磁盘 | 代码、标定/参数副本、进程归属、文本事件/状态/资源及任务日志 | raw bag、VIO 轨迹 CSV、图/mesh 二进制、PLY/TSDF/地图导出 |
+| AMOV / UROS RAM | 当前图像/IMU缓存、关键帧和描述子、轨迹/图、TSDF/mesh、可靠重发队列 | 无法承诺零状态；进程重启后这些历史不具备磁盘恢复来源 |
+| 本机 | 原生结果 ROS 字节、receipt、原色 faces、紧凑姿态、资源与离线指标 | 将 actual 或评价拟合送回估计、以独立配准结果冒充分布式融合 |
 
-集中建图要求原始传感器流实时上行，网络吞吐、消息年龄、序号间隙和 IMU 覆盖需要在真实运行中单独验收。共享master与任务节点仍是实验依赖，尚未证明网络分区或节点失联时整个系统的容错能力。
+`quality_collector.py` 仅保存本机 actual、VIO 和通过 receipt 关联的 body path 姿态。`quality.py` 对两机联合 body path 共用一次 SE(3) 刚体对齐，计算 ATE、RPE 及覆盖；不估尺度，不逐机器人对齐联合结果。VIO 可单独以各自局部 gauge 做清楚标注的单机基线。缺机器人、缺配对和覆盖不足需明确报告，质量指标不自动等于验收通过。
 
-当前未实现语义标签推理，也未验证真实飞控、扫描去畸变、硬件时间同步或多机外参标定。
+## 保留的集中 baseline
+
+`manager_hub.py` / `manager_local.py` 保留此前集中版本：设备仅控制/生成传感器，上行给本机运行两份完整 SLAM。它使用一个共享 master、传感器 ingress、旧 native-pair 全局显示/导出规则，与当前三个 master 的分布式 profile 不能混用。
+
+2026 年 11 月 3 日集中运动、11 月 2 日旧双机故障和第四轮 continuity 修复前结果分别保留历史证据。第五轮以两端相同 0.20 m 原生 TSDF（默认 0.15 m）完成两圈 20/20、496.58 秒运动，真实 TSDF 完成 775/805 次。首次共享接纳后的 accepted mesh 更新间隔中位数为 AMOV/UROS 3.7527/1.9996 秒，P95 为 13.5174/2.9459 秒，最大为 22.8619/4.9907 秒；native mesh Header 是原生 `vertex_stamps.back()`，不能把它的年龄当相机到显示时延。AMOV 平均 CPU 90.75%，不能据功能通过宣称强实时。
+
+该轮联合输出保留 109,117 个原生顶点槽、67,033 个面引用顶点与 146,846 个原色面。离线几何评价复用 body path 的一次团队 SE(3)，不另做 ICP、缩放或每机独立配准；它使用有限可见真值采样与顶点距离近似，不修改原生地图，也不充当共享原子优化证据。见[完整运行报告](/home/mrjq311/swarm_kimera_runtime/experiment/three_host_20261102/distributed/runs/distributed_continuity_20261104_153318/hub/final_report.json)、[分布式核验摘要](evidence/distributed_acceptance_20261104.json)、[已知问题](known_issues.md)与[分布式部署](distributed_deployment.md)。

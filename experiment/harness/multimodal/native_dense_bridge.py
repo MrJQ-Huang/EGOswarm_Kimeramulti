@@ -7,11 +7,12 @@ to optical point messages, interpolates native VIO for TF, preserves native grap
 keys/measurements, converts optimized camera poses back to body poses, and exposes
 native mesh vertices for display. It does not reconstruct or deform a map.
 
-Start before VIO and sensors in a fresh epoch. Local mode intentionally does not
-consume distributed results. Joint mode withholds PGMO full meshes until an
-observed native completed DPGO round supplies a complete original-key trajectory.
-The pinned native messages have no shared round ID: the recorded causal window
-is an observational binding, not an invented atomic optimizer/mesh receipt.
+Start before VIO and sensors in a fresh epoch. The default diagnostic execution
+retains the fixed-input deformation experiment. Explicit online execution never
+freezes native graph/mesh inputs and accepts numerically unchanged solutions.
+The pinned native messages have no shared round ID: completion and path echoes
+are observational evidence, not an atomic optimizer/mesh receipt. Network
+compression and transmission belong in a separate process.
 """
 import argparse
 import bisect
@@ -20,14 +21,24 @@ import copy
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
+import re
+import sys
 import threading
 import time
+import xmlrpc.client
 
 import numpy as np
 
 from native_vio_graph_adapter import SIM_T_BODY_CAMERA, pose_matrix, set_pose, rotate_covariance
 from native_imu_pose_interpolation import GyroCoverageError, GyroRotationHistory
+
+
+# The calibrated extrinsic is fixed for this deployed simulator. Compute its
+# inverse once, rather than solving the same 4x4 system for every expanded key.
+SIM_T_CAMERA_BODY = np.linalg.inv(SIM_T_BODY_CAMERA)
+SIM_T_CAMERA_BODY.setflags(write=False)
 
 
 def require_source(message, expected):
@@ -70,8 +81,90 @@ def snapshot_message_header(message):
 
 def canonical_mesh_digest(message):
     """Full native mesh content hash, ignoring only ROS transport Header.seq."""
+    return hashlib.sha256(canonical_mesh_bytes(message)).hexdigest()
+
+
+def canonical_mesh_bytes(message):
+    """Serialize an immutable native mesh once, normalizing transport seq only."""
     normalized = snapshot_message_header(message)
     normalized.header.seq = 0
+    return message_bytes(normalized)
+
+
+def canonical_serialized_mesh_digest(payload):
+    """Hash native ROS bytes, ignoring only the top Header.seq uint32."""
+    if len(payload) < 4: raise ValueError('Truncated native mesh Header.seq')
+    value = hashlib.sha256(); value.update(b'\0'*4); value.update(memoryview(payload)[4:])
+    return value.hexdigest()
+
+
+def publish_serialized_message(publisher, payload):
+    # The publisher remains registered with the native ROS type and MD5.
+    # AnyMsg.serialize forwards its immutable buffer without a second walk of
+    # the native vertices/colors/faces or rospy rewriting the retained header.
+    publisher.publish(rospy.AnyMsg().deserialize(payload))
+
+
+def mesh_proof_hashes(message, xyz):
+    return dict(vertex_xyz_float32_le_sha256=hashlib.sha256(xyz.astype('<f4').tobytes()).hexdigest(),
+        vertex_stamps_uint64_le_sha256=hashlib.sha256(np.asarray([s.to_nsec() for s in message.vertex_stamps], dtype='<u8').tobytes()).hexdigest(),
+        triangles_uint32_le_sha256=hashlib.sha256(np.asarray([t.vertex_indices for t in message.triangles], dtype='<u4').tobytes()).hexdigest())
+
+
+class BoundedXmlRpcTransport(xmlrpc.client.Transport):
+    def __init__(self, timeout):
+        super().__init__(); self.timeout = timeout
+
+    def make_connection(self, host):
+        connection = super().make_connection(host); connection.timeout = self.timeout
+        return connection
+
+
+def native_node_identity(master_uri, node_name, caller, timeout=.5):
+    """Observe a native ROS process incarnation, without trusting node name alone."""
+    with xmlrpc.client.ServerProxy(master_uri, transport=BoundedXmlRpcTransport(timeout)) as master:
+        code, reason, uri = master.lookupNode(caller, node_name)
+    if code != 1 or not isinstance(uri, str) or not uri.startswith('http://'):
+        raise ValueError('Cannot resolve native PGMO process identity: '+str(reason))
+    with xmlrpc.client.ServerProxy(uri, transport=BoundedXmlRpcTransport(timeout)) as native:
+        code, reason, pid = native.getPid(caller)
+    if code != 1 or type(pid) is not int or pid <= 0:
+        raise ValueError('Cannot verify native PGMO process PID: '+str(reason))
+    return dict(node=node_name, uri=uri, pid=pid)
+
+
+class NativeProcessIdentityUnavailable(ValueError):
+    pass
+
+
+class NativeProcessProbe:
+    """Bounded local XMLRPC observations, independent of the SLAM state lock."""
+    def __init__(self, operation, period=.5):
+        self.operation, self.period = operation, period
+        self.lock = threading.Lock(); self.stopped = threading.Event()
+        self.value = dict(identity=None, error='not_yet_observed', checked_monotonic=None)
+        self.thread = threading.Thread(target=self.run, name='native-pgmo-process-probe', daemon=True)
+        self.thread.start()
+
+    def run(self):
+        while not self.stopped.is_set():
+            try: identity, error = self.operation(), None
+            except Exception as failure: identity, error = None, str(failure)
+            with self.lock:
+                self.value = dict(identity=identity, error=error, checked_monotonic=time.monotonic())
+            self.stopped.wait(self.period)
+
+    def snapshot(self):
+        with self.lock: return copy.deepcopy(self.value)
+
+    def close(self):
+        self.stopped.set()
+
+
+def canonical_graph_digest(message):
+    """Ignore transport sequence only; retain every native key/stamp/pose bit."""
+    if not hasattr(message, 'header'): return digest(message)
+    normalized = snapshot_message_header(message); normalized.header.seq = 0
     return digest(normalized)
 
 
@@ -239,6 +332,7 @@ class RoundLedger:
     def __init__(self, updates=25):
         self.updates = updates; self.serial = 0; self.active = None; self.completed = None
         self.latest_weights = {}; self.path_event = None; self.last_path_sha = None
+        self.online_completed = None; self.online_path_event = None; self.online_weights = None
 
     def command(self, owner, message, now):
         if int(message.publishing_robot) != owner:
@@ -254,7 +348,16 @@ class RoundLedger:
                 self.active['weight_update_walls'].append(now)
             elif message.command == message.HARD_TERMINATE:
                 self.active = None; self.completed = None; self.path_event = None
+                self.online_completed = None; self.online_path_event = None; self.online_weights = None
             elif message.command == message.TERMINATE:
+                # Production does not require observing every GNC update. A
+                # native successful termination remains distinct from a hard
+                # termination, an iterate, or our own diagnostic update count.
+                self.online_completed = dict(self.active, terminate_wall=now)
+                self.online_path_event = None
+                weight = self.latest_weights.get(owner)
+                self.online_weights = (copy.deepcopy(weight) if weight is not None
+                    and weight['received_wall'] >= self.active['request_wall'] else None)
                 if len(self.active['weight_update_walls']) == self.updates:
                     self.completed = dict(self.active, terminate_wall=now)
                 else:
@@ -269,10 +372,16 @@ class RoundLedger:
         if not all(np.isfinite(row[4]) for row in rows): raise ValueError('Nonfinite native weight')
         self.latest_weights[owner] = dict(owner=owner, received_wall=now, rows=rows,
             sha256=hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest())
+        if (self.active is None and self.online_completed is not None
+                and owner == self.online_completed['owner'] and now >= self.online_completed['request_wall']):
+            self.online_weights = copy.deepcopy(self.latest_weights[owner])
 
     def native_path(self, message, now):
         signature = path_geometry_digest(message)
         self.last_path_sha = signature
+        if self.online_completed is not None and now > self.online_completed['terminate_wall']:
+            self.online_path_event = dict(received_wall=now, sha256=signature,
+                poses=len(message.poses), round_serial=self.online_completed['serial'])
         if self.completed is None or self.active is not None: return
         if now <= self.completed['terminate_wall']: return
         # With publish_iterate=false, native PGOAgentROS writes mCachedPoses
@@ -294,6 +403,186 @@ class RoundLedger:
         return dict(round=copy.deepcopy(self.completed), upstream_dpgo_path=dict(self.path_event),
                     weights=copy.deepcopy(weight), accepted_cross_constraints=len(accepted),
                     binding='observed_native_command_path_graph_window_no_shared_message_round_id')
+
+    def online_proof(self, now, require_cross):
+        completed, path = self.online_completed, self.online_path_event
+        if completed is None or path is None or path['round_serial'] != completed['serial']:
+            return None
+        if not completed['terminate_wall'] < path['received_wall'] <= now: return None
+        weight = self.online_weights
+        # Native weights may be delivered before TERMINATE. This is an observed
+        # request/termination window, not a +/- wall-time or all-updates gate.
+        if weight is None or not completed['request_wall'] <= weight['received_wall'] <= now:
+            return None
+        active = set(completed['active_robots'])
+        accepted = [r for r in weight['rows'] if r[0] != r[2] and r[4] >= .5
+                    and r[0] in active and r[2] in active]
+        if require_cross and not accepted: return None
+        return dict(round=copy.deepcopy(completed), upstream_dpgo_path=dict(path),
+            weights=copy.deepcopy(weight), accepted_cross_constraints=len(accepted),
+            observed_weight_update_count=len(completed['weight_update_walls']),
+            diagnostic_complete_weight_update_count=len(completed['weight_update_walls']) == self.updates,
+            binding='observed_native_termination_cached_path_and_weights_no_shared_atomic_round_id',
+            exact_shared_optimizer_round_id_available=False)
+
+
+class PeerControlIngress:
+    """Authenticate proxied native controls by exact per-message provenance.
+
+    Receipt and native ROS topics are independently ordered. Keep a bounded
+    pending cache rather than losing a unique TERMINATE when its receipt lags.
+    A proxy caller alone never authorizes a native control event.
+    """
+    def __init__(self, robot_id, run_id, cutoff_ns, caller, maximum_pending=256, maximum_wait=5.):
+        if not re.fullmatch(r'/[A-Za-z][A-Za-z0-9_/]*', caller):
+            raise ValueError('Remote bridge caller must be one absolute ROS node name')
+        self.robot_id, self.peer = robot_id, 1-robot_id
+        self.run_id, self.cutoff_ns, self.caller = run_id, cutoff_ns, caller
+        self.maximum_pending, self.maximum_wait = maximum_pending, maximum_wait
+        self.status = None; self.receipts = {}; self.pending = deque(); self.lock = threading.Lock()
+        self.overdue = False; self.discarded_previous_boot_controls = 0
+        self.atomic_pending = deque(); self.atomic_sequence = 0; self.atomic_last_sha = None
+        self.atomic_delivered = 0; self.atomic_duplicates = 0
+
+    def set_status(self, value):
+        if (value.get('run_id') != self.run_id or value.get('local_robot_id', value.get('robot_id')) != self.robot_id
+                or value.get('peer_robot_id') != self.peer or value.get('cutoff_ns') != self.cutoff_ns):
+            raise ValueError('Peer bridge status epoch/ownership mismatch')
+        with self.lock:
+            if self.status and self.status.get('peer_boot_id') and value.get('peer_boot_id') and (self.status.get('local_boot_id'), self.status.get('peer_boot_id')) != (
+                    value.get('local_boot_id'), value.get('peer_boot_id')):
+                self.receipts.clear()
+                # Do not silently carry unproven controls across a peer restart.
+                self.discarded_previous_boot_controls += len(self.pending); self.pending.clear()
+                if self.atomic_sequence:
+                    raise ValueError('Authenticated native control peer boot changed; use a fresh experiment run')
+            self.status = value
+            for receipt in value.get('recent_ingress', []): self._receipt(receipt)
+
+    def _receipt(self, value):
+        if value.get('topic') not in ('/sim_%d/dpgo_ros_node/command' % self.peer,
+                                      '/sim_%d/dpgo_ros_node/measurement_weights' % self.peer):
+            return
+        if (value.get('run_id') != self.run_id or value.get('cutoff_ns') != self.cutoff_ns
+                or value.get('local_robot_id') != self.robot_id or value.get('peer_robot_id') != self.peer
+                or value.get('verified') is not True or value.get('proxy_caller') != self.caller
+                or value.get('source_robot_id') != self.peer
+                or value.get('source_caller') != '/sim_%d/dpgo_ros_node/agent' % self.peer
+                or not re.fullmatch(r'[0-9a-f]{64}', str(value.get('sha256', '')))):
+            raise ValueError('Untrusted remote native control provenance')
+        key = (value['topic'], value['sha256'])
+        self.receipts[key] = dict(value)
+        while len(self.receipts) > self.maximum_pending*2:
+            del self.receipts[next(iter(self.receipts))]
+
+    def receipt(self, value):
+        with self.lock: self._receipt(value)
+
+    def enqueue(self, topic, sha256, callback, message, received_wall, received_monotonic, with_receive_wall):
+        with self.lock:
+            if len(self.pending) >= self.maximum_pending:
+                raise RuntimeError('Remote native control authentication queue overflow: ' +
+                    json.dumps(self._diagnostic(received_monotonic), sort_keys=True))
+            self.pending.append((topic, sha256, callback, message, received_wall, received_monotonic, with_receive_wall))
+
+    def atomic(self, receipt, payload, message, callback, wall, monotonic):
+        """Payload and provenance are indivisible on the production ROS topic."""
+        from peer_wire import canonical_payload_sha256
+        if receipt.get('kind') != 'native_control': raise ValueError('Wrong atomic native control envelope')
+        if receipt.get('wire_sha256') != hashlib.sha256(payload).hexdigest():
+            raise ValueError('Atomic native control original bytes failed SHA256')
+        if receipt.get('sha256') != canonical_payload_sha256(payload, receipt.get('has_header') is True):
+            raise ValueError('Atomic native control canonical bytes failed SHA256')
+        if getattr(message, '_type', None) != receipt.get('type') or not isinstance(receipt.get('type'), str):
+            raise ValueError('Atomic native control ROS type mismatch')
+        if (getattr(message, '_md5sum', None) != receipt.get('md5')
+                or not re.fullmatch(r'[0-9a-f]{32}', str(receipt.get('md5', '')))):
+            raise ValueError('Atomic native control ROS schema mismatch')
+        slots = getattr(message, '_slot_types', ())
+        has_header = bool(getattr(message, '_has_header', False) or (slots and slots[0] == 'std_msgs/Header'))
+        if type(receipt.get('has_header')) is not bool or receipt['has_header'] != has_header:
+            raise ValueError('Atomic native control Header schema mismatch')
+        sequence = receipt.get('control_sequence')
+        if type(sequence) is not int or sequence < 1: raise ValueError('Invalid atomic control sequence')
+        with self.lock:
+            if receipt.get('topic') not in ('/sim_%d/dpgo_ros_node/command' % self.peer,
+                                            '/sim_%d/dpgo_ros_node/measurement_weights' % self.peer):
+                raise ValueError('Unexpected atomic native control topic')
+            self._receipt(receipt)  # Same strict run/source/proxy/robot authentication.
+            if self.status and self.status.get('peer_boot_id') and (
+                    receipt.get('local_boot_id') != self.status.get('local_boot_id') or
+                    receipt.get('source_boot_id') != self.status['peer_boot_id']):
+                raise ValueError('Atomic native control boot identity mismatch')
+            if sequence == self.atomic_sequence:
+                if self.atomic_last_sha != receipt['sha256']: raise ValueError('Atomic sequence reused for changed native bytes')
+                self.atomic_duplicates += 1; return []
+            if sequence != self.atomic_sequence+1:
+                raise ValueError('Atomic control sequence gap: expected %d got %d' % (self.atomic_sequence+1, sequence))
+            self.atomic_sequence = sequence; self.atomic_last_sha = receipt['sha256']
+            self.atomic_pending.append((receipt, callback, message, wall, monotonic))
+            if len(self.atomic_pending) > self.maximum_pending:
+                raise RuntimeError('Atomic native control awaiting boot identity overflow: '+json.dumps(self._diagnostic(monotonic)))
+            return self._drain_atomic()
+
+    def _drain_atomic(self):
+        events = []; status = self.status or {}
+        while self.atomic_pending:
+            receipt, callback, message, wall, monotonic = self.atomic_pending[0]
+            # Per-message authenticated session/boots establish provenance;
+            # aggregate feature/ego lane health is reported independently and
+            # cannot invalidate an already authenticated control packet.
+            if not status.get('local_boot_id') or not status.get('peer_boot_id'): break
+            if (receipt.get('local_boot_id') != status['local_boot_id'] or
+                    receipt.get('source_boot_id') != status['peer_boot_id']):
+                raise ValueError('Atomic native control boot identity mismatch')
+            self.atomic_pending.popleft(); self.atomic_delivered += 1
+            events.append((callback, message, wall, monotonic, True, 'control'))
+        return events
+
+    def _diagnostic(self, now):
+        head = self.pending[0] if self.pending else None
+        status = self.status or {}; receipt = self.receipts.get((head[0], head[1])) if head else None
+        reason = ('no_pending' if head is None else 'missing_receipt' if receipt is None
+                  else 'session_not_ready' if status.get('session_ready') is not True
+                  else 'missing_boot_identity' if not status.get('peer_boot_id') or not status.get('local_boot_id')
+                  else 'source_boot_mismatch' if receipt.get('source_boot_id') != status['peer_boot_id'] else 'matched')
+        return dict(pending=len(self.pending), head_topic=head[0] if head else None,
+            head_sha256=head[1] if head else None, head_age_s=max(0., now-head[5]) if head else 0.,
+            receipt_present=receipt is not None, reason=reason, receipt_cache_size=len(self.receipts),
+            atomic_pending=len(self.atomic_pending), atomic_last_sequence=self.atomic_sequence,
+            atomic_delivered=self.atomic_delivered, atomic_duplicates=self.atomic_duplicates,
+            atomic_head_topic=self.atomic_pending[0][0].get('topic') if self.atomic_pending else None,
+            atomic_head_sha256=self.atomic_pending[0][0].get('sha256') if self.atomic_pending else None,
+            atomic_head_age_s=max(0., now-self.atomic_pending[0][4]) if self.atomic_pending else 0.,
+            atomic_reason='awaiting_initial_boot_identity' if self.atomic_pending else 'all_received_controls_authenticated')
+
+    def diagnostic(self, now):
+        with self.lock: return self._diagnostic(now)
+
+    def drain(self, now):
+        authenticated = []
+        with self.lock:
+            authenticated.extend(self._drain_atomic())
+            while self.pending:
+                topic, sha, callback, message, wall, monotonic, with_wall = self.pending[0]
+                receipt = self.receipts.get((topic, sha)); status = self.status or {}
+                ready = (receipt is not None and status.get('session_ready') is True
+                         and bool(status.get('peer_boot_id')) and bool(status.get('local_boot_id'))
+                         and receipt.get('source_boot_id') == status['peer_boot_id'])
+                if not ready:
+                    # A missing/late receipt is a waiting condition, not a
+                    # reason to kill local LMO or lose a unique TERMINATE. The
+                    # queue remains bounded; actual overflow still fails closed.
+                    self.overdue = now-monotonic > self.maximum_wait
+                    break
+                self.pending.popleft()
+                self.overdue = False
+                if getattr(message, '_type', None) is not None and receipt.get('type') != message._type:
+                    raise ValueError('Peer receipt/native control ROS type mismatch')
+                if getattr(message, '_md5sum', None) is not None and receipt.get('md5') != message._md5sum:
+                    raise ValueError('Peer receipt/native control ROS schema mismatch')
+                authenticated.append((callback, message, wall, monotonic, with_wall, 'control'))
+        return authenticated
 
 
 def validate_mesh(message, cutoff_ns, expected_frame):
@@ -340,10 +629,11 @@ def native_readiness_query(last_native_graph, original_key_zero):
 
 
 def optimized_camera_to_body(camera_pose):
-    return pose_matrix(camera_pose) @ np.linalg.inv(SIM_T_BODY_CAMERA)
+    return pose_matrix(camera_pose) @ SIM_T_CAMERA_BODY
 
 
-def path_error(actual, expected):
+def diagnostic_path_error(actual, expected):
+    """Compatibility metric for the explicit fixed-mesh diagnostic gates."""
     if len(actual.poses) < len(expected.poses): return None
     translation, rotation = 0., 0.
     for measured, target in zip(actual.poses, expected.poses):
@@ -353,11 +643,61 @@ def path_error(actual, expected):
     return dict(max_translation_m=translation, max_rotation_rad=rotation)
 
 
+def pose_value_arrays(poses):
+    """Copy and validate native values; never mutate the ROS pose objects."""
+    poses = list(poses)
+    if not poses: return np.empty((0, 3)), np.empty((0, 4))
+    positions = np.asarray([(p.position.x, p.position.y, p.position.z) for p in poses], dtype=float)
+    quaternions = np.asarray([(p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w)
+                              for p in poses], dtype=float)
+    norms = np.linalg.norm(quaternions, axis=1)
+    if (not np.isfinite(positions).all() or not np.isfinite(quaternions).all()
+            or np.any(np.abs(norms-1.) > 1e-3)):
+        raise ValueError('Native graph contains a nonfinite pose or nonunit quaternion')
+    return positions, quaternions/norms[:, None]
+
+
+def validate_pose_values(poses):
+    """Validate a native pose array without allocating N unused SE(3) matrices."""
+    pose_value_arrays(poses)
+
+
+def path_error(actual, expected):
+    """Batched SE(3) residuals, with no per-pose matrix construction/inversion.
+
+    For T_target^-1 T_actual the translation norm equals ||p_actual-p_target||
+    because the target rotation is orthogonal. The relative quaternion's vector
+    norm and absolute scalar recover the shortest rotation angle with atan2,
+    including stable identity, antipodal and pi rotations. This is an online
+    observation metric; the fixed-mesh diagnostic retains its previous metric.
+    """
+    count = len(expected.poses)
+    if len(actual.poses) < count: return None
+    if not count: return dict(max_translation_m=0., max_rotation_rad=0.)
+    measured, qm = pose_value_arrays(item.pose for item in actual.poses[:count])
+    target, qt = pose_value_arrays(item.pose for item in expected.poses)
+    translation = np.linalg.norm(measured-target, axis=1)
+    vector = qt[:, 3, None]*qm[:, :3]-qm[:, 3, None]*qt[:, :3]-np.cross(qt[:, :3], qm[:, :3])
+    scalar = np.sum(qt*qm, axis=1)
+    rotation = 2*np.arctan2(np.linalg.norm(vector, axis=1), np.abs(scalar))
+    return dict(max_translation_m=float(translation.max()), max_rotation_rad=float(rotation.max()))
+
+
 class NativeDenseBridge:
     def __init__(self, args):
         args.external_sensor_stream = getattr(args, 'external_sensor_stream', False)
+        args.execution_mode = getattr(args, 'execution_mode', 'diagnostic')
+        args.no_persist = getattr(args, 'no_persist', False)
+        args.remote_bridge_caller = getattr(args, 'remote_bridge_caller', None)
+        args.remote_control_transport = getattr(args, 'remote_control_transport', 'atomic')
+        args.shared_gauge_id = getattr(args, 'shared_gauge_id', args.run_id)
+        args.status_period = getattr(args, 'status_period', 1.)
+        args.online_legacy_vertices = getattr(args, 'online_legacy_vertices', False)
+        if args.no_persist and args.execution_mode != 'online':
+            raise ValueError('No-persist requires online execution; fixed-mesh diagnostics archive their evidence')
         self.a = args; self.base = '/'+args.robot_name; self.lock = threading.RLock()
         self.native_input_lock = threading.Lock(); self.native_inputs = deque()
+        self.timing_lock = threading.Lock(); self.timings = {}
         self.native_input_max_queue = 0; self.native_input_max_delay = 0.; self.native_control_max_delay = 0.
         self.native_imu_max_delay = 0.
         self.replaceable_lock = threading.Lock(); self.replaceable_inputs = {}; self.replaceable_overwrites = Counter()
@@ -380,6 +720,25 @@ class NativeDenseBridge:
         self.native_body_metadata_ack_has_optimized_key_zero = False
         self.eligible = None; self.camera_graph_contract = None
         self.accepted_joint_mesh_receipt = None; self.latest_submitted_body_path_sha256 = None
+        self.online_submission = None; self.online_path_echo = None; self.online_mesh_sequence = 0
+        self.online_verified_submission = None
+        self.online_pgmo_process_identity = None
+        self.pgmo_graph_largest_key = -1
+        self.pgmo_process_probe = None; self.pgmo_process_identity_error = None
+        self.online_latest_mesh_gauge = 'local_unanchored'
+        self.last_rejected_control_envelope = None
+        self.pgmo_body_key_stamps = {}; self.pgmo_verified_through = -1; self.online_pending_pgmo_path = None
+        self.last_status_wall = 0.
+        self.peer_controls = (PeerControlIngress(args.robot_id, args.run_id, self.cutoff_ns,
+            args.remote_bridge_caller) if args.remote_bridge_caller else None)
+        if self.peer_controls:
+            protocol_folder = Path(__file__).resolve().parents[2]/'three_host_20261102'/'distributed'
+            if str(protocol_folder) not in sys.path: sys.path.insert(0, str(protocol_folder))
+            from peer_wire import native_message_sha256
+            self.remote_control_digest = native_message_sha256
+            self.remote_control_types = {
+                '/sim_%d/dpgo_ros_node/command' % (1-args.robot_id): (Command, lambda m, t: self.rounds.command(1-args.robot_id, m, t)),
+                '/sim_%d/dpgo_ros_node/measurement_weights' % (1-args.robot_id): (RelativeMeasurementWeights, lambda m, t: self.rounds.weights(1-args.robot_id, m, t))}
         self.remesh_after = None; self.fatal = None; self.counts = Counter(); self.evidence = args.output_directory
         self.evidence.mkdir(parents=True, exist_ok=True)
         self.events = (self.evidence/'bridge_events.jsonl').open('a', buffering=1)
@@ -389,6 +748,7 @@ class NativeDenseBridge:
             'mesh_graph': ('mesh_graph_incremental', PoseGraph, 1000, False),
             'full': ('full_mesh', KimeraPgmoMesh, 1, False),
             'path': ('approved_body_path', RosPath, 1, True),
+            'verified_path': ('verified_body_path', RosPath, 1, True),
             'native_mesh': ('native_optimized_mesh', KimeraPgmoMesh, 1, True),
             'accepted_mesh': ('accepted_joint_mesh', KimeraPgmoMesh, 1, True),
             'accepted_vertices': ('accepted_joint_vertices', PointCloud2, 1, True),
@@ -396,7 +756,10 @@ class NativeDenseBridge:
             'vertices': ('display_vertices', PointCloud2, 1, True),
             'status': ('status', String, 1, True)}
         if args.external_sensor_stream: del topics['points']
-        self.pub = {k: rospy.Publisher(self.base+'/native_dense/'+v[0], v[1], queue_size=v[2], latch=v[3])
+        if not self.legacy_vertices_enabled():
+            for key in ('vertices', 'accepted_vertices', 'raw_local_vertices'): del topics[key]
+        self.pub = {k: rospy.Publisher(self.base+'/native_dense/'+v[0], v[1],
+                    queue_size=None if self.is_online() and k in ('graph', 'mesh_graph') else v[2], latch=v[3])
                     for k, v in topics.items()}
         self.subs = []
         native = args.replay_caller if args.recorded_native_bag else self.base+'/kimera_vio_ros/kimera_vio_ros_node'
@@ -427,12 +790,24 @@ class NativeDenseBridge:
                 '/'+args.robot_name+'_native_vio_camera_graph_adapter', 2)
             for robot in (0, 1):
                 owner = '/sim_%d/dpgo_ros_node/agent' % robot
+                remote = bool(self.peer_controls and robot != args.robot_id)
+                if remote and args.remote_control_transport == 'atomic': continue
+                caller = args.remote_bridge_caller if remote else owner
                 self.subscribe('/sim_%d/dpgo_ros_node/command' % robot, Command,
-                    lambda m, t, r=robot: self.rounds.command(r, m, t), owner, None,
-                    priority='control', with_receive_wall=True)
+                    lambda m, t, r=robot: self.rounds.command(r, m, t), caller, None,
+                    priority='control', with_receive_wall=True, remote_control=remote)
                 self.subscribe('/sim_%d/dpgo_ros_node/measurement_weights' % robot, RelativeMeasurementWeights,
-                    lambda m, t, r=robot: self.rounds.weights(r, m, t), owner, None,
-                    priority='control', with_receive_wall=True)
+                    lambda m, t, r=robot: self.rounds.weights(r, m, t), caller, None,
+                    priority='control', with_receive_wall=True, remote_control=remote)
+            if self.peer_controls:
+                self.subscribe(self.base+'/peer_bridge/status', String, self.on_peer_status,
+                    args.remote_bridge_caller, 2, independent=True)
+                if args.remote_control_transport == 'atomic':
+                    self.subscribe(self.base+'/peer_bridge/native_control', UInt8MultiArray, self.on_peer_native_control,
+                        args.remote_bridge_caller, None, independent=True, with_receive_wall=True)
+                else:
+                    self.subscribe(self.base+'/peer_bridge/ingress_receipt', String, self.on_peer_receipt,
+                        args.remote_bridge_caller, None, independent=True)
             self.subscribe(self.base+'/dpgo_ros_node/path', RosPath,
                 lambda m, t: self.rounds.native_path(m, t), self.base+'/dpgo_ros_node/agent', None,
                 priority='control', with_receive_wall=True)
@@ -440,12 +815,151 @@ class NativeDenseBridge:
                 self.base+'/distributed_loop_closure/distributed_loop_closure_node', None,
                 priority='control', with_receive_wall=True)
         self.timer = rospy.Timer(rospy.Duration(.05), self.tick)
+        if self.is_online() and args.mode == 'joint':
+            self.pgmo_process_probe = NativeProcessProbe(lambda: self.timed('ros_pgmo_process_identity',
+                native_node_identity, os.environ.get('ROS_MASTER_URI', 'http://localhost:11311'),
+                self.base+'/native_pgmo', rospy.get_name()))
+            rospy.on_shutdown(self.pgmo_process_probe.close)
 
-    def subscribe(self, topic, kind, callback, expected, queue, priority=False, with_receive_wall=False, replaceable=False):
+    def is_online(self):
+        return getattr(getattr(self, 'a', None), 'execution_mode', 'diagnostic') == 'online'
+
+    def legacy_vertices_enabled(self):
+        return not self.is_online() or getattr(self.a, 'online_legacy_vertices', False)
+
+    @staticmethod
+    def shared_online_proof(proof):
+        return (isinstance(proof, dict) and set(proof.get('round', {}).get('active_robots', [])) == {0, 1}
+            and proof.get('accepted_cross_constraints', 0) > 0
+            and proof.get('round', {}).get('terminate_wall') is not None)
+
+    def online_gauge_epoch(self):
+        peer_boots = None
+        if self.peer_controls:
+            with self.peer_controls.lock:
+                status = self.peer_controls.status or {}
+                local, peer = status.get('local_boot_id'), status.get('peer_boot_id')
+            if not local or not peer: raise ValueError('Shared gauge lacks authenticated peer boot identity')
+            peer_boots = dict(local=local, peer=peer)
+        return dict(run_id=self.a.run_id, cutoff_ns=self.cutoff_ns, robot_id=self.a.robot_id,
+            output_frame=self.output_frame, native_key_zero_stamp_ns=self.keys.nodes[0].header.stamp.to_nsec(),
+            peer_boots=peer_boots)
+
+    def observe_pgmo_process_identity(self):
+        observed = self.pgmo_process_probe.snapshot() if self.pgmo_process_probe else {}
+        checked = observed.get('checked_monotonic')
+        if observed.get('identity') is None or checked is None or time.monotonic()-checked > 2.:
+            self.pgmo_process_identity_error = observed.get('error') or 'native PGMO process identity observation is stale'
+            self.counts['online_shared_gauge_waiting_process_identity'] += 1
+            raise NativeProcessIdentityUnavailable(self.pgmo_process_identity_error)
+        identity = observed['identity']; self.pgmo_process_identity_error = None
+        previous = self.online_pgmo_process_identity
+        if previous is not None and identity != previous:
+            self.invalidate_online_gauge('native_pgmo_process_changed')
+            raise ValueError('Native PGMO process changed; shared-gauge continuity requires a fresh experiment run')
+        self.online_pgmo_process_identity = identity
+        return identity
+
+    def invalidate_online_gauge(self, reason):
+        if self.online_verified_submission is not None:
+            self.counts['online_shared_gauge_invalidations'] += 1
+            self.event('online_shared_gauge_invalidated', reason=reason)
+        self.online_verified_submission = None; self.accepted_joint_mesh_receipt = None
+
+    def validate_pgmo_graph_prefix(self, message):
+        keys = sorted(int(node.key) for node in message.nodes)
+        largest = keys[-1] if keys else -1
+        if keys != list(range(largest+1)) or largest < self.pgmo_graph_largest_key:
+            self.invalidate_online_gauge('native_pgmo_graph_prefix_regressed_or_reset')
+            raise ValueError('Native PGMO graph prefix regressed/reset; use a fresh experiment run')
+        self.pgmo_graph_largest_key = largest
+
+    def verified_online_gauge(self):
+        verified = self.online_verified_submission
+        if verified is None: return None
+        if verified['epoch'] != self.online_gauge_epoch():
+            self.invalidate_online_gauge('run_key_zero_frame_or_peer_boot_changed')
+            raise ValueError('Shared-gauge epoch changed; use a fresh experiment run')
+        try: self.observe_pgmo_process_identity()
+        except NativeProcessIdentityUnavailable: return None
+        return verified
+
+    def timed(self, label, operation, *args):
+        if not hasattr(self, 'timing_lock'): return operation(*args)
+        began = time.monotonic()
+        try: return operation(*args)
+        finally:
+            elapsed = time.monotonic()-began
+            with self.timing_lock:
+                value = self.timings.setdefault(label, dict(calls=0, total_s=0., max_s=0., last_s=0.))
+                value.update(calls=value['calls']+1, total_s=value['total_s']+elapsed,
+                    max_s=max(value['max_s'], elapsed), last_s=elapsed)
+
+    def timing_snapshot(self):
+        if not hasattr(self, 'timing_lock'): return {}
+        with self.timing_lock: return copy.deepcopy(self.timings)
+
+    def persist_bytes(self, path, data):
+        if not getattr(self.a, 'no_persist', False): path.write_bytes(data)
+
+    def persist_json(self, path, value):
+        if not getattr(self.a, 'no_persist', False):
+            path.write_text(json.dumps(value, indent=2, allow_nan=False), encoding='utf-8')
+
+    def completion_proof(self):
+        # A completed local-only solution can still improve its native local
+        # output. Cross constraints gate shared-gauge acceptance, not live LMO.
+        if self.is_online(): return self.rounds.online_proof(time.time(), False)
+        return self.rounds.proof(time.time(), self.a.require_cross)
+
+    def on_peer_status(self, message):
+        self.peer_controls.set_status(json.loads(message.data))
+
+    def on_peer_receipt(self, message):
+        self.peer_controls.receipt(json.loads(message.data))
+
+    def queue_authenticated_controls(self, events):
+        if not events: return
+        with self.native_input_lock:
+            if len(self.native_inputs)+len(events) > 20000:
+                raise RuntimeError('Authenticated native input processing queue overflow: '+
+                    json.dumps(self.peer_controls.diagnostic(time.monotonic()), sort_keys=True))
+            self.native_inputs.extend(events)
+            self.native_input_max_queue = max(self.native_input_max_queue, len(self.native_inputs))
+
+    def on_peer_native_control(self, envelope, received_wall=None):
+        from peer_wire import decode_frame_bytes
+        received_wall = time.time() if received_wall is None else received_wall
+        monotonic = time.monotonic()
+        receipt, payload = decode_frame_bytes(bytes(envelope.data))
+        topic = receipt.get('topic')
+        if topic not in self.remote_control_types: raise ValueError('Unrecognized atomic native control topic')
+        kind, callback = self.remote_control_types[topic]
+        try:
+            message = kind(); message.deserialize(payload)
+            events = self.peer_controls.atomic(receipt, payload, message, callback, received_wall, monotonic)
+        except Exception as error:
+            self.last_rejected_control_envelope = dict(topic=topic, sha256=receipt.get('sha256'),
+                control_sequence=receipt.get('control_sequence'), error=str(error))
+            raise
+        self.queue_authenticated_controls(events)
+
+    def subscribe(self, topic, kind, callback, expected, queue, priority=False, with_receive_wall=False,
+                  replaceable=False, remote_control=False, independent=False):
         def receive(message):
             try:
                 received_wall, received_monotonic = time.time(), time.monotonic()
                 require_source(message, expected)
+                if independent:
+                    # Authentication metadata and coupled native controls may
+                    # never contend with expensive SLAM/mesh state work.
+                    if with_receive_wall: self.timed('independent:'+callback.__name__, callback, message, received_wall)
+                    else: self.timed('independent:'+callback.__name__, callback, message)
+                    return
+                if remote_control:
+                    self.peer_controls.enqueue(topic, self.remote_control_digest(message), callback, message,
+                        received_wall, received_monotonic, with_receive_wall)
+                    return
                 if priority:
                     if priority is True and callback == self.on_graph:
                         if frame(message.header.frame_id) != self.a.robot_name+'/map':
@@ -492,13 +1006,16 @@ class NativeDenseBridge:
         # short lock so native transport callbacks never wait for mesh work.
         with self.native_input_lock:
             batch = list(self.native_inputs); self.native_inputs.clear()
+        if getattr(self, 'peer_controls', None):
+            batch.extend(self.peer_controls.drain(time.monotonic()))
+            batch.sort(key=lambda entry: entry[3])
         for callback, message, received_wall, received_monotonic, with_receive_wall, category in batch:
             delay = time.monotonic()-received_monotonic
             if category == 'original': self.native_input_max_delay = max(self.native_input_max_delay, delay)
             elif category == 'imu': self.native_imu_max_delay = max(self.native_imu_max_delay, delay)
             else: self.native_control_max_delay = max(self.native_control_max_delay, delay)
-            if with_receive_wall: callback(message, received_wall)
-            else: callback(message)
+            if with_receive_wall: self.timed('callback:'+callback.__name__, callback, message, received_wall)
+            else: self.timed('callback:'+callback.__name__, callback, message)
             self.counts[{'original': 'priority_native_originals_processed',
                          'imu': 'priority_actual_imu_samples_processed'}.get(category,
                          'priority_native_control_events_processed')] += 1
@@ -508,7 +1025,7 @@ class NativeDenseBridge:
             batch = list(self.replaceable_inputs.values()); self.replaceable_inputs.clear()
         for callback, message in batch:
             self.drain_native_inputs()
-            callback(message)
+            self.timed('callback:'+callback.__name__, callback, message)
 
     def event(self, kind, **fields):
         self.events.write(json.dumps(dict(event=kind, run_id=self.a.run_id, wall=time.time(), **fields), allow_nan=False)+'\n')
@@ -522,11 +1039,16 @@ class NativeDenseBridge:
             if (str(error) == 'publish() to a closed topic' and
                     getattr(rospy, 'is_shutdown', lambda: False)()):
                 return
-            self.fatal = str(error); self.event('fatal', error=str(error)); rospy.logfatal('Native dense bridge: %s', error)
+            self.fatal = str(error)
+            provenance = self.peer_controls.diagnostic(time.monotonic()) if getattr(self, 'peer_controls', None) else None
+            self.event('fatal', error=str(error), remote_control_provenance=provenance,
+                timings=self.timing_snapshot(),
+                last_rejected_control_envelope=getattr(self, 'last_rejected_control_envelope', None))
+            rospy.logfatal('Native dense bridge: %s', error)
             # Keep the primary cause even if an in-flight timer encounters
             # closed publishers during rospy shutdown.
-            (self.evidence/'fatal.json').write_text(json.dumps(dict(error=self.fatal, wall=time.time(),
-                run_id=self.a.run_id), indent=2), encoding='utf-8')
+            self.persist_json(self.evidence/'fatal.json', dict(error=self.fatal, wall=time.time(),
+                run_id=self.a.run_id))
         rospy.signal_shutdown(str(error))
 
     def on_odom(self, message):
@@ -584,39 +1106,53 @@ class NativeDenseBridge:
         if len(self.mesh_graph_queue) > 1000: raise RuntimeError('Lossless native mesh graph queue overflow')
 
     def on_full_mesh(self, message):
-        xyz = validate_mesh(message, self.cutoff_ns, self.local_frame)
+        xyz = self.timed('online_full_mesh:validate', validate_mesh, message, self.cutoff_ns, self.local_frame) if self.is_online() else validate_mesh(message, self.cutoff_ns, self.local_frame)
         self.latest_full_mesh = retag_local_mesh(message, self.a.robot_id)
-        self.latest_full_mesh_bytes = message_bytes(self.latest_full_mesh)
-        self.latest_full_mesh_sha = hashlib.sha256(self.latest_full_mesh_bytes).hexdigest()
+        if self.is_online():
+            self.latest_full_mesh_bytes = self.timed('online_full_mesh:serialize', message_bytes, self.latest_full_mesh)
+            self.latest_full_mesh_sha = self.timed('online_full_mesh:hash', canonical_serialized_mesh_digest, self.latest_full_mesh_bytes)
+        else:
+            self.latest_full_mesh_bytes = message_bytes(self.latest_full_mesh)
+            self.latest_full_mesh_sha = hashlib.sha256(self.latest_full_mesh_bytes).hexdigest()
         self.counts['native_full_meshes'] += 1
         # The native frontend mesh is still in the VIO integration frame. Keep
         # that geometry observable independently of PGMO's global deformation.
         # Only XYZ extraction and a display ownership color happen here.
-        color = 0x34D8ED if self.a.robot_id == 0 else 0xFFA04B
-        self.pub['raw_local_vertices'].publish(
-            self.make_cloud(xyz, color, message.header.stamp, self.local_frame))
-        self.counts['raw_local_mesh_displays'] += 1
+        if self.legacy_vertices_enabled():
+            color = 0x34D8ED if self.a.robot_id == 0 else 0xFFA04B
+            self.pub['raw_local_vertices'].publish(
+                self.make_cloud(xyz, color, message.header.stamp, self.local_frame))
+            self.counts['raw_local_mesh_displays'] += 1
 
     def on_optimized_graph(self, message, received_wall=None):
         if self.transaction is not None:
-            self.counts['optimized_graphs_during_mesh_transaction'] += 1; return
+            self.counts['optimized_graphs_retained_during_mesh_transaction'] += 1
+        signature = canonical_graph_digest(message) if self.is_online() else digest(message)
+        proof = self.completion_proof()
+        previous = getattr(self, 'approved', None)
+        same_completion = (proof is None or previous is None or
+            (proof['round']['owner'], proof['round']['serial']) ==
+            (previous['proof']['round']['owner'], previous['proof']['round']['serial']))
+        if ((signature == getattr(self, 'last_optimized_sha', None) and same_completion) or
+                any(candidate['signature'] == signature for candidate in getattr(self, 'optimized_candidates', []))):
+            self.counts['optimized_graph_timer_duplicates_suppressed'] += 1
+            return
         nodes = self.keys.optimized_structure(message.nodes)
         if not nodes: return
-        proof = self.rounds.proof(time.time(), self.a.require_cross)
         if self.camera_graph_contract is None:
             self.counts['optimized_graphs_without_verified_camera_graph_contract'] += 1; return
-        code, _, states = rospy.get_master().getSystemState()
+        code, _, states = self.timed('ros_get_system_state', lambda: rospy.get_master().getSystemState())
         subscribers = dict(states[1]) if code == 1 else {}
         if self.base+'/distributed_loop_closure/distributed_loop_closure_node' not in subscribers.get(
                 self.base+'/kimera_camera_adapter/pose_graph_incremental', []):
             raise ValueError('Native LCD is not subscribed to the verified camera-convention graph')
+        if self.is_online() and self.base+'/distributed_loop_closure/distributed_loop_closure_node' not in subscribers.get(
+                self.base+'/dpgo_ros_node/path', []):
+            raise ValueError('Native LCD is not subscribed to the completed native DPGO path')
         if proof is not None and self.a.robot_id not in proof['round']['active_robots']:
             self.counts['optimized_graphs_outside_active_cluster'] += 1; return
-        if rospy.get_param(self.base+'/dpgo_ros_node/agent/publish_iterate', None) is not False:
+        if self.timed('ros_get_publish_iterate', lambda: rospy.get_param(self.base+'/dpgo_ros_node/agent/publish_iterate', None)) is not False:
             raise ValueError('Joint dense mode requires native DPGO publish_iterate=false')
-        signature = digest(message)
-        if (signature == self.last_optimized_sha or
-                any(candidate['signature'] == signature for candidate in self.optimized_candidates)): return
         if len(self.optimized_candidates) >= self.optimized_candidate_limit:
             old = self.optimized_candidates.popleft(); self.counts['optimized_candidates_superseded'] += 1
             self.event('optimized_candidate_superseded', graph_sha256=old['signature'])
@@ -627,8 +1163,8 @@ class NativeDenseBridge:
         self.advance_optimized_candidates()
 
     def advance_optimized_candidates(self):
-        if self.transaction is not None: return
-        now = time.time(); current = self.rounds.proof(now, self.a.require_cross)
+        if self.transaction is not None and not self.is_online(): return
+        now = time.time(); current = self.completion_proof()
         retained = deque()
         while self.optimized_candidates:
             candidate = self.optimized_candidates.popleft(); nodes = candidate['nodes']
@@ -641,13 +1177,14 @@ class NativeDenseBridge:
                 # Native cached poses are only committed by TERMINATE. Retain
                 # independent-topic deliveries until the observed round ledger
                 # catches up, while rejecting genuinely earlier stale graphs.
-                if candidate['received_wall'] < current['round']['terminate_wall']-1.:
+                if not self.is_online() and candidate['received_wall'] < current['round']['terminate_wall']-1.:
                     self.counts['optimized_candidates_predating_completed_round'] += 1; continue
                 candidate['proof'] = current
-            if (current is None or current['round']['serial'] != candidate['proof']['round']['serial'] or
-                    current['round']['owner'] != candidate['proof']['round']['owner']):
+            if (not self.is_online() and (current is None or
+                    current['round']['serial'] != candidate['proof']['round']['serial'] or
+                    current['round']['owner'] != candidate['proof']['round']['owner'])):
                 self.counts['optimized_candidates_obsolete_round'] += 1; continue
-            if self.a.robot_id not in current['round']['active_robots']:
+            if self.a.robot_id not in candidate['proof']['round']['active_robots']:
                 self.counts['optimized_candidates_outside_active_cluster'] += 1; continue
             missing = self.keys.missing_originals(nodes)
             monotonic_now = time.monotonic()
@@ -735,13 +1272,15 @@ class NativeDenseBridge:
             break
 
     def publish_graphs(self):
-        if self.transaction is not None: return
+        if self.transaction is not None and not self.is_online(): return
         if self.gauge_checked and self.pub['graph'].get_num_connections():
-            while self.graph_queue:
+            budget = 32 if self.is_online() else len(self.graph_queue)
+            while self.graph_queue and budget:
+                budget -= 1
                 message = self.graph_queue.popleft(); output = copy.deepcopy(message)
                 output.edges = [e for e in output.edges if int(e.type) == int(e.ODOM)]
                 self.keys.require_odometry_through(max((int(n.key) for n in output.nodes), default=self.graph_sent))
-                self.pub['graph'].publish(output)
+                self.timed('publish_native_original_graph', self.pub['graph'].publish, output)
                 self.last_forwarded_graph = copy.deepcopy(output)
                 self.graph_sent = max(self.graph_sent, max((int(n.key) for n in output.nodes), default=-1))
                 self.last_graph_wall = time.time(); self.counts['original_body_graphs_forwarded'] += 1
@@ -751,10 +1290,16 @@ class NativeDenseBridge:
         # body node and accepts asynchronous increments; moving quiet is neither
         # required nor a receipt that the native callback ran.
         if self.gauge_checked and self.native_body_metadata_ack and self.graph_sent >= 0 and self.pub['mesh_graph'].get_num_connections():
-            while self.mesh_graph_queue:
-                self.pub['mesh_graph'].publish(self.mesh_graph_queue.popleft()); self.counts['mesh_graphs_forwarded'] += 1
+            budget = 32 if self.is_online() else len(self.mesh_graph_queue)
+            while self.mesh_graph_queue and budget:
+                budget -= 1
+                self.timed('publish_native_mesh_graph', self.pub['mesh_graph'].publish, self.mesh_graph_queue.popleft())
+                self.counts['mesh_graphs_forwarded'] += 1
 
     def approve_path(self):
+        if self.is_online():
+            self.approve_online_path()
+            return
         if self.transaction is not None or not self.pgmo_initialized or self.latest_full_mesh is None: return
         if self.pending_optimized is None or self.graph_sent < len(self.pending_optimized[0])-1: return
         if not self.pub['path'].get_num_connections(): return
@@ -792,18 +1337,209 @@ class NativeDenseBridge:
         publish_preserving_cached_message(self.pub['full'], raw_mesh)
         self.event('native_fixed_mesh_baseline_requested', mesh_sha256=self.latest_full_mesh_sha)
 
+    def approve_online_path(self):
+        """Submit a complete native-key path without pausing live PGMO inputs."""
+        if (self.pending_optimized is None or not self.gauge_checked or not self.pgmo_initialized
+                or not self.native_body_metadata_ack or self.latest_full_mesh is None
+                or not self.pub['path'].get_num_connections()): return
+        nodes, proof, signature, _raw = self.pending_optimized
+        if self.graph_sent < len(nodes)-1: return
+        # The input is the original-key expansion produced by native LCD, not
+        # the sparse DPGO submap path. Never re-index a submap path into PGMO.
+        self.keys.contiguous(nodes)
+        active = set(proof['round']['active_robots'])
+        if self.a.robot_id not in active: raise ValueError('Native completion excludes this robot')
+        if self.a.mode == 'joint' and not self.shared_online_proof(proof):
+            # A local-only new path must never replace native shared priors
+            # while an earlier shared-gauge proof is retained for continuity.
+            self.invalidate_online_gauge('new_path_has_no_completed_shared_gauge_proof')
+            self.online_submission = None; self.online_path_echo = None; self.online_pending_pgmo_path = None
+            self.approved = None; self.pending_optimized = None
+            self.counts['online_paths_rejected_without_shared_gauge_proof'] += 1
+            self.event('online_path_not_submitted', reason='joint_path_requires_completed_active_pair_and_cross_constraints')
+            return
+        epoch = self.online_gauge_epoch() if self.a.mode == 'joint' else None
+        if self.online_verified_submission is not None and self.online_verified_submission['epoch'] != epoch:
+            self.invalidate_online_gauge('submission_epoch_changed')
+            raise ValueError('Shared-gauge submission epoch changed; use a fresh experiment run')
+        path = RosPath(header=Header(stamp=rospy.Time.now(), frame_id=self.a.global_frame))
+        for node in nodes:
+            value = PoseStamped(header=copy.deepcopy(node.header), pose=copy.deepcopy(node.pose))
+            value.header.frame_id = self.a.global_frame; value.header.seq = int(node.key)
+            set_pose(value.pose, optimized_camera_to_body(node.pose)); path.poses.append(value)
+        metadata = dict(graph_sha256=signature, key_count=len(nodes),
+            pose_convention='T_global_camera_to_T_global_body',
+            original_key_stamps_ns=[int(n.header.stamp.to_nsec()) for n in nodes],
+            path_sha256=digest(path), prepared_wall=time.time(), proof=copy.deepcopy(proof),
+            original_key_expansion_source=self.base+'/kimera_distributed/optimized_nodes',
+            native_publish_iterate=False, exact_shared_optimizer_round_id_available=False,
+            gauge_epoch=epoch,
+            camera_graph_adapter_native_key_zero_stamp_ns=self.camera_graph_contract['native_key_zero_stamp_ns'])
+        self.online_submission = dict(path=path, metadata=metadata)
+        self.online_path_echo = None; self.online_pending_pgmo_path = None; self.approved = metadata
+        self.latest_submitted_body_path_sha256 = metadata['path_sha256']
+        self.timed('publish_native_optimized_body_path', publish_preserving_cached_message, self.pub['path'], path)
+        self.last_optimized_sha = signature; self.pending_optimized = None
+        # Full meshes continue independently; this flag merely schedules a live
+        # latest-mesh callback so native PGMO applies its newly submitted priors.
+        self.remesh_after = time.time()
+        self.counts['submitted_native_paths'] += 1
+        self.event('online_native_body_path_submitted', graph_sha256=signature,
+            path_sha256=metadata['path_sha256'], native_key_count=len(nodes))
+
+    def on_online_optimized_mesh(self, message, xyz):
+        """Relay native geometry unchanged; attach honest observational evidence."""
+        serialized = self.timed('online_mesh:serialize', message_bytes, message)
+        self.timed('online_mesh:publish_native', publish_serialized_message, self.pub['native_mesh'], serialized)
+        vertices = None
+        if self.legacy_vertices_enabled():
+            color = 0x34D8ED if self.a.robot_id == 0 else 0xFFA04B
+            vertices = self.make_cloud(xyz, color, message.header.stamp, self.output_frame)
+            self.pub['vertices'].publish(vertices)
+        self.counts['native_pgmo_meshes'] += 1
+        submission = self.online_submission
+        verified = self.verified_online_gauge() if self.a.mode == 'joint' else None
+        if self.a.mode != 'joint' or submission is None or verified is None:
+            self.online_latest_mesh_gauge = ('local_unanchored' if submission is None else
+                'awaiting_native_process_identity' if self.online_verified_submission is not None else 'awaiting_native_path_echo')
+            self.counts['online_unanchored_or_awaiting_path_echo_meshes'] += 1
+            return
+        # The verified path establishes continuity of the same native PGMO
+        # coordinate gauge. A newer proven shared path may be pending its own
+        # observation; it does not turn the persistent native graph local.
+        submission = verified['submission']; echo = verified['echo']
+        proof = submission['metadata']['proof']; active = set(proof['round']['active_robots'])
+        # A configured gauge ID is just a namespace. A shared result requires
+        # actual native cross-robot constraints and a completed active cluster.
+        if active != {0, 1} or proof.get('accepted_cross_constraints', 0) <= 0:
+            self.online_latest_mesh_gauge = 'local_unanchored'
+            self.counts['online_meshes_without_shared_gauge_evidence'] += 1
+            return
+        self.online_mesh_sequence += 1
+        latest = self.online_submission['metadata']
+        newer_pending = latest['path_sha256'] != submission['metadata']['path_sha256']
+        canonical_sha256 = self.timed('online_mesh:canonical_hash', canonical_serialized_mesh_digest, serialized)
+        proof_hashes = self.timed('online_mesh:proof_hashes', mesh_proof_hashes, message, xyz)
+        receipt = dict(run_id=self.a.run_id, cutoff_ns=self.cutoff_ns, robot_id=self.a.robot_id,
+            receipt_kind='online_native_pgmo_mesh', execution_mode='online',
+            native_geometry_source='native_PGMO_online_live_mesh',
+            canonical_native_mesh_sha256=canonical_sha256,
+            mesh_header_stamp_ns=message.header.stamp.to_nsec(), mesh_frame=message.header.frame_id,
+            vertex_count=len(message.vertices), triangle_count=len(message.triangles),
+            native_optimized_graph_sha256=submission['metadata']['graph_sha256'],
+            submitted_body_path_sha256=submission['metadata']['path_sha256'],
+            native_path_echo_verified=True, native_path_echo=dict(echo),
+            native_path_echo_basis='last_verified_submission_in_same_native_pgmo_gauge_session',
+            native_path_echo_covers_latest_submission=not newer_pending,
+            latest_submitted_body_path_sha256=latest['path_sha256'], newer_path_pending=newer_pending,
+            pending_submitted_body_path_sha256=latest['path_sha256'] if newer_pending else None,
+            last_verified_body_path_sha256=submission['metadata']['path_sha256'],
+            last_verified_native_optimized_graph_sha256=submission['metadata']['graph_sha256'],
+            last_verified_path_observed_wall=echo['received_wall'],
+            native_pgmo_process_identity=dict(verified['process_identity']),
+            shared_gauge_epoch=copy.deepcopy(verified['epoch']),
+            native_path_exact_pose_echo=False,
+            path_echo_verification='keys_stamps_and_finite_native_poses',
+            path_echo_key_stamps_source=self.base+'/native_pgmo/pose_graph',
+            path_echo_per_pose_stamps_available=False,
+            native_publish_iterate=False, shared_gauge_ready=True,
+            shared_gauge_id=self.a.shared_gauge_id, gauge_id_is_configuration_identity_only=True,
+            shared_gauge_evidence='completed_native_DPGO_active_cluster_accepted_cross_weights_and_PGMO_path_observation',
+            optimizer_owner=proof['round']['owner'], completed_round_serial=proof['round']['serial'],
+            final_native_weight_batch_sha256=proof['weights']['sha256'],
+            completed_round_proof=copy.deepcopy(proof), accepted_wall=time.time(),
+            native_mesh_sequence=self.online_mesh_sequence, immutable_snapshot=True,
+            fixed_mesh_deformation_diagnostic_performed=False,
+            exact_optimizer_mesh_generation_proven=False, exact_shared_optimizer_round_id_available=False,
+            current_mesh_path_generation_verified=False,
+            binding='persistent_native_shared_gauge_from_last_verified_path_observation_no_atomic_generation', **proof_hashes)
+        self.accepted_joint_mesh_receipt = receipt
+        self.online_latest_mesh_gauge = 'shared_gauge_observed_non_atomic'
+        self.timed('online_mesh:publish_accepted', publish_serialized_message, self.pub['accepted_mesh'], serialized)
+        if vertices is not None: publish_preserving_cached_message(self.pub['accepted_vertices'], vertices)
+        self.counts['online_shared_gauge_meshes'] += 1
+        self.event('online_native_mesh_accepted', native_mesh_sequence=self.online_mesh_sequence,
+            canonical_native_mesh_sha256=receipt['canonical_native_mesh_sha256'],
+            vertex_count=len(message.vertices), triangle_count=len(message.triangles))
+
     def on_pgmo_graph(self, message):
+        if self.is_online(): self.timed('online_pgmo_graph:prefix_check', self.validate_pgmo_graph_prefix, message)
         if self.graph_sent >= 0 and 0 in self.keys.nodes:
             zeros = [n for n in message.nodes if int(n.key) == 0 and int(n.robot_id) == self.a.robot_id]
             if any(n.header.stamp.to_nsec() != self.keys.nodes[0].header.stamp.to_nsec() for n in zeros):
                 raise ValueError('Native PGMO key-zero stamp differs from original epoch')
             self.native_body_metadata_ack = True
             self.native_body_metadata_ack_has_optimized_key_zero |= bool(zeros)
+        if self.is_online():
+            # The pinned PGMO nav_msgs/Path omits individual stamps/keys. Its
+            # native pose_graph carries them, so verify the full metadata there
+            # rather than inventing stamp acknowledgements on the path topic.
+            validate_pose_values(node.pose for node in message.nodes)
+            for node in message.nodes:
+                key = int(node.key)
+                if int(node.robot_id) != self.a.robot_id or key not in self.keys.nodes:
+                    raise ValueError('Native PGMO graph has no matching original body key')
+                stamp = require_stamp(node.header.stamp, self.cutoff_ns)
+                if stamp != self.keys.nodes[key].header.stamp.to_nsec():
+                    raise ValueError('Native PGMO body key stamp differs from native VIO')
+                self.pgmo_body_key_stamps[key] = stamp
+            while self.pgmo_verified_through+1 in self.pgmo_body_key_stamps:
+                self.pgmo_verified_through += 1
         self.pgmo_graph_stats = dict(nodes=len(message.nodes), edges=len(message.edges), received_wall=time.time())
         if self.transaction is not None and self.transaction['phase'] == 'await_path_echo':
             self.transaction.setdefault('query_graph_counts', []).append(dict(self.pgmo_graph_stats))
+        if self.is_online() and self.online_pending_pgmo_path is not None:
+            self.on_pgmo_path(self.online_pending_pgmo_path)
 
     def on_pgmo_path(self, message):
+        if self.is_online():
+            submission = self.online_submission
+            if submission is None: return
+            if frame(message.header.frame_id) != self.output_frame:
+                raise ValueError('Native PGMO online path frame differs from configured output frame')
+            stamp = require_stamp(message.header.stamp, self.cutoff_ns)
+            if stamp not in {node.header.stamp.to_nsec() for node in self.keys.nodes.values()}:
+                raise ValueError('Native PGMO path stamp has no original native key')
+            for item in message.poses:
+                if frame(item.header.frame_id) != self.output_frame:
+                    raise ValueError('Native PGMO online path contains a foreign pose frame')
+            validate_pose_values(item.pose for item in message.poses)
+            if len(message.poses) < len(submission['metadata']['original_key_stamps_ns']):
+                self.counts['online_path_observations_waiting_native_key_metadata'] += 1
+                return
+            if self.online_path_echo is not None:
+                # Still authenticate and validate every new native path. The
+                # submitted prefix metadata is immutable and already verified;
+                # repeated cached paths need no N matrix inverses/residuals.
+                self.counts['online_path_prior_metadata_reused'] += 1
+                return
+            self.online_pending_pgmo_path = message
+            stamps = submission['metadata']['original_key_stamps_ns']
+            if len(message.poses) < len(stamps) or any(self.pgmo_body_key_stamps.get(key) != value
+                    for key, value in enumerate(stamps)):
+                self.counts['online_path_observations_waiting_native_key_metadata'] += 1
+                return
+            error = path_error(message, submission['path'])
+            if self.online_path_echo is None:
+                identity = None
+                if self.a.mode == 'joint':
+                    try: identity = self.observe_pgmo_process_identity()
+                    except NativeProcessIdentityUnavailable: return
+                self.online_path_echo = dict(received_wall=time.time(), verified_native_key_count=len(stamps),
+                    exact_pose_echo=False, verification='keys_stamps_and_finite_native_poses', **error)
+                if self.a.mode == 'joint' and self.shared_online_proof(submission['metadata']['proof']):
+                    epoch = self.online_gauge_epoch()
+                    if epoch != submission['metadata']['gauge_epoch']:
+                        self.invalidate_online_gauge('path_observation_epoch_changed')
+                        raise ValueError('Native path observation crossed a shared-gauge epoch')
+                    self.online_verified_submission = dict(submission=submission, echo=dict(self.online_path_echo),
+                        epoch=epoch, process_identity=identity)
+                    self.timed('publish_native_verified_body_path', publish_preserving_cached_message,
+                        self.pub['verified_path'], submission['path'])
+                # Re-trigger the latest live full mesh, without capturing or
+                # freezing it. PGMO publishes mesh only from its mesh callback.
+                self.remesh_after = time.time()
+            return
         current = self.transaction
         if current is None: return
         if current['phase'] == 'await_native_seed':
@@ -815,7 +1551,7 @@ class NativeDenseBridge:
                 publish_preserving_cached_message(self.pub['full'], current['fixed_mesh'])
             return
         if current['phase'] != 'await_path_echo': return
-        error = path_error(message, current['path'])
+        error = diagnostic_path_error(message, current['path'])
         if error is None or error['max_translation_m'] > 1e-5 or error['max_rotation_rad'] > 1e-5: return
         current['echo_receipts'].append(dict(received_wall=time.time(), path_sha256=digest(message), **error))
         # Two identical native query results plus unchanged native factor counts
@@ -832,6 +1568,7 @@ class NativeDenseBridge:
             no_edge_query_factor_counts=counts[-2:])
 
     def transaction_tick(self):
+        if self.is_online(): return
         current = self.transaction
         if current is None: return
         if time.time()-current['phase_started_wall'] > self.a.mesh_phase_timeout:
@@ -855,8 +1592,12 @@ class NativeDenseBridge:
             publish_preserving_cached_message(self.pub['full'], current['fixed_mesh'])
 
     def on_optimized_mesh(self, message):
-        xyz = validate_mesh(message, self.cutoff_ns, self.output_frame)
+        xyz = self.timed('online_mesh:validate', validate_mesh, message, self.cutoff_ns, self.output_frame) if self.is_online() else validate_mesh(message, self.cutoff_ns, self.output_frame)
         if message.ns != str(self.a.robot_id): raise ValueError('Native PGMO output ownership differs from configured robot')
+        if self.is_online():
+            self.pgmo_initialized = True
+            self.on_online_optimized_mesh(message, xyz)
+            return
         serialized = None; serialized_sha = None
         def mesh_bytes():
             nonlocal serialized
@@ -956,8 +1697,8 @@ class NativeDenseBridge:
         try:
             with self.lock:
                 if self.fatal is not None or rospy.is_shutdown(): return
-                self.drain_native_inputs()
-                self.drain_replaceable_inputs()
+                self.timed('tick:drain_native_inputs', self.drain_native_inputs)
+                self.timed('tick:drain_replaceable_inputs', self.drain_replaceable_inputs)
                 if not self.gauge_checked and 0 in self.keys.nodes:
                     stamp = self.keys.nodes[0].header.stamp.to_nsec(); at_zero = self.history.at(stamp)
                     if at_zero is not None:
@@ -966,16 +1707,29 @@ class NativeDenseBridge:
                         if np.linalg.norm(delta[:3, 3]) > .02 or angle > .02:
                             raise ValueError('Native VIO odometry/key-zero graph gauges differ; refuse silent frame relabel')
                         self.gauge_checked = True; self.event('native_local_gauge_verified', key0_stamp_ns=stamp)
-                self.publish_graphs(); self.publish_sensor(); self.advance_optimized_candidates(); self.approve_path(); self.transaction_tick()
-                if (self.transaction is None and self.latest_full_mesh is not None and self.native_body_metadata_ack
+                self.timed('tick:publish_graphs', self.publish_graphs)
+                self.timed('tick:publish_sensor', self.publish_sensor)
+                self.timed('tick:advance_optimized_candidates', self.advance_optimized_candidates)
+                self.timed('tick:approve_path', self.approve_path)
+                self.timed('tick:transaction_tick', self.transaction_tick)
+                if ((self.transaction is None or self.is_online()) and self.latest_full_mesh is not None and self.native_body_metadata_ack
                         and self.graph_sent >= 0 and not self.mesh_graph_queue and self.pub['full'].get_num_connections()):
                     signature = self.latest_full_mesh_sha
                     forced = self.remesh_after is not None and time.time() >= self.remesh_after
                     if signature != getattr(self, 'last_full_sha', None) or forced:
-                        publish_preserving_cached_message(self.pub['full'], self.latest_full_mesh)
+                        if self.is_online():
+                            self.timed('publish_native_full_mesh', publish_serialized_message, self.pub['full'], self.latest_full_mesh_bytes)
+                        else:
+                            self.timed('publish_native_full_mesh', publish_preserving_cached_message, self.pub['full'], self.latest_full_mesh)
                         self.last_full_sha = signature
                         self.remesh_after = None; self.counts['full_meshes_forwarded'] += 1
+                if self.is_online() and time.time()-self.last_status_wall < self.a.status_period: return
+                self.last_status_wall = time.time()
+                with self.timing_lock: timings = copy.deepcopy(self.timings)
                 report = dict(run_id=self.a.run_id, cutoff_ns=self.cutoff_ns, robot_id=self.a.robot_id, mode=self.a.mode,
+                    execution_mode=getattr(self.a, 'execution_mode', 'diagnostic'),
+                    legacy_vertex_displays_enabled=self.legacy_vertices_enabled(),
+                    persistence_enabled=not getattr(self.a, 'no_persist', False),
                     wall=time.time(), native_local_gauge_verified=self.gauge_checked, local_keyframes=len(self.keys.nodes),
                     input_mode='sha256_pinned_recorded_native_VIO_and_sensors' if self.a.recorded_native_bag else 'live_native_VIO_and_sensors',
                     recorded_native_bag_sha256=self.a.recorded_native_bag_sha256,
@@ -990,6 +1744,12 @@ class NativeDenseBridge:
                     gyro_maximum_permitted_gap_s=self.gyros.maximum_gap_ns*1e-9 if self.gyros is not None else None,
                     gyro_maximum_endpoint_residual_rad=self.gyros.maximum_endpoint_residual_rad if self.gyros is not None else None,
                     graph_forwarded_through_key=self.graph_sent, counts=dict(self.counts), fatal_error=self.fatal,
+                    native_pgmo_verified_through_key=self.pgmo_verified_through,
+                    native_pgmo_unacknowledged_original_keys=max(0, self.graph_sent-self.pgmo_verified_through),
+                    original_graphs_waiting_forward=len(self.graph_queue), mesh_graphs_waiting_forward=len(self.mesh_graph_queue),
+                    original_graph_forwarding_policy=('online synchronous publisher; at most 32 messages per tick; no factor replay'
+                        if self.is_online() else 'compatibility diagnostic native graph forwarding; no factor replay'),
+                    timings=timings,
                     native_original_priority_queue_length=len(self.native_inputs),
                     native_original_priority_queue_max_length=self.native_input_max_queue,
                     native_original_max_queue_delay_s=self.native_input_max_delay,
@@ -1008,9 +1768,35 @@ class NativeDenseBridge:
                     raw_local_vertices_source='native_mesh_frontend/full_mesh; exact XYZ, no PGMO deformation',
                     local_tsdf_continues_during_pgmo_transaction=True,
                     sensor_stream_in_independent_process=self.a.external_sensor_stream,
-                    native_deformation_eligible=self.eligible is not None if self.a.mode == 'joint' else None,
+                    native_deformation_eligible=(self.eligible is not None if self.a.mode == 'joint' else None)
+                        if not self.is_online() else None,
                     native_deformation_proof=self.eligible,
                     accepted_joint_mesh_receipt=self.accepted_joint_mesh_receipt,
+                    shared_gauge_id=getattr(self.a, 'shared_gauge_id', self.a.run_id),
+                    gauge_id_is_configuration_identity_only=True,
+                    shared_gauge_ready=self.accepted_joint_mesh_receipt is not None if self.is_online() else self.eligible is not None,
+                    latest_submitted_path_echo_observed=self.online_path_echo is not None if self.is_online() else None,
+                    last_verified_body_path_sha256=(self.online_verified_submission['submission']['metadata']['path_sha256']
+                        if self.online_verified_submission is not None else None),
+                    newer_path_pending=(self.online_verified_submission is not None and self.online_submission is not None
+                        and self.online_verified_submission['submission']['metadata']['path_sha256'] != self.online_submission['metadata']['path_sha256'])
+                        if self.is_online() else None,
+                    native_pgmo_process_identity=self.online_pgmo_process_identity,
+                    native_pgmo_process_probe=self.pgmo_process_probe.snapshot() if self.pgmo_process_probe else None,
+                    native_pgmo_process_identity_error=self.pgmo_process_identity_error,
+                    latest_native_mesh_gauge=getattr(self, 'online_latest_mesh_gauge', None) if self.is_online() else None,
+                    native_optimized_mesh_topic=self.base+'/native_dense/native_optimized_mesh',
+                    optimization_evidence=self.approved['proof'] if self.approved else None,
+                    native_publish_iterate=self.approved.get('native_publish_iterate') if self.approved else None,
+                    exact_shared_optimizer_round_id_available=False,
+                    pgmo_inputs_frozen=self.transaction is not None and not self.is_online(),
+                    remote_bridge_caller=getattr(self.a, 'remote_bridge_caller', None),
+                    remote_controls_waiting_for_provenance=len(self.peer_controls.pending) if self.peer_controls else 0,
+                    remote_control_provenance_overdue=self.peer_controls.overdue if self.peer_controls else False,
+                    remote_controls_rejected_previous_boot=self.peer_controls.discarded_previous_boot_controls if self.peer_controls else 0,
+                    remote_control_transport=getattr(self.a, 'remote_control_transport', 'atomic'),
+                    remote_control_provenance=self.peer_controls.diagnostic(time.monotonic()) if self.peer_controls else None,
+                    last_rejected_control_envelope=self.last_rejected_control_envelope,
                     latest_submitted_body_path_sha256=self.latest_submitted_body_path_sha256,
                     ordinary_native_mesh_stream_has_immutable_generation_receipt=False,
                     mesh_transaction_phase=self.transaction['phase'] if self.transaction else None,
@@ -1019,9 +1805,10 @@ class NativeDenseBridge:
                     adapter_not_estimator=True, consumes_ground_truth=False, consumes_lidar_or_custom_mapper=False,
                     mesh_owner_workaround='local frontend default0 -> configured robot; no geometry/key changes',
                     exact_optimizer_mesh_generation_proven=False,
-                    acceptance='Native mesh deformation must be separately measured before claiming S3/S4 complete')
+                    acceptance=('Online native PGMO output with observational completion/path evidence; geometry accuracy requires separate evaluation'
+                        if self.is_online() else 'Native mesh deformation must be separately measured before claiming S3/S4 complete'))
                 self.pub['status'].publish(String(data=json.dumps(report, allow_nan=False)))
-                (self.evidence/'status.json').write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
+                self.persist_json(self.evidence/'status.json', report)
         except Exception as error: self.fail(error)
 
 
@@ -1033,6 +1820,19 @@ def main():
     parser.add_argument('--cutoff', required=True, type=float)
     parser.add_argument('--output-directory', required=True, type=Path)
     parser.add_argument('--mode', choices=('local', 'joint'), default='local')
+    parser.add_argument('--execution-mode', choices=('diagnostic', 'online'), default='diagnostic',
+                        help='Explicit online production or compatibility fixed-mesh deformation diagnostic')
+    parser.add_argument('--no-persist', action='store_true',
+                        help='Online only: retain ROS/log events, never write native graphs, meshes or receipt archives')
+    parser.add_argument('--shared-gauge-id',
+                        help='Configuration identity only; shared-gauge acceptance still requires native cross-robot evidence')
+    parser.add_argument('--remote-bridge-caller',
+                        help='Exact trusted local peer proxy; remote controls additionally require matching verified ingress receipts')
+    parser.add_argument('--remote-control-transport', choices=('atomic', 'receipt'), default='atomic',
+                        help='Atomic coupled native bytes/provenance in production; receipt is explicit compatibility diagnostics')
+    parser.add_argument('--status-period', type=float, default=1., help='Online diagnostic status period, seconds')
+    parser.add_argument('--online-legacy-vertices', action='store_true',
+                        help='Also produce legacy display/accepted/raw PointClouds online; diagnostic always retains them')
     parser.add_argument('--global-frame', default='kimera_world')
     parser.add_argument('--cloud-rate', type=float, default=2.)
     parser.add_argument('--pixel-stride', type=int, default=3)
@@ -1057,10 +1857,15 @@ def main():
     parser.add_argument('--recorded-native-bag-sha256')
     parser.add_argument('--replay-caller', default='/native_dense_replay')
     args = parser.parse_args(rospy.myargv()[1:])
+    if args.shared_gauge_id is None: args.shared_gauge_id = args.run_id
     if args.robot_name != 'sim_%d' % args.robot_id: parser.error('Expected matching sim_N name')
     if args.cutoff <= 0 or args.cloud_rate <= 0 or args.pixel_stride < 1: parser.error('Invalid epoch/sampling')
     if args.mesh_phase_timeout <= 0 or args.max_odom_gap <= 0 or args.max_gyro_gap <= 0 or args.weight_updates <= 0:
         parser.error('Native phase timeout, odometry bracket limit and weight-update count must be positive')
+    if not np.isfinite(args.status_period) or args.status_period <= 0: parser.error('Status period must be finite and positive')
+    if args.no_persist and args.execution_mode != 'online': parser.error('--no-persist requires --execution-mode online')
+    if args.remote_bridge_caller and not re.fullmatch(r'/[A-Za-z][A-Za-z0-9_/]*', args.remote_bridge_caller):
+        parser.error('Remote bridge caller must be one absolute ROS node name')
     if args.recorded_native_bag:
         if args.mode != 'local': parser.error('Recorded native-input mode is only for isolated local S2 acceptance')
         if not args.replay_caller.startswith('/native_dense_replay'):
@@ -1086,5 +1891,5 @@ if __name__ == '__main__':
     from nav_msgs.msg import Odometry, Path as RosPath
     from pose_graph_tools_msgs.msg import PoseGraph
     from sensor_msgs.msg import CameraInfo, Image, Imu, PointCloud2, PointField
-    from std_msgs.msg import Header, String
+    from std_msgs.msg import Header, String, UInt8MultiArray
     main()
